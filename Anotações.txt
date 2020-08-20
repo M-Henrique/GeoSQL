@@ -1,6 +1,0 @@
-Mudanças no TCC em relação ao original:
-
-	- Estrutura de páginas
-	- Flexbox
-	- Aplicação de tamanhos relativos (rem e vw/vh)
-	- Utilização de variáveis globais css
