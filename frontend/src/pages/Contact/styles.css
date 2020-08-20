@@ -1,0 +1,13 @@
+#contactContainer section {
+   margin: 1rem 3rem;
+
+   line-height: 2rem;
+}
+
+#contactContainer section h2 {
+   font-family: var(--font-family-title);
+}
+
+#contactContainer section p {
+   padding: 0.3rem 0;
+}

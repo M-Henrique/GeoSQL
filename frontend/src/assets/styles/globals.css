@@ -1,0 +1,79 @@
+:root {
+   --color-background: #f0f2f5;
+
+   --color-primary-lighter: #a9e6f7;
+   --color-primary-light: #88dbf2;
+   --color-primary: #63d3f2;
+   --color-primary-dark: #14c4f5;
+   --color-primary-darker: #11a7d1;
+
+   --color-secondary: #6c757d;
+   --color-secondary-dark: #575d63;
+   --color-secondary-darker: #3d4145;
+
+   --color-success-button: #28a745;
+   --color-success-button-dark: #228c3a;
+
+   --color-title-in-primary: #4f4f4f;
+   --color-text-in-primary: #666;
+
+   --color-title-in-secondary: #fff;
+   --color-text-in-secondary: #e6e6e6;
+
+   --color-text-in-success-button: #fff;
+
+   --color-text-complement: #a3a3a3;
+   --color-text-base: #fff;
+
+   --color-generic-link: #007bff;
+
+   --font-family-title: Montserrat, sans-seriff;
+   --font-size-title: 1.6rem;
+
+   --font-family-text: 'Baloo Tamma 2', cursive;
+   --font-size-text: 1.4rem;
+
+   font-size: 75%;
+}
+
+* {
+   margin: 0;
+   padding: 0;
+
+   box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+   height: 100vh;
+   width: 100vw;
+}
+
+body {
+   background: var(--color-background);
+}
+
+#root {
+   display: flex;
+   align-items: center;
+   justify-content: center;
+}
+
+body,
+input,
+button,
+textarea {
+   font: 400 var(--font-size-text) var(--font-family-text);
+   color: var(--color-text-in-primary);
+}
+
+.container {
+   display: flex;
+}
+
+.firstContainer {
+   flex-direction: column;
+   height: 100vh;
+   width: 100vw;
+}

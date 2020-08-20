@@ -1,0 +1,14 @@
+#aboutContainer section {
+   margin: 1rem 3rem;
+
+   line-height: 2rem;
+}
+
+#aboutContainer section h2 {
+   font-family: var(--font-family-title);
+}
+
+#aboutContainer section p {
+   text-align: justify;
+   text-indent: 4rem;
+}

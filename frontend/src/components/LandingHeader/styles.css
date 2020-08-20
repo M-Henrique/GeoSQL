@@ -1,0 +1,54 @@
+#linksList {
+   height: 6vh;
+   padding: 0 30rem;
+
+   flex-direction: row;
+   justify-content: space-between;
+   align-items: center;
+
+   background: var(--color-secondary-darker);
+}
+
+#localLinks {
+   align-items: center;
+}
+
+.link {
+   padding: 0 2rem;
+
+   font-size: var(--font-size-title);
+   color: var(--color-title-in-secondary);
+   opacity: 0.7;
+   text-decoration: none;
+
+   transition: all 0.2s ease;
+}
+
+.link:not(#githubLink):hover {
+   opacity: 0.4;
+}
+
+#homeLink {
+   font: 700 var(--font-size-title) var(--font-family-title);
+}
+
+#githubLink {
+   width: 5rem;
+   height: 4rem;
+
+   justify-content: center;
+
+   border-radius: 0.5rem;
+
+   background: var(--color-primary-dark);
+}
+
+#githubLink:hover {
+   cursor: pointer;
+   background: var(--color-primary-darker);
+}
+
+#githubLink a {
+   display: flex;
+   align-items: center;
+}
