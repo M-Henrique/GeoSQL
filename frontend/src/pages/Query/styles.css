@@ -1,0 +1,78 @@
+#queryContainer {
+   align-items: center;
+}
+
+#queryContainer #schemaContainer {
+   width: 95vw;
+   height: 65vh;
+   background: var(--color-primary);
+   border: 0.2rem solid var(--color-secondary);
+   border-radius: 2rem;
+   flex-direction: column;
+   overflow: auto;
+   margin-top: 2rem;
+}
+
+#queryContainer #schemaContainer table {
+   background: var(--color-background);
+   margin: 1rem 2rem;
+   border-radius: 2rem;
+   border: 0.2rem solid var(--color-secondary);
+}
+
+#queryContainer #schemaContainer table caption {
+   text-align: left;
+   color: var(--color-title-in-primary);
+   font: 700 var(--font-size-title) var(--font-family-title);
+}
+
+#queryContainer #schemaContainer table td {
+   text-align: center;
+   min-width: 5rem;
+   white-space: nowrap;
+   padding: 0.5rem;
+}
+
+#queryContainer #schemaContainer table td:not(:last-child) {
+   border-right: 0.2rem solid var(--color-secondary);
+   min-width: 5rem;
+}
+
+#queryContainer textarea {
+   width: 50vw;
+   height: 20vh;
+   border-radius: 2rem;
+   resize: none;
+   padding: 1rem;
+   margin-top: 2rem;
+}
+
+#queryContainer textarea:focus {
+   outline: none;
+}
+
+/* width */
+::-webkit-scrollbar {
+   width: 0.5rem;
+   height: 0.5rem;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+   background: var(--color-secondary);
+   border-radius: 5rem;
+}
+
+::-webkit-scrollbar-track {
+   margin: 2rem;
+   background: transparent;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+   background: var(--color-secondary-dark);
+}
+
+::-webkit-scrollbar-corner {
+   background: var(--color-primary);
+}
