@@ -38,41 +38,91 @@
    min-width: 5rem;
 }
 
+#queryContainer #schemaContainer::-webkit-scrollbar {
+   width: 0.7rem;
+   height: 0.7rem;
+}
+
+#queryContainer #schemaContainer::-webkit-scrollbar-thumb {
+   background: var(--color-secondary);
+   border-radius: 5rem;
+}
+
+#queryContainer #schemaContainer::-webkit-scrollbar-track {
+   margin: 2rem;
+   background: transparent;
+}
+
+#queryContainer #schemaContainer::-webkit-scrollbar-thumb:hover {
+   background: var(--color-secondary-dark);
+}
+
+#queryContainer #schemaContainer::-webkit-scrollbar-corner {
+   opacity: 0;
+}
+
+#queryContainer #inputsContainer {
+   margin-top: 2rem;
+}
+
+#queryContainer #inputsContainer #textAreaContainer {
+   flex-direction: column;
+   flex: 3;
+}
+
 #queryContainer textarea {
-   width: 50vw;
    height: 20vh;
    border-radius: 2rem;
    resize: none;
    padding: 1rem;
-   margin-top: 2rem;
 }
 
 #queryContainer textarea:focus {
    outline: none;
 }
 
-/* width */
-::-webkit-scrollbar {
-   width: 0.5rem;
-   height: 0.5rem;
+#queryContainer #inputsContainer #buttonsContainer {
+   flex-direction: column;
+   margin-left: 5rem;
+   flex: 1;
+   align-items: flex-start;
+   justify-content: space-between;
+   height: 20vh;
 }
 
-/* Handle */
-::-webkit-scrollbar-thumb {
+#queryContainer #inputsContainer #buttonsContainer .queryButton {
+   padding: 1.2rem;
+   width: 12rem;
+
+   display: flex;
+   align-items: center;
+   justify-content: center;
+
+   border-radius: 0.5rem;
+
+   font: 400 var(--font-size-title) var(--font-family-title);
+   text-decoration: none;
+   color: var(--color-text-in-success-button);
+
+   transition: all 0.2s ease;
+}
+
+#queryContainer #inputsContainer #buttonsContainer .queryButton:hover {
+   filter: brightness(85%);
+}
+
+#queryContainer #inputsContainer #buttonsContainer #submitQuery {
+   background: var(--color-success-button);
+}
+
+#queryContainer #inputsContainer #buttonsContainer #saveQuery {
    background: var(--color-secondary);
-   border-radius: 5rem;
 }
 
-::-webkit-scrollbar-track {
-   margin: 2rem;
-   background: transparent;
+#queryContainer #inputsContainer #buttonsContainer #helpPageButton {
+   background: var(--color-primary-dark);
 }
 
-/* Handle on hover */
-::-webkit-scrollbar-thumb:hover {
-   background: var(--color-secondary-dark);
-}
-
-::-webkit-scrollbar-corner {
-   background: var(--color-primary);
+#queryContainer #inputsContainer #buttonsContainer .queryButton .queryIcon {
+   margin-right: 1rem;
 }

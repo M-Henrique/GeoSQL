@@ -28,7 +28,7 @@ export default function Landing() {
                <select name="Banco">
                   <option value="Brasil">Brasil</option>
                </select>
-               <Link to="/query" id="iniciar">
+               <Link to="/query" id="start">
                   <FiPlayCircle />
                   Iniciar
                </Link>

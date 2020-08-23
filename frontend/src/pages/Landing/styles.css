@@ -39,7 +39,7 @@
    border: 1px solid #ced4da;
 }
 
-#landingContainer #introContainer #databaseSelection #iniciar {
+#landingContainer #introContainer #databaseSelection #start {
    min-width: 8rem;
    height: 3.5rem;
    padding: 0.8rem;
@@ -60,7 +60,7 @@
    transition: background 0.2s ease;
 }
 
-#landingContainer #introContainer #databaseSelection #iniciar:hover {
+#landingContainer #introContainer #databaseSelection #start:hover {
    background: var(--color-success-button-dark);
 }
 
