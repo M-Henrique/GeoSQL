@@ -1,9 +1,10 @@
 #tabsMenu {
    height: 6vh;
-   flex-direction: row;
-   justify-content: space-between;
    padding: 0 4rem;
    margin-top: 1rem;
+
+   flex-direction: row;
+   justify-content: space-between;
 }
 
 #tabsMenu #logo {
@@ -17,15 +18,18 @@
 }
 
 #tabsMenu #tabs .tab {
+   margin: 0 1rem;
+   padding: 1rem;
+
    display: flex;
    align-items: center;
    justify-content: center;
-   margin: 0 1rem;
-   padding: 1rem;
+
    text-decoration: none;
-   font: 700 var(--font-size-title) var(--font-family-title);
    color: var(--color-primary-dark);
-   transition: font-size 0.5s;
+   font: 700 var(--font-size-title) var(--font-family-title);
+
+   transition: font-size 0.2s;
 }
 
 #tabsMenu #tabs .tab:hover,
@@ -34,6 +38,7 @@
    border-bottom: none;
    border-top-left-radius: 1rem;
    border-top-right-radius: 1rem;
+
    color: var(--color-secondary-darker);
    font-size: 1.8rem;
 }

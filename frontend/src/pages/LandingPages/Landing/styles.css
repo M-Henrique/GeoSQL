@@ -50,9 +50,9 @@
 
    border-radius: 0.5rem;
 
-   font-size: 1.6rem;
    text-decoration: none;
    color: var(--color-text-in-success-button);
+   font: 400 var(--font-size-title) var(--font-family-title);
 
    background: var(--color-success-button);
 
@@ -61,6 +61,10 @@
 
 #landingContainer #introContainer #databaseSelection #start:hover {
    background: var(--color-success-button-dark);
+}
+
+#landingContainer #introContainer #databaseSelection #start #startIcon {
+   margin-right: 0.5rem;
 }
 
 #landingContainer footer {

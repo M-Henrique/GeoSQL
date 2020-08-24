@@ -2,7 +2,7 @@ import React from 'react';
 
 import { FiDownload } from 'react-icons/fi';
 
-import TabsMenu from '../../components/TabsMenu';
+import TabsMenu from '../../../components/TabsMenu';
 
 import './styles.css';
 

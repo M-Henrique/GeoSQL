@@ -1,19 +1,25 @@
 #queryContainer #schemaContainer {
    width: 95vw;
    height: 65vh;
-   background: var(--color-primary);
+   margin-top: 1rem;
+
+   flex-direction: column;
+
    border: 0.2rem solid var(--color-secondary);
    border-radius: 2rem;
-   flex-direction: column;
+
    overflow: auto;
-   margin-top: 1rem;
+
+   background: var(--color-primary);
 }
 
 #queryContainer #schemaContainer table {
-   background: var(--color-background);
    margin: 1rem 2rem;
+
    border-radius: 2rem;
    border: 0.2rem solid var(--color-secondary);
+
+   background: var(--color-background);
 }
 
 #queryContainer #schemaContainer table caption {
@@ -23,10 +29,11 @@
 }
 
 #queryContainer #schemaContainer table td {
-   text-align: center;
-   height: 3rem;
    min-width: 10rem;
+   height: 3rem;
    padding: 0.8rem;
+
+   text-align: center;
 }
 
 #queryContainer #schemaContainer table td:not(:last-child) {
@@ -39,12 +46,14 @@
 }
 
 #queryContainer #schemaContainer::-webkit-scrollbar-thumb {
-   background: var(--color-secondary);
    border-radius: 5rem;
+
+   background: var(--color-secondary);
 }
 
 #queryContainer #schemaContainer::-webkit-scrollbar-track {
    margin: 2rem;
+
    background: transparent;
 }
 
@@ -61,15 +70,17 @@
 }
 
 #queryContainer #inputsContainer #textAreaContainer {
-   flex-direction: column;
    flex: 3;
+   flex-direction: column;
 }
 
 #queryContainer textarea {
    height: 20vh;
-   border-radius: 2rem;
-   resize: none;
    padding: 1rem;
+
+   border-radius: 2rem;
+
+   resize: none;
 }
 
 #queryContainer textarea:focus {
@@ -77,12 +88,13 @@
 }
 
 #queryContainer #inputsContainer #buttonsContainer {
-   flex-direction: column;
-   margin-left: 5rem;
-   flex: 1;
-   align-items: flex-start;
-   justify-content: space-between;
    height: 20vh;
+   margin-left: 5rem;
+
+   flex: 1;
+   flex-direction: column;
+   justify-content: space-between;
+   align-items: flex-start;
 }
 
 #queryContainer #inputsContainer #buttonsContainer .queryButton {

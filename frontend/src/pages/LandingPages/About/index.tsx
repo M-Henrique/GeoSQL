@@ -1,6 +1,6 @@
 import React from 'react';
 
-import LandingHeader from '../../components/LandingHeader';
+import LandingHeader from '../../../components/LandingHeader';
 
 import './styles.css';
 

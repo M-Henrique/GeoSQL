@@ -1,14 +1,14 @@
 import React from 'react';
 import { BrowserRouter, Route } from 'react-router-dom';
 
-import Landing from './pages/Landing';
-import About from './pages/About';
-import Contact from './pages/Contact';
+import Landing from './pages/LandingPages/Landing';
+import About from './pages/LandingPages/About';
+import Contact from './pages/LandingPages/Contact';
 
-import Query from './pages/Query';
-import Results from './pages/Results';
-import WorldMap from './pages/WorldMap';
-import Help from './pages/Help - em construção';
+import Query from './pages/MainPages/Query';
+import Results from './pages/MainPages/Results';
+import WorldMap from './pages/MainPages/WorldMap';
+import Help from './pages/MainPages/Help - em construção';
 
 function Routes() {
    return (

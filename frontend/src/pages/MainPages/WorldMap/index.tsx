@@ -1,6 +1,6 @@
 import React from 'react';
 
-import TabsMenu from '../../components/TabsMenu';
+import TabsMenu from '../../../components/TabsMenu';
 
 import './styles.css';
 

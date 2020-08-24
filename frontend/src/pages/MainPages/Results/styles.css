@@ -1,33 +1,41 @@
 #resultsContainer #mainContainer {
-   margin-top: 2rem;
    width: 95vw;
+   margin-top: 2rem;
+
    justify-content: space-between;
 }
 
 #resultsContainer #mainContainer aside {
    width: 15vw;
    max-height: 35vh;
+
    flex-direction: column;
    justify-content: space-between;
 }
 
 #resultsContainer #mainContainer aside .saveResults {
-   display: flex;
-   align-items: center;
-   background: var(--color-secondary);
-   font: 400 var(--font-size-title) var(--font-family-title);
-   color: var(--color-title-in-secondary);
    width: 12rem;
+   padding: 1rem;
+
+   display: flex;
+   justify-content: center;
+   align-items: center;
+
    border-radius: 0.5rem;
    border: none;
-   padding: 1rem;
-   justify-content: center;
+
+   font: 400 var(--font-size-title) var(--font-family-title);
+   color: var(--color-title-in-secondary);
+
+   background: var(--color-secondary);
+
    transition: background 0.2s ease;
 }
 
 #resultsContainer #mainContainer aside .saveResults:hover {
-   background: var(--color-secondary-dark);
    cursor: pointer;
+
+   background: var(--color-secondary-dark);
 }
 
 #resultsContainer #mainContainer aside .saveResults .saveIcon {
@@ -37,24 +45,28 @@
 #resultsContainer #mainContainer #tableContainer {
    width: 80vw;
    height: 85vh;
+
    overflow: auto;
 }
 
 #resultsContainer #mainContainer #tableContainer table {
    flex: 1;
+
    border: 1px solid var(--color-secondary-dark);
    border-spacing: 0;
    border-radius: 1rem;
 }
 
 #resultsContainer #mainContainer #tableContainer table thead {
-   background: var(--color-primary-light);
    font: 700 var(--font-size-title) var(--font-family-title);
+
+   background: var(--color-primary-light);
 }
 
 #resultsContainer #mainContainer #tableContainer table tbody {
-   background: var(--color-background);
    font-size: 1.5rem;
+
+   background: var(--color-background);
 }
 
 #resultsContainer #mainContainer #tableContainer table tr {
@@ -62,8 +74,10 @@
 }
 
 #resultsContainer #mainContainer #tableContainer table tr:hover {
-   background: var(--color-secondary-light) !important;
    color: var(--color-text-in-secondary);
+
+   background: var(--color-secondary-light) !important;
+
    transition: 0.1s;
 }
 
@@ -73,12 +87,15 @@
 
 #resultsContainer #mainContainer #tableContainer table td,
 #resultsContainer #mainContainer #tableContainer table th {
-   text-align: center;
-   height: 4rem;
    min-width: 10rem;
+   height: 4rem;
    padding: 1rem;
+
    border-right: 1px solid var(--color-secondary-darker);
+
+   text-align: center;
 }
+
 #resultsContainer #mainContainer #tableContainer table th:first-child {
    border-top-left-radius: 1rem;
 }
@@ -101,8 +118,9 @@
 }
 
 #resultsContainer #tableContainer::-webkit-scrollbar-thumb {
-   background: var(--color-secondary);
    border-radius: 5rem;
+
+   background: var(--color-secondary);
 }
 
 #resultsContainer #tableContainer::-webkit-scrollbar-track {

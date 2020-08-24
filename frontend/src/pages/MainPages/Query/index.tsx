@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 
 import { FiSearch, FiSave, FiHelpCircle } from 'react-icons/fi';
 
-import TabsMenu from '../../components/TabsMenu';
+import TabsMenu from '../../../components/TabsMenu';
 
 import './styles.css';
 
