@@ -7,6 +7,8 @@
    --color-primary-dark: #0077b6;
    --color-primary-darker: #023e8a;
 
+   --color-secondary-lighter: #c2c2c2;
+   --color-secondary-light: #a3a3a3;
    --color-secondary: #6c757d;
    --color-secondary-dark: #575d63;
    --color-secondary-darker: #3d4145;
@@ -18,11 +20,10 @@
    --color-text-in-primary: #666;
 
    --color-title-in-secondary: #fff;
-   --color-text-in-secondary: #e6e6e6;
+   --color-text-in-secondary: #fff;
 
    --color-text-in-success-button: #fff;
 
-   --color-text-complement: #a3a3a3;
    --color-text-base: #fff;
 
    --color-generic-link: #007bff;
@@ -74,6 +75,7 @@ textarea {
 
 .firstContainer {
    flex-direction: column;
+   align-items: center;
    height: 100vh;
    width: 100vw;
 }

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 
 import { FiSearch, FiSave, FiHelpCircle } from 'react-icons/fi';
 
-import LandingHeader from '../../components/LandingHeader';
+import TabsMenu from '../../components/TabsMenu';
 
 import './styles.css';
 
@@ -11,7 +11,7 @@ export default function Query() {
    return (
       <div id="queryContainer" className="firstContainer container">
          <header>
-            <LandingHeader />
+            <TabsMenu selectedTab="query" />
          </header>
          <main>
             {/* Não contém className container pois o display flex causa um bug na expansão das tabelas */}
@@ -70,12 +70,12 @@ export default function Query() {
                <div id="buttonsContainer" className="container">
                   <Link to="/results" id="submitQuery" className="queryButton">
                      <FiSearch className="queryIcon" />
-                     Iniciar
+                     Pesquisar
                   </Link>
-                  <Link to="" id="saveQuery" className="queryButton">
+                  <button id="saveQuery" className="queryButton">
                      <FiSave className="queryIcon" />
                      Salvar
-                  </Link>
+                  </button>
                   <Link to="/help" id="helpPageButton" className="queryButton">
                      <FiHelpCircle className="queryIcon" />
                      Ajuda

@@ -1,0 +1,118 @@
+#resultsContainer #mainContainer {
+   margin-top: 2rem;
+   width: 95vw;
+   justify-content: space-between;
+}
+
+#resultsContainer #mainContainer aside {
+   width: 15vw;
+   max-height: 35vh;
+   flex-direction: column;
+   justify-content: space-between;
+}
+
+#resultsContainer #mainContainer aside .saveResults {
+   display: flex;
+   align-items: center;
+   background: var(--color-secondary);
+   font: 400 var(--font-size-title) var(--font-family-title);
+   color: var(--color-title-in-secondary);
+   width: 12rem;
+   border-radius: 0.5rem;
+   border: none;
+   padding: 1rem;
+   justify-content: center;
+   transition: background 0.2s ease;
+}
+
+#resultsContainer #mainContainer aside .saveResults:hover {
+   background: var(--color-secondary-dark);
+   cursor: pointer;
+}
+
+#resultsContainer #mainContainer aside .saveResults .saveIcon {
+   margin-right: 0.5rem;
+}
+
+#resultsContainer #mainContainer #tableContainer {
+   width: 80vw;
+   height: 85vh;
+   overflow: auto;
+}
+
+#resultsContainer #mainContainer #tableContainer table {
+   flex: 1;
+   border: 1px solid var(--color-secondary-dark);
+   border-spacing: 0;
+   border-radius: 1rem;
+}
+
+#resultsContainer #mainContainer #tableContainer table thead {
+   background: var(--color-primary-light);
+   font: 700 var(--font-size-title) var(--font-family-title);
+}
+
+#resultsContainer #mainContainer #tableContainer table tbody {
+   background: var(--color-background);
+   font-size: 1.5rem;
+}
+
+#resultsContainer #mainContainer #tableContainer table tr {
+   border: 1px solid black;
+}
+
+#resultsContainer #mainContainer #tableContainer table tr:hover {
+   background: var(--color-secondary-light) !important;
+   color: var(--color-text-in-secondary);
+   transition: 0.2s;
+}
+
+#resultsContainer #mainContainer #tableContainer table tr:nth-child(even) {
+   background: var(--color-secondary-lighter);
+}
+
+#resultsContainer #mainContainer #tableContainer table td,
+#resultsContainer #mainContainer #tableContainer table th {
+   text-align: center;
+   height: 4rem;
+   min-width: 10rem;
+   padding: 1rem;
+   border-right: 1px solid var(--color-secondary-darker);
+}
+#resultsContainer #mainContainer #tableContainer table th:first-child {
+   border-top-left-radius: 1rem;
+}
+
+#resultsContainer #mainContainer #tableContainer table th:last-child {
+   border-top-right-radius: 1rem;
+}
+
+#resultsContainer #mainContainer #tableContainer table tr:last-child td:first-child {
+   border-bottom-left-radius: 1rem;
+}
+
+#resultsContainer #mainContainer #tableContainer table tr:last-child td:last-child {
+   border-bottom-right-radius: 1rem;
+}
+
+#resultsContainer #tableContainer::-webkit-scrollbar {
+   width: 0.7rem;
+   height: 0.7rem;
+}
+
+#resultsContainer #tableContainer::-webkit-scrollbar-thumb {
+   background: var(--color-secondary);
+   border-radius: 5rem;
+}
+
+#resultsContainer #tableContainer::-webkit-scrollbar-track {
+   background: transparent;
+}
+
+#resultsContainer #tableContainer::-webkit-scrollbar-thumb:hover {
+   background: var(--color-secondary-dark);
+}
+
+#resultsContainer #tableContainer::-webkit-scrollbar-corner {
+   opacity: 0;
+}

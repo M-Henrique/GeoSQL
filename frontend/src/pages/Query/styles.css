@@ -1,7 +1,3 @@
-#queryContainer {
-   align-items: center;
-}
-
 #queryContainer #schemaContainer {
    width: 95vw;
    height: 65vh;
@@ -10,7 +6,7 @@
    border-radius: 2rem;
    flex-direction: column;
    overflow: auto;
-   margin-top: 2rem;
+   margin-top: 1rem;
 }
 
 #queryContainer #schemaContainer table {
@@ -28,14 +24,13 @@
 
 #queryContainer #schemaContainer table td {
    text-align: center;
-   min-width: 5rem;
-   white-space: nowrap;
-   padding: 0.5rem;
+   height: 3rem;
+   min-width: 10rem;
+   padding: 0.8rem;
 }
 
 #queryContainer #schemaContainer table td:not(:last-child) {
    border-right: 0.2rem solid var(--color-secondary);
-   min-width: 5rem;
 }
 
 #queryContainer #schemaContainer::-webkit-scrollbar {
@@ -98,6 +93,7 @@
    align-items: center;
    justify-content: center;
 
+   border: none;
    border-radius: 0.5rem;
 
    font: 400 var(--font-size-title) var(--font-family-title);
@@ -105,6 +101,8 @@
    color: var(--color-text-in-success-button);
 
    transition: all 0.2s ease;
+
+   cursor: pointer;
 }
 
 #queryContainer #inputsContainer #buttonsContainer .queryButton:hover {
@@ -124,5 +122,5 @@
 }
 
 #queryContainer #inputsContainer #buttonsContainer .queryButton .queryIcon {
-   margin-right: 1rem;
+   margin-right: 0.2rem;
 }

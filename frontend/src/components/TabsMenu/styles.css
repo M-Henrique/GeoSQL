@@ -1,0 +1,42 @@
+#tabsMenu {
+   height: 6vh;
+   flex-direction: row;
+   justify-content: space-between;
+   padding: 0 4rem;
+   margin-top: 1rem;
+}
+
+#tabsMenu #logo {
+   width: 13vw;
+   height: 6vh;
+   margin-top: 0.5rem;
+}
+
+#tabsMenu #tabs {
+   align-items: center;
+}
+
+#tabsMenu #tabs .tab {
+   display: flex;
+   align-items: center;
+   margin: 0 1rem;
+   padding: 1rem;
+   text-decoration: none;
+   font: 700 var(--font-size-title) var(--font-family-title);
+   color: var(--color-primary-dark);
+   transition: font-size 0.2s ease;
+}
+
+#tabsMenu #tabs .tab:hover,
+#tabsMenu #tabs .selectedTab {
+   border: 1px solid var(--color-secondary);
+   border-bottom: none;
+   border-top-left-radius: 1rem;
+   border-top-right-radius: 1rem;
+   color: var(--color-secondary-darker);
+   font-size: 1.8rem;
+}
+
+#tabsMenu #tabs .tab .tabIcon {
+   margin-right: 0.5rem;
+}

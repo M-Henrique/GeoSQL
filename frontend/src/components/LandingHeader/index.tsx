@@ -19,6 +19,7 @@ export default function LandingHeader() {
                Contato
             </Link>
          </div>
+
          <div id="exteriorLinks" className="container">
             <div id="githubLink" className="link container">
                <a
