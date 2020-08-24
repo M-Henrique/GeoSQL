@@ -8,6 +8,7 @@ import Contact from './pages/Contact';
 import Query from './pages/Query';
 import Results from './pages/Results';
 import WorldMap from './pages/WorldMap';
+import Help from './pages/Help - em construção';
 
 function Routes() {
    return (
@@ -18,6 +19,7 @@ function Routes() {
          <Route path="/query" exact component={Query}></Route>
          <Route path="/results" exact component={Results}></Route>
          <Route path="/map" exact component={WorldMap}></Route>
+         <Route path="/help" exact component={Help}></Route>
       </BrowserRouter>
    );
 }

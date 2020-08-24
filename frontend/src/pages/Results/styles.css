@@ -64,7 +64,7 @@
 #resultsContainer #mainContainer #tableContainer table tr:hover {
    background: var(--color-secondary-light) !important;
    color: var(--color-text-in-secondary);
-   transition: 0.2s;
+   transition: 0.1s;
 }
 
 #resultsContainer #mainContainer #tableContainer table tr:nth-child(even) {

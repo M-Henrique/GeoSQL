@@ -1,0 +1,45 @@
+#helpContainer {
+   margin: 2rem;
+   align-items: flex-start;
+}
+
+#helpContainer p,
+#helpContainer small {
+   text-indent: 3rem;
+   line-height: 2rem;
+}
+
+#helpContainer .titleTutorial {
+   margin-top: 2rem;
+
+   font: 700 var(--font-size-title) var(--font-family-title);
+}
+
+#helpContainer .titleTutorial:not(:first-child) {
+   color: var(--color-primary);
+}
+
+#helpContainer #warning {
+   color: brown;
+}
+
+#helpContainer .imgTutorial {
+   align-self: center;
+}
+
+#helpContainer .listTutorial {
+   margin-left: 4rem;
+}
+
+#helpContainer .listTutorial li {
+   text-indent: 0.5rem;
+}
+
+#helpContainer .listTutorial .linkTutorial {
+   text-decoration: none;
+   color: var(--color-generic-link);
+}
+
+#helpContainer .listTutorial .linkTutorial:hover {
+   text-decoration: underline;
+}

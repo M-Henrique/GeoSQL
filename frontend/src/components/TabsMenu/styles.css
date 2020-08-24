@@ -19,12 +19,13 @@
 #tabsMenu #tabs .tab {
    display: flex;
    align-items: center;
+   justify-content: center;
    margin: 0 1rem;
    padding: 1rem;
    text-decoration: none;
    font: 700 var(--font-size-title) var(--font-family-title);
    color: var(--color-primary-dark);
-   transition: font-size 0.2s ease;
+   transition: font-size 0.5s;
 }
 
 #tabsMenu #tabs .tab:hover,
