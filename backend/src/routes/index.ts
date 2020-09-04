@@ -7,11 +7,15 @@ const routes = Router();
 // Todas as tabelas do banco
 routes.get('/query', async (request, response) => {
    try {
-      const tables = await client.query(
-         `SELECT DISTINCT table_name, column_name FROM information_schema.columns WHERE table_schema = 'geodata'`
+      const { rows: tablesColumns } = await client.query(
+         `SELECT DISTINCT table_name as table, column_name as name FROM information_schema.columns WHERE table_schema = 'geodata' ORDER BY table_name;`
       );
 
-      return response.json(tables.rows);
+      const { rows: tables } = await client.query(
+         `SELECT DISTINCT table_name as name FROM information_schema.columns WHERE table_schema = 'geodata' ORDER BY table_name;`
+      );
+
+      return response.json({ tablesColumns, tables });
    } catch (error) {
       return response.status(400).json(error.message);
    }
@@ -19,12 +23,12 @@ routes.get('/query', async (request, response) => {
 
 // Resultados da query realizada
 routes.get('/results', async (request, response) => {
-   const query = request.body.query;
+   const queryText = request.body.queryText;
 
    try {
-      const result = await client.query(query);
+      const result = await client.query(queryText);
 
-      return response.json(result);
+      return response.json(result.rows);
    } catch (error) {
       return response.status(400).json(error.message);
    }
