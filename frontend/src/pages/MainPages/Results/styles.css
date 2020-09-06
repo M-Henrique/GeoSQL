@@ -86,7 +86,7 @@
 }
 
 #resultsContainer #mainContainer #tableContainer table td,
-#resultsContainer #mainContainer #tableContainer table th {
+#resultsContainer #mainContainer #tableContainer table tr th {
    min-width: 10rem;
    height: 4rem;
    padding: 1rem;
@@ -96,11 +96,11 @@
    text-align: center;
 }
 
-#resultsContainer #mainContainer #tableContainer table th:first-child {
+#resultsContainer #mainContainer #tableContainer table tr th:first-child {
    border-top-left-radius: 1rem;
 }
 
-#resultsContainer #mainContainer #tableContainer table th:last-child {
+#resultsContainer #mainContainer #tableContainer table tr th:last-child {
    border-top-right-radius: 1rem;
 }
 

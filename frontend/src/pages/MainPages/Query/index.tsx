@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { Link } from 'react-router-dom';
 
 import { FiSearch, FiSave, FiHelpCircle } from 'react-icons/fi';
 
 import api from '../../../services/api';
+import ResultsContext from '../../../contexts/results';
 
 import TabsMenu from '../../../components/TabsMenu';
 
@@ -15,12 +16,18 @@ export default function Query() {
    // Nomes de tabelas apenas (para facilitar a iteração)
    const [tables, setTables] = useState<any[]>([]);
 
+   const { submitQuery } = useContext(ResultsContext);
+
    useEffect(() => {
       api.get('/query').then(({ data: { tablesColumns, tables } }) => {
          setTablesColumns(tablesColumns);
          setTables(tables);
       });
    }, []);
+
+   async function handleSubmitQuery() {
+      await submitQuery();
+   }
 
    return (
       <div id="queryContainer" className="firstContainer container">
@@ -59,10 +66,12 @@ export default function Query() {
                </div>
 
                <div id="buttonsContainer" className="container">
-                  <Link to="/results" id="submitQuery" className="queryButton">
-                     <FiSearch className="queryIcon" />
-                     Pesquisar
-                  </Link>
+                  <span onClick={handleSubmitQuery}>
+                     <Link to="/results" id="submitQuery" className="queryButton">
+                        <FiSearch className="queryIcon" />
+                        Pesquisar
+                     </Link>
+                  </span>
                   <button id="saveQuery" className="queryButton">
                      <FiSave className="queryIcon" />
                      Salvar

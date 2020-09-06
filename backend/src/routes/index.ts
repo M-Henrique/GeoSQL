@@ -22,7 +22,7 @@ routes.get('/query', async (request, response) => {
 });
 
 // Resultados da query realizada
-routes.get('/results', async (request, response) => {
+routes.post('/results', async (request, response) => {
    const queryText = request.body.queryText;
 
    try {

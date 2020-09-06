@@ -1,12 +1,16 @@
-import React from 'react';
+import React, { useContext } from 'react';
 
 import { FiDownload } from 'react-icons/fi';
+
+import ResultsContext from '../../../contexts/results';
 
 import TabsMenu from '../../../components/TabsMenu';
 
 import './styles.css';
 
 export default function Results() {
+   const { rows } = useContext(ResultsContext);
+
    return (
       <div id="resultsContainer" className="firstContainer container">
          <header>
@@ -35,118 +39,15 @@ export default function Results() {
             <section id="tableContainer" className="container">
                <table>
                   <thead>
-                     <th>Teste</th>
-                     <th>Teste</th>
-                     <th>Teste</th>
-                     <th>Teste</th>
-                     <th>Teste</th>
+                     <tr>
+                        <th>Teste</th>
+                        <th>Teste</th>
+                        <th>Teste</th>
+                        <th>Teste</th>
+                        <th>Teste</th>
+                     </tr>
                   </thead>
                   <tbody>
-                     <tr>
-                        <td>Teste</td>
-                        <td>Teste</td>
-                        <td>Teste</td>
-                        <td>Teste</td>
-                        <td>Teste</td>
-                     </tr>
-                     <tr>
-                        <td>Teste</td>
-                        <td>Teste</td>
-                        <td>Teste</td>
-                        <td>Teste</td>
-                        <td>Teste</td>
-                     </tr>
-                     <tr>
-                        <td>Teste</td>
-                        <td>Teste</td>
-                        <td>Teste</td>
-                        <td>Teste</td>
-                        <td>Teste</td>
-                     </tr>
-                     <tr>
-                        <td>Teste</td>
-                        <td>Teste</td>
-                        <td>Teste</td>
-                        <td>Teste</td>
-                        <td>Teste</td>
-                     </tr>
-                     <tr>
-                        <td>Teste</td>
-                        <td>Teste</td>
-                        <td>Teste</td>
-                        <td>Teste</td>
-                        <td>Teste</td>
-                     </tr>
-                     <tr>
-                        <td>Teste</td>
-                        <td>Teste</td>
-                        <td>Teste</td>
-                        <td>Teste</td>
-                        <td>Teste</td>
-                     </tr>
-                     <tr>
-                        <td>Teste</td>
-                        <td>Teste</td>
-                        <td>Teste</td>
-                        <td>Teste</td>
-                        <td>Teste</td>
-                     </tr>
-                     <tr>
-                        <td>Teste</td>
-                        <td>Teste</td>
-                        <td>Teste</td>
-                        <td>Teste</td>
-                        <td>Teste</td>
-                     </tr>
-                     <tr>
-                        <td>Teste</td>
-                        <td>Teste</td>
-                        <td>Teste</td>
-                        <td>Teste</td>
-                        <td>Teste</td>
-                     </tr>
-                     <tr>
-                        <td>Teste</td>
-                        <td>Teste</td>
-                        <td>Teste</td>
-                        <td>Teste</td>
-                        <td>Teste</td>
-                     </tr>
-                     <tr>
-                        <td>Teste</td>
-                        <td>Teste</td>
-                        <td>Teste</td>
-                        <td>Teste</td>
-                        <td>Teste</td>
-                     </tr>
-                     <tr>
-                        <td>Teste</td>
-                        <td>Teste</td>
-                        <td>Teste</td>
-                        <td>Teste</td>
-                        <td>Teste</td>
-                     </tr>
-                     <tr>
-                        <td>Teste</td>
-                        <td>Teste</td>
-                        <td>Teste</td>
-                        <td>Teste</td>
-                        <td>Teste</td>
-                     </tr>
-                     <tr>
-                        <td>Teste</td>
-                        <td>Teste</td>
-                        <td>Teste</td>
-                        <td>Teste</td>
-                        <td>Teste</td>
-                     </tr>
-                     <tr>
-                        <td>Teste</td>
-                        <td>Teste</td>
-                        <td>Teste</td>
-                        <td>Teste</td>
-                        <td>Teste</td>
-                     </tr>
                      <tr>
                         <td>Teste</td>
                         <td>Teste</td>
