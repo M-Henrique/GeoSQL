@@ -69,11 +69,11 @@
    background: var(--color-background);
 }
 
-#resultsContainer #mainContainer #tableContainer table tr {
+#resultsContainer #mainContainer #tableContainer table tbody tr {
    border: 1px solid black;
 }
 
-#resultsContainer #mainContainer #tableContainer table tr:hover {
+#resultsContainer #mainContainer #tableContainer table tbody tr:hover {
    color: var(--color-text-in-secondary);
 
    background: var(--color-secondary-light) !important;
@@ -81,12 +81,12 @@
    transition: 0.1s;
 }
 
-#resultsContainer #mainContainer #tableContainer table tr:nth-child(even) {
+#resultsContainer #mainContainer #tableContainer table tbody tr:nth-child(even) {
    background: var(--color-secondary-lighter);
 }
 
 #resultsContainer #mainContainer #tableContainer table td,
-#resultsContainer #mainContainer #tableContainer table tr th {
+#resultsContainer #mainContainer #tableContainer table th {
    min-width: 10rem;
    height: 4rem;
    padding: 1rem;
@@ -96,11 +96,11 @@
    text-align: center;
 }
 
-#resultsContainer #mainContainer #tableContainer table tr th:first-child {
+#resultsContainer #mainContainer #tableContainer table th:first-child {
    border-top-left-radius: 1rem;
 }
 
-#resultsContainer #mainContainer #tableContainer table tr th:last-child {
+#resultsContainer #mainContainer #tableContainer table th:last-child {
    border-top-right-radius: 1rem;
 }
 

@@ -3,7 +3,7 @@ import api from '../services/api';
 import { AxiosRequestConfig } from 'axios';
 
 interface ResultsContextData {
-   rows: {}[];
+   rows: Array<Object>;
    submitQuery(): Promise<void>;
 }
 
@@ -18,7 +18,7 @@ export const ResultsProvider: React.FC = ({ children }) => {
 
    async function submitQuery() {
       const { data } = await api.post('/results', {
-         queryText: 'SELECT * FROM refinaria',
+         queryText: `SELECT * FROM estado`,
       } as Query);
 
       setResults(data);
