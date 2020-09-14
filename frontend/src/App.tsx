@@ -1,6 +1,7 @@
 import React from 'react';
 
-import { ResultsProvider } from './contexts/results';
+import { TablesProvider } from './contexts/tables';
+import { QueryProvider } from './contexts/query';
 
 import Routes from './routes';
 
@@ -8,9 +9,11 @@ import './assets/styles/globals.css';
 
 function App() {
    return (
-      <ResultsProvider>
-         <Routes />
-      </ResultsProvider>
+      <TablesProvider>
+         <QueryProvider>
+            <Routes />
+         </QueryProvider>
+      </TablesProvider>
    );
 }
 

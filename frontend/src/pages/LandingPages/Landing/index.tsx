@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { Link } from 'react-router-dom';
 
 import { FiPlayCircle } from 'react-icons/fi';
+
+import TablesContext from '../../../contexts/tables';
 
 import LandingHeader from '../../../components/LandingHeader';
 
@@ -10,6 +12,12 @@ import Logo from '../../../assets/images/logGeosqlplus743x232.png';
 import './styles.css';
 
 export default function Landing() {
+   const { getTables } = useContext(TablesContext);
+
+   async function handleGetTables() {
+      await getTables();
+   }
+
    return (
       <div id="landingContainer" className="firstContainer container">
          <header>
@@ -28,7 +36,7 @@ export default function Landing() {
                <select name="Banco">
                   <option value="Brasil">Brasil</option>
                </select>
-               <Link to="/query" id="start">
+               <Link to="/query" id="start" onClick={handleGetTables}>
                   <FiPlayCircle id="startIcon" />
                   Iniciar
                </Link>

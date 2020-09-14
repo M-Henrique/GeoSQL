@@ -42,6 +42,18 @@
    margin-right: 0.5rem;
 }
 
+#resultsContainer #mainContainer #errorContainer {
+   flex: 1;
+   flex-direction: column;
+   align-items: center;
+
+   font: 700 var(--font-size-title) var(--font-family-title);
+}
+
+#resultsContainer #mainContainer #errorContainer p {
+   margin-bottom: 2rem;
+}
+
 #resultsContainer #mainContainer #tableContainer {
    width: 80vw;
    height: 85vh;

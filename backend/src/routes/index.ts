@@ -1,6 +1,8 @@
-import { Router, request, response, json } from 'express';
+import { Router } from 'express';
 
 import client from '../database';
+
+import QueryService from '../services/QueryService';
 
 const routes = Router();
 
@@ -23,14 +25,15 @@ routes.get('/query', async (request, response) => {
 
 // Resultados da query realizada
 routes.post('/results', async (request, response) => {
-   const queryText = request.body.queryText;
+   const query = request.body.query;
 
    try {
-      const result = await client.query(queryText);
+      const queryService = new QueryService();
+      const { rows } = await queryService.execute(query);
 
-      return response.json(result.rows);
+      return response.json(rows);
    } catch (error) {
-      return response.status(400).json(error.message);
+      return response.json(error.message);
    }
 });
 

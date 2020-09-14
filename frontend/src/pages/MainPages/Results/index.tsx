@@ -1,15 +1,18 @@
+// Torna possível o retorno do map apenas em condicionais.
+/* eslint-disable array-callback-return */
+
 import React, { useContext } from 'react';
 
 import { FiDownload } from 'react-icons/fi';
 
-import ResultsContext from '../../../contexts/results';
+import QueryContext from '../../../contexts/query';
 
 import TabsMenu from '../../../components/TabsMenu';
 
 import './styles.css';
 
 export default function Results() {
-   const { rows } = useContext(ResultsContext);
+   const { results } = useContext(QueryContext);
 
    return (
       <div id="resultsContainer" className="firstContainer container">
@@ -37,30 +40,38 @@ export default function Results() {
                </button>
             </aside>
             <section id="tableContainer" className="container">
-               <table>
-                  <thead>
-                     <tr>
-                        {Object.keys(rows[0]).map((column, index) => {
-                           if (column !== 'geom') {
-                              return <th key={index}>{column}</th>;
-                           }
+               {typeof results === 'string' ? (
+                  <div id="errorContainer" className="container">
+                     <p>Error</p>
+                     <p>{results}</p>
+                  </div>
+               ) : (
+                  <table>
+                     <thead>
+                        <tr>
+                           {Object.keys(results[0]).map((column, index) => {
+                              if (column !== 'geom' && column !== 'geojson') {
+                                 return <th key={index}>{column}</th>;
+                              }
+                           })}
+                        </tr>
+                     </thead>
+                     <tbody>
+                        {results.map((row, index) => {
+                           return (
+                              <tr key={index}>
+                                 {Object.values(row).map((value, index) => {
+                                    // A tipagem do typescript não aceita a comparação direta por meio da string 'geom'. Como a tipagem estática não pode ser feita (devido às diferentes colunas que virão em cada resultado), o ts-ignore fez-se necessário).
+                                    //@ts-ignore
+                                    if (row['geom'] !== value && row['geojson'] !== value)
+                                       return <td key={index}>{value}</td>;
+                                 })}
+                              </tr>
+                           );
                         })}
-                     </tr>
-                  </thead>
-                  <tbody>
-                     {rows.map((row, index) => {
-                        return (
-                           <tr key={index}>
-                              {Object.values(row).map((value, index) => {
-                                 // A tipagem do typescript não aceita a comparação direta por meio da string 'geom'. Como a tipagem estática não pode ser feita (devido às diferentes colunas que virão em cada resultado), o ts-ignore e fez-se necessário).
-                                 //@ts-ignore
-                                 if (row['geom'] !== value) return <td key={index}>{value}</td>;
-                              })}
-                           </tr>
-                        );
-                     })}
-                  </tbody>
-               </table>
+                     </tbody>
+                  </table>
+               )}
             </section>
          </div>
       </div>

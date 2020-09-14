@@ -1,32 +1,27 @@
-import React, { useEffect, useState, useContext } from 'react';
+import React, { useState, useContext } from 'react';
 import { Link } from 'react-router-dom';
 
 import { FiSearch, FiSave, FiHelpCircle } from 'react-icons/fi';
 
-import api from '../../../services/api';
-import ResultsContext from '../../../contexts/results';
+import QueryContext from '../../../contexts/query';
+import TablesContext from '../../../contexts/tables';
 
 import TabsMenu from '../../../components/TabsMenu';
 
 import './styles.css';
 
 export default function Query() {
-   // Nomes de tabelas e suas respectivas colunas
-   const [tablesColumns, setTablesColumns] = useState<any[]>([]);
-   // Nomes de tabelas apenas (para facilitar a iteração)
-   const [tables, setTables] = useState<any[]>([]);
+   const { query, submitQuery } = useContext(QueryContext);
+   const { tables, tablesColumns } = useContext(TablesContext);
 
-   const { submitQuery } = useContext(ResultsContext);
+   const [queryText, setQueryText] = useState(query);
 
-   useEffect(() => {
-      api.get('/query').then(({ data: { tablesColumns, tables } }) => {
-         setTablesColumns(tablesColumns);
-         setTables(tables);
-      });
-   }, []);
-
-   async function handleSubmitQuery() {
-      await submitQuery();
+   async function handleSubmitQuery(queryText: string) {
+      try {
+         await submitQuery(queryText);
+      } catch {
+         return;
+      }
    }
 
    return (
@@ -37,9 +32,9 @@ export default function Query() {
          <main>
             {/* Não contém className container pois o display flex causa um bug na expansão das tabelas */}
             <div id="schemaContainer">
-               {tables.map((table) => {
+               {tables.map((table, index) => {
                   return (
-                     <table key={table.name}>
+                     <table key={index}>
                         <caption>{table.name}</caption>
                         <tbody>
                            <tr>
@@ -57,7 +52,13 @@ export default function Query() {
 
             <div id="inputsContainer" className="container">
                <div id="textAreaContainer" className="container">
-                  <textarea name="query" id="queryText" placeholder="SELECT * FROM ..."></textarea>
+                  <textarea
+                     name="query"
+                     id="query"
+                     placeholder="SELECT * FROM ..."
+                     value={queryText}
+                     onChange={(e) => setQueryText(e.target.value)}
+                  ></textarea>
                   <small>
                      Obs: ao realizar consultas com funções geográficas, como ST_Union por exemplo,
                      utilizar o alias "geom". Ex: SELECT ST_Union(a.geom, b.geom){' '}
@@ -66,12 +67,17 @@ export default function Query() {
                </div>
 
                <div id="buttonsContainer" className="container">
-                  <span onClick={handleSubmitQuery}>
-                     <Link to="/results" id="submitQuery" className="queryButton">
-                        <FiSearch className="queryIcon" />
-                        Pesquisar
-                     </Link>
-                  </span>
+                  <Link
+                     to="/results"
+                     id="submitQuery"
+                     className="queryButton"
+                     onClick={() => {
+                        handleSubmitQuery(queryText);
+                     }}
+                  >
+                     <FiSearch className="queryIcon" />
+                     Pesquisar
+                  </Link>
                   <button id="saveQuery" className="queryButton">
                      <FiSave className="queryIcon" />
                      Salvar
