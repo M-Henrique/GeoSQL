@@ -13,7 +13,7 @@ export default class QueryService {
       for (let i in tempTable.fields) {
          if (tempTable.fields[i].name === 'geom') {
             return await client.query(
-               `SELECT *, ST_GeometryType(geom) AS Geometria, ST_AsGeoJSON (geom) AS geojson FROM resultados;`
+               `SELECT *, ST_GeometryType(geom::geometry) AS Geometria, ST_AsGeoJSON (geom::geometry) AS geojson FROM resultados;`
             );
          }
       }

@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 
 import { FiSearch, FiSave, FiHelpCircle } from 'react-icons/fi';
@@ -16,13 +16,16 @@ export default function Query() {
 
    const [queryText, setQueryText] = useState(query);
 
-   async function handleSubmitQuery(queryText: string) {
-      try {
-         await submitQuery(queryText);
-      } catch {
-         return;
-      }
-   }
+   const handleSubmitQuery = useCallback(
+      async (queryText: string) => {
+         try {
+            await submitQuery(queryText);
+         } catch {
+            return;
+         }
+      },
+      [submitQuery]
+   );
 
    return (
       <div id="queryContainer" className="firstContainer container">
@@ -56,6 +59,7 @@ export default function Query() {
                      name="query"
                      id="query"
                      placeholder="SELECT * FROM ..."
+                     autoFocus
                      value={queryText}
                      onChange={(e) => setQueryText(e.target.value)}
                   ></textarea>

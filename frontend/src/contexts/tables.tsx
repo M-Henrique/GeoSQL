@@ -1,4 +1,4 @@
-import React, { createContext, useState } from 'react';
+import React, { createContext, useCallback, useState } from 'react';
 import api from '../services/api';
 
 interface ContextData {
@@ -13,14 +13,14 @@ export const TablesProvider: React.FC = ({ children }) => {
    const [tables, setTables] = useState([{}]);
    const [tablesColumns, setTablesColumns] = useState([{}]);
 
-   async function getTables() {
+   const getTables = useCallback(async () => {
       const {
          data: { tables, tablesColumns },
       } = await api.get('/query');
 
       setTables(tables);
       setTablesColumns(tablesColumns);
-   }
+   }, []);
 
    return (
       <TablesContext.Provider value={{ tables, tablesColumns, getTables }}>

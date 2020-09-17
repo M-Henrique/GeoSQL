@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useCallback, useContext } from 'react';
 import { Link } from 'react-router-dom';
 
 import { FiPlayCircle } from 'react-icons/fi';
@@ -14,9 +14,9 @@ import './styles.css';
 export default function Landing() {
    const { getTables } = useContext(TablesContext);
 
-   async function handleGetTables() {
+   const handleGetTables = useCallback(async () => {
       await getTables();
-   }
+   }, [getTables]);
 
    return (
       <div id="landingContainer" className="firstContainer container">

@@ -76,6 +76,7 @@
 
 #queryContainer textarea {
    height: 20vh;
+   margin-bottom: 0.5rem;
    padding: 1rem;
 
    border-radius: 2rem;
@@ -85,6 +86,9 @@
 
 #queryContainer textarea:focus {
    outline: none;
+
+   border: 0.1rem solid var(--color-primary-dark);
+   box-shadow: 0 0 1rem var(--color-primary-dark);
 }
 
 #queryContainer #inputsContainer #buttonsContainer {

@@ -1,4 +1,4 @@
-import React, { createContext, useState } from 'react';
+import React, { createContext, useCallback, useState } from 'react';
 import api from '../services/api';
 import { AxiosRequestConfig } from 'axios';
 
@@ -18,7 +18,7 @@ export const QueryProvider: React.FC = ({ children }) => {
    const [results, setResults] = useState([{}]);
    const [query, setQuery] = useState('');
 
-   async function submitQuery(query: string) {
+   const submitQuery = useCallback(async (query: string) => {
       setQuery(query);
 
       const { data } = await api.post('/results', {
@@ -26,7 +26,7 @@ export const QueryProvider: React.FC = ({ children }) => {
       } as Query);
 
       setResults(data);
-   }
+   }, []);
 
    return (
       <QueryContext.Provider value={{ query, results, submitQuery }}>
