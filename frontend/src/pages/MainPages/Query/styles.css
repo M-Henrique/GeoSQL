@@ -3,14 +3,38 @@
    height: 65vh;
    margin-top: 1rem;
 
-   flex-direction: column;
-
    border: 0.2rem solid var(--color-secondary);
    border-radius: 2rem;
 
    overflow: auto;
 
    background: var(--color-primary);
+}
+
+#queryContainer #schemaContainer #firstTimeContainer {
+   width: 100%;
+   height: 100%;
+
+   flex-direction: column;
+   align-items: center;
+   justify-content: center;
+
+   color: var(--color-secondary-dark);
+   font-size: 2.5rem;
+}
+
+#queryContainer #schemaContainer #firstTimeContainer p:first-of-type {
+   font: 700 3rem var(--font-family-title);
+}
+
+#queryContainer #schemaContainer #loadingContainer {
+   width: 100%;
+   height: 100%;
+
+   justify-content: center;
+   align-items: center;
+
+   background: rgba(255, 255, 255, 0.5);
 }
 
 #queryContainer #schemaContainer table {
@@ -80,6 +104,8 @@
    padding: 1rem;
 
    border-radius: 2rem;
+
+   font-size: 1.5rem;
 
    resize: none;
 }

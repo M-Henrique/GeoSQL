@@ -4,6 +4,7 @@
 import React, { useContext } from 'react';
 
 import { FiDownload } from 'react-icons/fi';
+import { ClipLoader } from 'react-spinners';
 
 import QueryContext from '../../../contexts/query';
 
@@ -12,7 +13,7 @@ import TabsMenu from '../../../components/TabsMenu';
 import './styles.css';
 
 export default function Results() {
-   const { results } = useContext(QueryContext);
+   const { results, loading } = useContext(QueryContext);
 
    return (
       <div id="resultsContainer" className="firstContainer container">
@@ -40,9 +41,18 @@ export default function Results() {
                </button>
             </aside>
             <section id="tableContainer" className="container">
-               {typeof results === 'string' ? (
+               {results.length <= 0 ? (
+                  <div id="firstTimeContainer" className="container">
+                     <p>Nenhum resultado a ser exibido até o momento.</p>{' '}
+                     <p>Vá até a aba "consulta" e realize uma consulta.</p>{' '}
+                  </div>
+               ) : loading ? (
+                  <div id="loadingContainer" className="container">
+                     <ClipLoader color={'var(--color-primary-dark)'} size={220} />
+                  </div>
+               ) : typeof results === 'string' ? (
                   <div id="errorContainer" className="container">
-                     <p>Error</p>
+                     <p>Error:</p>
                      <p>{results}</p>
                   </div>
                ) : (
