@@ -97,6 +97,20 @@
    background: var(--color-secondary-dark);
 }
 
+#mapContainer #mainContainer #subtitleContainer #layersContainer .layer .buttons .layerVisible {
+   background: var(--color-primary-dark);
+}
+
+#mapContainer
+   #mainContainer
+   #subtitleContainer
+   #layersContainer
+   .layer
+   .buttons
+   .layerVisible:hover {
+   background: var(--color-primary-darker);
+}
+
 #mapContainer #mainContainer #subtitleContainer #layersContainer .layer .buttons button svg {
    margin: 0 0.1rem;
 }
@@ -129,12 +143,17 @@
    min-width: 18rem;
 
    position: absolute;
+   z-index: 1;
 
    border-radius: 1rem;
 
    flex-direction: column;
 
    background: var(--color-secondary-lighter);
+}
+
+.teste {
+   z-index: 0;
 }
 
 #mapContainer
