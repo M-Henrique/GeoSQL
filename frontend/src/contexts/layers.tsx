@@ -41,7 +41,7 @@ export const LayersProvider: React.FC = ({ children }) => {
          { points: 4, radius: 15, angle: Math.PI / 4 },
          { points: 3, radius: 15, rotation: Math.PI / 4, angle: 0 },
          { points: 5, radius: 15, radius2: 4, angle: 0 },
-         { points: 100, radius: 5 },
+         { points: 100, radius: 15 },
       ];
 
       return shapes[Math.floor(Math.random() * shapes.length)];
@@ -75,7 +75,7 @@ export const LayersProvider: React.FC = ({ children }) => {
                }),
                stroke: new Stroke({
                   color: colorStroke,
-                  width: 2,
+                  width: 1,
                }),
                image: new RegularShape({
                   fill: new Fill({
