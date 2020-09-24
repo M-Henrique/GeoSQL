@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 
 import {
    FaList,
@@ -22,6 +22,9 @@ import View from 'ol/View';
 import TileLayer from 'ol/layer/Tile';
 import OSM from 'ol/source/OSM';
 import { fromLonLat } from 'ol/proj';
+import VectorLayer from 'ol/layer/Vector';
+
+import LayersContext from '../../../contexts/layers';
 
 import TabsMenu from '../../../components/TabsMenu';
 
@@ -30,9 +33,18 @@ import 'react-slidedown/lib/slidedown.css';
 
 import './styles.css';
 
+interface DnDProps {
+   draggedFrom: number | null;
+   draggedTo: number | null;
+   isDragging: boolean;
+   originalOrder: VectorLayer[];
+   updatedOrder: VectorLayer[];
+}
+
 export default function WorldMap(props: any) {
+   const { layers } = useContext(LayersContext);
+
    const [map, setMap] = useState<Map>();
-   const mapElement = useRef<HTMLDivElement | null>(null);
 
    const [showSubtitle, setShowSubtitle] = useState(true);
 
@@ -40,6 +52,16 @@ export default function WorldMap(props: any) {
    const [isStrokeMenuVisible, setIsStrokeMenuVisible] = useState<boolean[]>([]);
    const [isLabelMenuVisible, setIsLabelMenuVisible] = useState<boolean[]>([]);
    const [isLayerVisible, setIsLayerVisible] = useState<boolean[]>([]);
+
+   const initialDnDState: DnDProps = {
+      draggedFrom: null,
+      draggedTo: null,
+      isDragging: false,
+      originalOrder: layers,
+      updatedOrder: layers,
+   };
+   const [dragAndDrop, setDragAndDrop] = useState(initialDnDState);
+   const [list, setList] = useState(layers);
 
    const handlePolygonMenuVisibility = useCallback(
       (index) => {
@@ -83,6 +105,13 @@ export default function WorldMap(props: any) {
       [isLabelMenuVisible, isPolygonMenuVisible, isStrokeMenuVisible]
    );
 
+   const handleLabelChange = useCallback(() => {
+      let labelMenus = [...isLabelMenuVisible];
+      labelMenus.fill(false);
+
+      setIsLabelMenuVisible(labelMenus);
+   }, [isLabelMenuVisible]);
+
    const handleLayerVisibility = useCallback(
       (index) => {
          let layerVisibility = [...isLayerVisible];
@@ -97,11 +126,109 @@ export default function WorldMap(props: any) {
       [isLayerVisible]
    );
 
+   const handleOnDragStart = useCallback(
+      (event) => {
+         setIsPolygonMenuVisible(isPolygonMenuVisible.fill(false));
+         setIsStrokeMenuVisible(isStrokeMenuVisible.fill(false));
+         setIsLabelMenuVisible(isLabelMenuVisible.fill(false));
+
+         // We'll access the "data-position" attribute
+         // of the current element dragged
+         const initialPosition = Number(event.currentTarget.dataset.position);
+
+         setDragAndDrop({
+            // we spread the previous content
+            // of the hook variable
+            // so we don't override the properties
+            // not being updated
+            ...dragAndDrop,
+
+            draggedFrom: initialPosition, // set the draggedFrom position
+            isDragging: true,
+            originalOrder: list, // store the current state of "list"
+         });
+
+         // Note: this is only for Firefox.
+         // Without it, the DnD won't work.
+         // But we are not using it.
+         event.dataTransfer.setData('text/html', '');
+      },
+      [dragAndDrop, isLabelMenuVisible, isPolygonMenuVisible, isStrokeMenuVisible, list]
+   );
+
+   // Função de utilidade para impedir que o arrasto do input de slider inicie um drag da camada.
+   const handleInputDrag = useCallback((event) => {
+      event.preventDefault();
+      event.stopPropagation();
+   }, []);
+
+   const handleOnDragOver = useCallback(
+      (event) => {
+         event.preventDefault();
+
+         if (event.currentTarget.tagName === 'LI') {
+            // Store the content of the original list in this variable that we'll update
+            let newList = dragAndDrop.originalOrder;
+
+            // index of the item being dragged
+            const draggedFrom = dragAndDrop.draggedFrom;
+
+            // index of the drop area being hovered
+            const draggedTo = Number(event.currentTarget.dataset.position);
+
+            // get the element that's at the position of "draggedFrom"
+            const itemDragged = newList[draggedFrom!];
+
+            // filter out the item being dragged
+            const remainingItems = newList.filter((item, index) => index !== draggedFrom);
+
+            // update the list
+            newList = [
+               ...remainingItems.slice(0, draggedTo),
+               itemDragged,
+               ...remainingItems.slice(draggedTo),
+            ];
+
+            // since this event fires many times
+            // we check if the targets are actually
+            // different:
+            if (draggedTo !== dragAndDrop.draggedTo) {
+               setDragAndDrop({
+                  ...dragAndDrop,
+
+                  // save the updated list state
+                  // we will render this onDrop
+                  updatedOrder: newList,
+                  draggedTo: draggedTo,
+               });
+            }
+         }
+      },
+      [dragAndDrop]
+   );
+
+   const handleOnDrop = useCallback(() => {
+      // and reset the state of the DnD
+      setDragAndDrop({
+         ...dragAndDrop,
+         draggedFrom: null,
+         draggedTo: null,
+         isDragging: false,
+      });
+   }, [dragAndDrop]);
+
+   const isInitialMount = useRef(true);
+   useEffect(() => {
+      if (isInitialMount.current) {
+         isInitialMount.current = false;
+      } else {
+         setList(dragAndDrop.updatedOrder);
+      }
+   }, [dragAndDrop]);
+
    useEffect(() => {
       const initialMap = new Map({
-         // ts-ignore utilizado para permitir a alocação do mapa em uma div.
-         //@ts-ignore
-         target: mapElement.current,
+         target: 'map',
          layers: [
             new TileLayer({
                source: new OSM(),
@@ -116,15 +243,23 @@ export default function WorldMap(props: any) {
       setMap(initialMap);
    }, []);
 
-   const array = [1, 2, 3];
+   useEffect(() => {
+      for (let layer of layers) map?.addLayer(layer);
+   }, [layers, map]);
+
    return (
-      <div id="mapContainer" className="firstContainer container">
+      <div
+         id="mapContainer"
+         className="firstContainer container"
+         onDrop={handleOnDrop}
+         onDragOver={handleOnDragOver}
+      >
          <header>
             <TabsMenu selectedTab="map" />
          </header>
 
          <section id="mainContainer" className="container">
-            <div ref={mapElement} id="map"></div>
+            <div id="map"></div>
             <div id="subtitleContainer" className="container">
                <button
                   id="toggleSubtitle"
@@ -136,9 +271,27 @@ export default function WorldMap(props: any) {
                <SlideDown>
                   {showSubtitle && (
                      <ul id="layersContainer" className="container">
-                        {array.map((value, index) => {
-                           return (
-                              <li key={index} className="layer container">
+                        {list.map((layer, index) => {
+                           return dragAndDrop && dragAndDrop.draggedTo === Number(index) ? (
+                              <li
+                                 key={index}
+                                 className="layer container dropArea"
+                                 draggable="true"
+                                 onDragStart={handleOnDragStart}
+                                 onDragOver={handleOnDragOver}
+                                 onDrop={handleOnDrop}
+                                 data-position={index}
+                              ></li>
+                           ) : (
+                              <li
+                                 key={index}
+                                 className="layer container"
+                                 draggable="true"
+                                 onDragStart={handleOnDragStart}
+                                 onDragOver={handleOnDragOver}
+                                 onDrop={handleOnDrop}
+                                 data-position={index}
+                              >
                                  <div className="buttons container">
                                     <div className="customizePolygon customization">
                                        <button
@@ -157,6 +310,8 @@ export default function WorldMap(props: any) {
                                                 min={0}
                                                 max={10}
                                                 step={0.1}
+                                                draggable="true"
+                                                onDragStart={handleInputDrag}
                                              />
                                              <div className="polygonShapesPicker container">
                                                 <button className="shape">
@@ -193,6 +348,8 @@ export default function WorldMap(props: any) {
                                                 min={0}
                                                 max={10}
                                                 step={0.1}
+                                                draggable="true"
+                                                onDragStart={handleInputDrag}
                                              />
                                           </div>
                                        )}
@@ -207,9 +364,15 @@ export default function WorldMap(props: any) {
                                        </button>
                                        {isLabelMenuVisible[index] && (
                                           <ul className="labelMenu menu container">
-                                             <li>Oi</li>
-                                             <li>Oi</li>
-                                             <li>Oi</li>
+                                             <li className="label" onClick={handleLabelChange}>
+                                                Oi
+                                             </li>
+                                             <li className="label" onClick={handleLabelChange}>
+                                                Oi
+                                             </li>
+                                             <li className="label" onClick={handleLabelChange}>
+                                                Oi
+                                             </li>
                                           </ul>
                                        )}
                                     </div>
@@ -239,7 +402,7 @@ export default function WorldMap(props: any) {
                                        <FaTrash />
                                     </button>
                                  </div>
-                                 <p className="text">Camada: 0</p>
+                                 <p className="text">Camada: {layer.getZIndex()}</p>
                               </li>
                            );
                         })}

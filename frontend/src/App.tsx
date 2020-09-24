@@ -2,6 +2,7 @@ import React from 'react';
 
 import { TablesProvider } from './contexts/tables';
 import { QueryProvider } from './contexts/query';
+import { LayersProvider } from './contexts/layers';
 
 import Routes from './routes';
 
@@ -11,7 +12,9 @@ function App() {
    return (
       <TablesProvider>
          <QueryProvider>
-            <Routes />
+            <LayersProvider>
+               <Routes />
+            </LayersProvider>
          </QueryProvider>
       </TablesProvider>
    );

@@ -63,11 +63,23 @@
    height: 6rem;
    margin-bottom: 0.5rem;
    padding: 0.2rem 0.5rem;
-   flex-direction: column;
-   border: 2px solid var(--color-primary-dark);
+
+   border: 0.2rem solid var(--color-primary-darker);
    border-radius: 1rem;
 
-   background: var(--color-primary);
+   flex-direction: column;
+
+   background: rgba(0, 180, 216, 0.6);
+}
+
+#mapContainer #mainContainer #subtitleContainer #layersContainer .dropArea {
+   border: none;
+   background: transparent;
+}
+
+#mapContainer #mainContainer #subtitleContainer #layersContainer .layer .buttons {
+   justify-content: center;
+   align-items: center;
 }
 
 #mapContainer #mainContainer #subtitleContainer #layersContainer .layer .buttons button {
@@ -145,15 +157,12 @@
    position: absolute;
    z-index: 1;
 
+   border: 0.1rem solid var(--color-secondary-dark);
    border-radius: 1rem;
 
    flex-direction: column;
 
    background: var(--color-secondary-lighter);
-}
-
-.teste {
-   z-index: 0;
 }
 
 #mapContainer
@@ -166,8 +175,33 @@
    .menu
    * {
    width: calc(100% - 2rem);
-   height: 3rem;
-   margin: 0.8rem 1rem;
+   margin: 1rem 1rem;
+}
+
+#mapContainer
+   #mainContainer
+   #subtitleContainer
+   #layersContainer
+   .layer
+   .buttons
+   .customization
+   .menu
+   .label {
+   list-style: none;
+   margin: 0 0.5rem;
+   cursor: pointer;
+}
+
+#mapContainer
+   #mainContainer
+   #subtitleContainer
+   #layersContainer
+   .layer
+   .buttons
+   .customization
+   .menu
+   .label:not(:last-child) {
+   border-bottom: 0.1rem solid var(--color-secondary-dark);
 }
 
 /*--------------------- Estilização do slider ---------------------*/
@@ -181,11 +215,17 @@
    .menu
    .sizePicker {
    appearance: none;
+
    height: 0.75rem;
+
    border-radius: 0.5rem;
-   background: var(--color-secondary-light);
+
+   background: var(--color-secondary);
    outline: none;
    opacity: 0.7;
+
+   z-index: 1;
+
    transition: opacity 0.2s;
 }
 
@@ -270,4 +310,6 @@
 
    font: 400 var(--font-size-title) var(--font-family-title);
    color: var(--color-title-in-primary);
+
+   cursor: move;
 }
