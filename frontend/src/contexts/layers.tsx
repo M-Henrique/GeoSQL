@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 
 import VectorLayer from 'ol/layer/Vector';
 import VectorSource from 'ol/source/Vector';
@@ -17,14 +17,13 @@ interface ContextData {
 const LayersContext = createContext<ContextData>({} as ContextData);
 
 export const LayersProvider: React.FC = ({ children }) => {
-   const { results } = useContext(QueryContext);
+   const { query, results } = useContext(QueryContext);
+
+   const [id, setId] = useState(0);
    const [layers, setLayers] = useState<VectorLayer[]>([]);
 
-   const isInitialMount = useRef(true);
    useEffect(() => {
-      if (isInitialMount.current) {
-         isInitialMount.current = false;
-      } else {
+      if (typeof results !== 'string') {
          const resultsGeoJSON = results.map((result: any) => JSON.parse(result.geojson));
 
          const geoJSONObject = {
@@ -37,6 +36,10 @@ export const LayersProvider: React.FC = ({ children }) => {
          });
 
          const vectorLayer = new VectorLayer({
+            // Tipagem desnecessária nesse caso (openlayers reconhece atributos personalizados automaticamente)
+            //@ts-ignore
+            id,
+            query,
             source: vectorSource,
             style: new Style({
                stroke: new Stroke({
@@ -48,7 +51,7 @@ export const LayersProvider: React.FC = ({ children }) => {
                }),
                image: new RegularShape({
                   fill: new Fill({
-                     color: '#654321',
+                     color: '#981561',
                   }),
                   stroke: new Stroke({
                      color: '#678901',
@@ -62,7 +65,10 @@ export const LayersProvider: React.FC = ({ children }) => {
          });
 
          setLayers((oldLayers) => [...oldLayers, vectorLayer]);
+         setId((id) => id + 1);
       }
+      // Necessário para evitar loops infinitos na criação de layers
+      // eslint-disable-next-line react-hooks/exhaustive-deps
    }, [results]);
 
    return <LayersContext.Provider value={{ layers }}>{children}</LayersContext.Provider>;

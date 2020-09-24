@@ -61,7 +61,8 @@ export default function WorldMap(props: any) {
       updatedOrder: layers,
    };
    const [dragAndDrop, setDragAndDrop] = useState(initialDnDState);
-   const [list, setList] = useState(layers);
+   // Reverse para correto display na legenda (últimas camadas por cima)
+   const [list, setList] = useState([...layers].reverse());
 
    const handlePolygonMenuVisibility = useCallback(
       (index) => {
@@ -286,6 +287,7 @@ export default function WorldMap(props: any) {
                               <li
                                  key={index}
                                  className="layer container"
+                                 title={layer.get('query')}
                                  draggable="true"
                                  onDragStart={handleOnDragStart}
                                  onDragOver={handleOnDragOver}
@@ -402,7 +404,7 @@ export default function WorldMap(props: any) {
                                        <FaTrash />
                                     </button>
                                  </div>
-                                 <p className="text">Camada: {layer.getZIndex()}</p>
+                                 <p className="text">Camada: {layer.get('id')}</p>
                               </li>
                            );
                         })}
