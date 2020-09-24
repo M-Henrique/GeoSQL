@@ -283,6 +283,41 @@ export default function WorldMap(props: any) {
                                  onDrop={handleOnDrop}
                                  data-position={index}
                               ></li>
+                           ) : layer.get('id') === 0 ? (
+                              <li
+                                 key={index}
+                                 className="layer mapLayer container"
+                                 title={layer.get('query')}
+                                 draggable="true"
+                                 onDragStart={handleOnDragStart}
+                                 onDragOver={handleOnDragOver}
+                                 onDrop={handleOnDrop}
+                                 data-position={index}
+                              >
+                                 <div className="buttons container">
+                                    {isLayerVisible[index] ||
+                                    isLayerVisible[index] === undefined ? (
+                                       <button
+                                          className="toggleVisibility layerVisible"
+                                          onClick={() => handleLayerVisibility(index)}
+                                       >
+                                          <FaEyeSlash />
+                                       </button>
+                                    ) : (
+                                       <button
+                                          className="toggleVisibility"
+                                          onClick={() => handleLayerVisibility(index)}
+                                       >
+                                          <FaEye />
+                                       </button>
+                                    )}
+
+                                    <button className="delete">
+                                       <FaTrash />
+                                    </button>
+                                 </div>
+                                 <p className="text">Camada: {layer.get('id')}</p>
+                              </li>
                            ) : (
                               <li
                                  key={index}

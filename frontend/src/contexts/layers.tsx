@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 
 import VectorLayer from 'ol/layer/Vector';
 import VectorSource from 'ol/source/Vector';
@@ -22,6 +22,19 @@ export const LayersProvider: React.FC = ({ children }) => {
    const [id, setId] = useState(0);
    const [layers, setLayers] = useState<VectorLayer[]>([]);
 
+   //Função auxiliar para geração da cor inicial.
+   const getRandomColor = useCallback(() => {
+      const letters = '0123456789ABCDEF';
+      let color = [];
+      for (let i = 0; i < 2; i++) {
+         color.push('#');
+         for (let j = 0; j < 6; j++) {
+            color[i] += letters[Math.floor(Math.random() * 16)];
+         }
+      }
+      return color;
+   }, []);
+
    useEffect(() => {
       if (typeof results !== 'string') {
          const resultsGeoJSON = results.map((result: any) => JSON.parse(result.geojson));
@@ -35,6 +48,8 @@ export const LayersProvider: React.FC = ({ children }) => {
             features: new GeoJSON().readFeatures(geoJSONObject, { featureProjection: 'EPSG:3857' }),
          });
 
+         const [colorFill, colorStroke] = getRandomColor();
+
          const vectorLayer = new VectorLayer({
             // Tipagem desnecessária nesse caso (openlayers reconhece atributos personalizados automaticamente)
             //@ts-ignore
@@ -42,19 +57,19 @@ export const LayersProvider: React.FC = ({ children }) => {
             query,
             source: vectorSource,
             style: new Style({
-               stroke: new Stroke({
-                  color: '#678901',
-                  width: 2,
-               }),
                fill: new Fill({
-                  color: '#654321',
+                  color: colorFill,
+               }),
+               stroke: new Stroke({
+                  color: colorStroke,
+                  width: 2,
                }),
                image: new RegularShape({
                   fill: new Fill({
-                     color: '#981561',
+                     color: colorFill,
                   }),
                   stroke: new Stroke({
-                     color: '#678901',
+                     color: colorStroke,
                      width: 2,
                   }),
                   points: 4,

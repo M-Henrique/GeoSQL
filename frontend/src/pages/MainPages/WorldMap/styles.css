@@ -77,7 +77,7 @@
    background: transparent;
 }
 
-#mapContainer #mainContainer #subtitleContainer #layersContainer .layer .buttons {
+#mapContainer #mainContainer #subtitleContainer #layersContainer .layer:not(.mapLayer) .buttons {
    justify-content: center;
    align-items: center;
 }
