@@ -382,8 +382,8 @@ export default function WorldMap(props: any) {
                                              <input
                                                 type="range"
                                                 className="sizePicker"
-                                                min={5}
-                                                max={15}
+                                                min={1}
+                                                max={5}
                                                 step={0.1}
                                                 draggable="true"
                                                 onDragStart={handleInputDrag}

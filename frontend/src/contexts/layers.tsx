@@ -83,7 +83,7 @@ export const LayersProvider: React.FC = ({ children }) => {
                   }),
                   stroke: new Stroke({
                      color: colorStroke,
-                     width: 2,
+                     width: 1,
                   }),
                   points,
                   angle,
