@@ -41,14 +41,14 @@ export default function Results() {
                </button>
             </aside>
             <section id="tableContainer" className="container">
-               {results.length <= 0 ? (
+               {loading ? (
+                  <div id="loadingContainer" className="container">
+                     <ClipLoader color={'var(--color-primary-dark)'} size={220} />
+                  </div>
+               ) : results.length <= 0 ? (
                   <div id="firstTimeContainer" className="container">
                      <p>Nenhum resultado a ser exibido até o momento.</p>{' '}
                      <p>Vá até a aba "consulta" e realize uma consulta.</p>{' '}
-                  </div>
-               ) : loading ? (
-                  <div id="loadingContainer" className="container">
-                     <ClipLoader color={'var(--color-primary-dark)'} size={220} />
                   </div>
                ) : typeof results === 'string' ? (
                   <div id="errorContainer" className="container">

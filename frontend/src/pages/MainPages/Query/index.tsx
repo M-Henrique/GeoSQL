@@ -44,14 +44,14 @@ export default function Query() {
          <main>
             {/* Não contém className container pois o display flex causa um bug na expansão das tabelas */}
             <div id="schemaContainer">
-               {tables.length <= 0 ? (
+               {loading ? (
+                  <div id="loadingContainer" className="container">
+                     <ClipLoader color={'var(--color-primary-dark)'} size={170} />
+                  </div>
+               ) : tables.length <= 0 ? (
                   <div id="firstTimeContainer" className="container">
                      <p>Sem tabelas para exibir até o momento.</p>
                      <p>Selecione um banco de dados.</p>
-                  </div>
-               ) : loading ? (
-                  <div id="loadingContainer" className="container">
-                     <ClipLoader color={'var(--color-primary-dark)'} size={170} />
                   </div>
                ) : (
                   tables.map((table, index) => {
