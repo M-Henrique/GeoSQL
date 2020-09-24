@@ -35,6 +35,18 @@ export const LayersProvider: React.FC = ({ children }) => {
       return color;
    }, []);
 
+   // Função auxiliar para geração randômica do formato inicial da camada
+   const getRandomShape = useCallback(() => {
+      const shapes = [
+         { points: 4, radius: 15, angle: Math.PI / 4 },
+         { points: 3, radius: 15, rotation: Math.PI / 4, angle: 0 },
+         { points: 5, radius: 15, radius2: 4, angle: 0 },
+         { points: 100, radius: 5 },
+      ];
+
+      return shapes[Math.floor(Math.random() * shapes.length)];
+   }, []);
+
    useEffect(() => {
       if (typeof results !== 'string') {
          const resultsGeoJSON = results.map((result: any) => JSON.parse(result.geojson));
@@ -49,6 +61,7 @@ export const LayersProvider: React.FC = ({ children }) => {
          });
 
          const [colorFill, colorStroke] = getRandomColor();
+         const { points, angle, rotation, radius, radius2 } = getRandomShape();
 
          const vectorLayer = new VectorLayer({
             // Tipagem desnecessária nesse caso (openlayers reconhece atributos personalizados automaticamente)
@@ -72,9 +85,11 @@ export const LayersProvider: React.FC = ({ children }) => {
                      color: colorStroke,
                      width: 2,
                   }),
-                  points: 4,
-                  radius: 10,
-                  angle: Math.PI / 4,
+                  points,
+                  angle,
+                  rotation,
+                  radius,
+                  radius2,
                }),
             }),
          });
