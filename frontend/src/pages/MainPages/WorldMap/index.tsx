@@ -114,7 +114,7 @@ export default function WorldMap(props: any) {
    }, [isLabelMenuVisible]);
 
    const handleLayerVisibility = useCallback(
-      (index) => {
+      (index, layer: VectorLayer) => {
          let layerVisibility = [...isLayerVisible];
 
          layerVisibility[index] = !isLayerVisible[index];
@@ -123,8 +123,14 @@ export default function WorldMap(props: any) {
          }
 
          setIsLayerVisible(layerVisibility);
+
+         if (layer.get('id') === 0) {
+            if (map?.getTarget() === 'map') map.setTarget('');
+            else map?.setTarget('map');
+         }
+         layer.setVisible(layerVisibility[index]);
       },
-      [isLayerVisible]
+      [isLayerVisible, map]
    );
 
    const handleOnDragStart = useCallback(
@@ -299,14 +305,14 @@ export default function WorldMap(props: any) {
                                     isLayerVisible[index] === undefined ? (
                                        <button
                                           className="toggleVisibility layerVisible"
-                                          onClick={() => handleLayerVisibility(index)}
+                                          onClick={() => handleLayerVisibility(index, layer)}
                                        >
                                           <FaEyeSlash />
                                        </button>
                                     ) : (
                                        <button
                                           className="toggleVisibility"
-                                          onClick={() => handleLayerVisibility(index)}
+                                          onClick={() => handleLayerVisibility(index, layer)}
                                        >
                                           <FaEye />
                                        </button>
@@ -418,14 +424,14 @@ export default function WorldMap(props: any) {
                                     isLayerVisible[index] === undefined ? (
                                        <button
                                           className="toggleVisibility layerVisible"
-                                          onClick={() => handleLayerVisibility(index)}
+                                          onClick={() => handleLayerVisibility(index, layer)}
                                        >
                                           <FaEyeSlash />
                                        </button>
                                     ) : (
                                        <button
                                           className="toggleVisibility"
-                                          onClick={() => handleLayerVisibility(index)}
+                                          onClick={() => handleLayerVisibility(index, layer)}
                                        >
                                           <FaEye />
                                        </button>
