@@ -1,3 +1,13 @@
+/*------------------------------------------------------------------------------------------------------------------------
+|  A tipagem do Openlayers sofre um bug so utilizar a função getStyle,                                                   |
+|     da VectorLayer. Apesar de, no arquivo "C:\Apache24\htdocs\TCC\frontend\node_modules\@types\ol\style\Style.d.ts"    |
+|        o retorno ser especificado como "Style", por algum motivo esse retorno não é reconhecido, forçando a utilização |
+|           de @ts-ignore por diversas vezes ao longo do arquivo,                                                        |
+|                                                                                                                        |
+|                                                                                                                        |
+|                                                                                                                        |
+------------------------------------------------------------------------------------------------------------------------*/
+
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 
 import {
@@ -166,11 +176,12 @@ export default function WorldMap(props: any) {
          strokeSize?: boolean;
       }) => {
          const oldStyle = layer.getStyle();
+         // Openlayers não disponibiliza métodos para capturar a antiga regularShape da camada, tendo de ser feito um processo manual
          const { points, angle, rotation, radius, radius2 } = getShape(layer.get('shape'));
 
          if (polygonColor) {
             const newColor = (document.getElementById(
-               `colorPicker${layer.get('id')}`
+               `polygonColorPicker${layer.get('id')}`
             )! as HTMLInputElement).value;
 
             layer.setStyle(
@@ -186,6 +197,39 @@ export default function WorldMap(props: any) {
                      }),
                      //@ts-ignore
                      stroke: oldStyle.getStroke(),
+                     points,
+                     angle,
+                     rotation,
+                     radius,
+                     radius2,
+                  }),
+               })
+            );
+         }
+
+         if (strokeColor) {
+            const newColor = (document.getElementById(
+               `strokeColorPicker${layer.get('id')}`
+            )! as HTMLInputElement).value;
+
+            layer.setStyle(
+               new Style({
+                  //@ts-ignore
+                  fill: oldStyle.getFill(),
+                  stroke: new Stroke({
+                     color: newColor,
+                     //@ts-ignore
+                     width: oldStyle.getStroke().getWidth(),
+                  }),
+                  image: new RegularShape({
+                     //@ts-ignore
+                     fill: oldStyle.getFill(),
+                     //@ts-ignore
+                     stroke: new Stroke({
+                        color: newColor,
+                        //@ts-ignore
+                        width: oldStyle.getStroke().getWidth(),
+                     }),
                      points,
                      angle,
                      rotation,
@@ -414,7 +458,7 @@ export default function WorldMap(props: any) {
                                           <div className="polygonMenu menu container">
                                              <input
                                                 type="color"
-                                                id={`colorPicker${layer.get('id')}`}
+                                                id={`polygonColorPicker${layer.get('id')}`}
                                                 className="colorPicker"
                                                 //@ts-ignore
                                                 value={layer.getStyle().getFill().getColor()}
@@ -459,7 +503,19 @@ export default function WorldMap(props: any) {
                                        </button>
                                        {isStrokeMenuVisible[index] && (
                                           <div className="strokeMenu menu container">
-                                             <input type="color" className="colorPicker" />
+                                             <input
+                                                type="color"
+                                                id={`strokeColorPicker${layer.get('id')}`}
+                                                className="colorPicker" //
+                                                value={layer
+                                                   .getStyle()
+                                                   //@ts-ignore
+                                                   .getStroke()
+                                                   .getColor()}
+                                                onChange={() =>
+                                                   handleLayerStyle({ layer, strokeColor: true })
+                                                }
+                                             />
                                              <input
                                                 type="range"
                                                 className="sizePicker"
