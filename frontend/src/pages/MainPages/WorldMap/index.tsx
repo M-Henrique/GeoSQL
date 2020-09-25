@@ -67,6 +67,9 @@ export default function WorldMap(props: any) {
    const [isLabelMenuVisible, setIsLabelMenuVisible] = useState<boolean[]>([]);
    const [isLayerVisible, setIsLayerVisible] = useState<boolean[]>([]);
 
+   const [colors, setColors] = useState<string[]>([]);
+   const [sizes, setSizes] = useState<number[]>([]);
+
    const initialDnDState: DnDProps = {
       draggedFrom: null,
       draggedTo: null,
@@ -147,6 +150,26 @@ export default function WorldMap(props: any) {
       [isLayerVisible, map]
    );
 
+   const updateColorArray = useCallback(
+      (id: number, color: string) => {
+         let activeColors = [...colors];
+
+         activeColors[id] = color;
+         setColors(activeColors);
+      },
+      [colors]
+   );
+
+   const updateSizeArray = useCallback(
+      (id: number, size: number) => {
+         let activeSizes = [...sizes];
+
+         activeSizes[id] = size;
+         setSizes(activeSizes);
+      },
+      [sizes]
+   );
+
    const getShape = useCallback((shape: string) => {
       const shapes = [
          { name: 'square', points: 4, radius: 15, angle: Math.PI / 4 },
@@ -205,6 +228,142 @@ export default function WorldMap(props: any) {
                   }),
                })
             );
+
+            updateColorArray(layer.get('id'), newColor);
+         }
+
+         if (polygonSize) {
+            const newSize = Number(
+               (document.getElementById(`polygonSizePicker${layer.get('id')}`)! as HTMLInputElement)
+                  .value
+            );
+
+            layer.set('size', newSize);
+
+            layer.setStyle(
+               new Style({
+                  //@ts-ignore
+                  fill: oldStyle.getFill(),
+                  //@ts-ignore
+                  stroke: oldStyle.getStroke(),
+                  image: new RegularShape({
+                     //@ts-ignore
+                     fill: oldStyle.getFill(),
+                     //@ts-ignore
+                     stroke: oldStyle.getStroke(),
+                     points,
+                     angle,
+                     rotation,
+                     radius: newSize,
+                     radius2,
+                  }),
+               })
+            );
+
+            updateSizeArray(layer.get('id'), newSize);
+         }
+
+         if (polygonShape) {
+            if (polygonShape === 'square') {
+               const { points, angle, rotation, radius, radius2 } = getShape('square');
+
+               layer.set('shape', 'square');
+
+               layer.setStyle(
+                  new Style({
+                     //@ts-ignore
+                     fill: oldStyle.getFill(),
+                     //@ts-ignore
+                     stroke: oldStyle.getStroke(),
+                     image: new RegularShape({
+                        //@ts-ignore
+                        fill: oldStyle.getFill(),
+                        //@ts-ignore
+                        stroke: oldStyle.getStroke(),
+                        points,
+                        angle,
+                        rotation,
+                        radius,
+                        radius2,
+                     }),
+                  })
+               );
+            }
+            if (polygonShape === 'triangle') {
+               const { points, angle, rotation, radius, radius2 } = getShape('triangle');
+
+               layer.set('shape', 'triangle');
+
+               layer.setStyle(
+                  new Style({
+                     //@ts-ignore
+                     fill: oldStyle.getFill(),
+                     //@ts-ignore
+                     stroke: oldStyle.getStroke(),
+                     image: new RegularShape({
+                        //@ts-ignore
+                        fill: oldStyle.getFill(),
+                        //@ts-ignore
+                        stroke: oldStyle.getStroke(),
+                        points,
+                        angle,
+                        rotation,
+                        radius,
+                        radius2,
+                     }),
+                  })
+               );
+            }
+            if (polygonShape === 'star') {
+               const { points, angle, rotation, radius, radius2 } = getShape('star');
+
+               layer.set('shape', 'star');
+
+               layer.setStyle(
+                  new Style({
+                     //@ts-ignore
+                     fill: oldStyle.getFill(),
+                     //@ts-ignore
+                     stroke: oldStyle.getStroke(),
+                     image: new RegularShape({
+                        //@ts-ignore
+                        fill: oldStyle.getFill(),
+                        //@ts-ignore
+                        stroke: oldStyle.getStroke(),
+                        points,
+                        angle,
+                        rotation,
+                        radius,
+                        radius2,
+                     }),
+                  })
+               );
+            }
+            if (polygonShape === 'circle') {
+               const { points, angle, rotation, radius, radius2 } = getShape('circle');
+
+               layer.set('shape', 'circle');
+
+               layer.setStyle(
+                  new Style({
+                     //@ts-ignore
+                     fill: oldStyle.getFill(),
+                     //@ts-ignore
+                     stroke: oldStyle.getStroke(),
+                     image: new RegularShape({
+                        //@ts-ignore
+                        fill: oldStyle.getFill(),
+                        //@ts-ignore
+                        stroke: oldStyle.getStroke(),
+                        points,
+                        angle,
+                        rotation,
+                        radius,
+                        radius2,
+                     }),
+                  })
+               );
+            }
          }
 
          if (strokeColor) {
@@ -224,7 +383,6 @@ export default function WorldMap(props: any) {
                   image: new RegularShape({
                      //@ts-ignore
                      fill: oldStyle.getFill(),
-                     //@ts-ignore
                      stroke: new Stroke({
                         color: newColor,
                         //@ts-ignore
@@ -238,9 +396,46 @@ export default function WorldMap(props: any) {
                   }),
                })
             );
+
+            updateColorArray(layer.get('id'), newColor);
+         }
+
+         if (strokeSize) {
+            const newSize = Number(
+               (document.getElementById(`strokeSizePicker${layer.get('id')}`)! as HTMLInputElement)
+                  .value
+            );
+
+            layer.setStyle(
+               new Style({
+                  //@ts-ignore
+                  fill: oldStyle.getFill(),
+                  stroke: new Stroke({
+                     //@ts-ignore
+                     color: oldStyle.getStroke().getColor(),
+                     width: newSize,
+                  }),
+                  image: new RegularShape({
+                     //@ts-ignore
+                     fill: oldStyle.getFill(),
+                     stroke: new Stroke({
+                        //@ts-ignore
+                        color: oldStyle.getStroke().getColor(),
+                        width: newSize,
+                     }),
+                     points,
+                     angle,
+                     rotation,
+                     radius,
+                     radius2,
+                  }),
+               })
+            );
+
+            updateSizeArray(layer.get('id'), newSize);
          }
       },
-      [getShape]
+      [getShape, updateColorArray, updateSizeArray]
    );
 
    const handleOnDragStart = useCallback(
@@ -467,25 +662,62 @@ export default function WorldMap(props: any) {
                                                 }
                                              />
                                              <input
+                                                id={`polygonSizePicker${layer.get('id')}`}
                                                 type="range"
                                                 className="sizePicker"
                                                 min={5}
                                                 max={15}
                                                 step={0.1}
+                                                value={layer.get('size')}
+                                                onChange={() =>
+                                                   handleLayerStyle({ layer, polygonSize: true })
+                                                }
                                                 draggable="true"
                                                 onDragStart={handleInputDrag}
                                              />
                                              <div className="polygonShapesPicker container">
-                                                <button className="shape">
+                                                <button
+                                                   className="shape"
+                                                   onClick={() =>
+                                                      handleLayerStyle({
+                                                         layer,
+                                                         polygonShape: 'square',
+                                                      })
+                                                   }
+                                                >
                                                    <FaSquare />
                                                 </button>
-                                                <button className="shape">
+                                                <button
+                                                   className="shape"
+                                                   onClick={() =>
+                                                      handleLayerStyle({
+                                                         layer,
+                                                         polygonShape: 'triangle',
+                                                      })
+                                                   }
+                                                >
                                                    <FaPlay />
                                                 </button>
-                                                <button className="shape">
+                                                <button
+                                                   className="shape"
+                                                   onClick={() =>
+                                                      handleLayerStyle({
+                                                         layer,
+                                                         polygonShape: 'star',
+                                                      })
+                                                   }
+                                                >
                                                    <FaStar />
                                                 </button>
-                                                <button className="shape">
+                                                <button
+                                                   className="shape"
+                                                   onClick={() =>
+                                                      handleLayerStyle({
+                                                         layer,
+                                                         polygonShape: 'circle',
+                                                      })
+                                                   }
+                                                >
                                                    <FaCircle />
                                                 </button>
                                              </div>
@@ -517,11 +749,17 @@ export default function WorldMap(props: any) {
                                                 }
                                              />
                                              <input
+                                                id={`strokeSizePicker${layer.get('id')}`}
                                                 type="range"
                                                 className="sizePicker"
                                                 min={1}
                                                 max={5}
                                                 step={0.1}
+                                                //@ts-ignore
+                                                value={layer.getStyle().getStroke().getWidth()}
+                                                onChange={() =>
+                                                   handleLayerStyle({ layer, strokeSize: true })
+                                                }
                                                 draggable="true"
                                                 onDragStart={handleInputDrag}
                                              />

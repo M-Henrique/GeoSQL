@@ -69,6 +69,7 @@ export const LayersProvider: React.FC = ({ children }) => {
             id,
             query,
             shape,
+            size: radius,
             source: vectorSource,
             style: new Style({
                fill: new Fill({
