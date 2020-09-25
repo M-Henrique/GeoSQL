@@ -38,10 +38,10 @@ export const LayersProvider: React.FC = ({ children }) => {
    // Função auxiliar para geração randômica do formato inicial da camada
    const getRandomShape = useCallback(() => {
       const shapes = [
-         { points: 4, radius: 15, angle: Math.PI / 4 },
-         { points: 3, radius: 15, rotation: Math.PI / 4, angle: 0 },
-         { points: 5, radius: 15, radius2: 4, angle: 0 },
-         { points: 100, radius: 15 },
+         { shape: 'square', points: 4, radius: 15, angle: Math.PI / 4 },
+         { shape: 'triangle', points: 3, radius: 15, rotation: Math.PI / 4, angle: 0 },
+         { shape: 'star', points: 5, radius: 15, radius2: 4, angle: 0 },
+         { shape: 'circle', points: 100, radius: 15 },
       ];
 
       return shapes[Math.floor(Math.random() * shapes.length)];
@@ -61,13 +61,14 @@ export const LayersProvider: React.FC = ({ children }) => {
          });
 
          const [colorFill, colorStroke] = getRandomColor();
-         const { points, angle, rotation, radius, radius2 } = getRandomShape();
+         const { shape, points, angle, rotation, radius, radius2 } = getRandomShape();
 
          const vectorLayer = new VectorLayer({
             // Tipagem desnecessária nesse caso (openlayers reconhece atributos personalizados automaticamente)
             //@ts-ignore
             id,
             query,
+            shape,
             source: vectorSource,
             style: new Style({
                fill: new Fill({

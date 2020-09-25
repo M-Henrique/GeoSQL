@@ -32,6 +32,10 @@ import 'ol/ol.css';
 import 'react-slidedown/lib/slidedown.css';
 
 import './styles.css';
+import Style from 'ol/style/Style';
+import Fill from 'ol/style/Fill';
+import Stroke from 'ol/style/Stroke';
+import RegularShape from 'ol/style/RegularShape';
 
 interface DnDProps {
    draggedFrom: number | null;
@@ -131,6 +135,68 @@ export default function WorldMap(props: any) {
          layer.setVisible(layerVisibility[index]);
       },
       [isLayerVisible, map]
+   );
+
+   const getShape = useCallback((shape: string) => {
+      const shapes = [
+         { name: 'square', points: 4, radius: 15, angle: Math.PI / 4 },
+         { name: 'triangle', points: 3, radius: 15, rotation: Math.PI / 4, angle: 0 },
+         { name: 'star', points: 5, radius: 15, radius2: 4, angle: 0 },
+         { name: 'circle', points: 100, radius: 15 },
+      ];
+
+      const [correctShape] = shapes.filter((format) => format.name === shape);
+      return correctShape;
+   }, []);
+
+   const handleLayerStyle = useCallback(
+      ({
+         layer,
+         polygonColor,
+         polygonSize,
+         polygonShape,
+         strokeColor,
+         strokeSize,
+      }: {
+         layer: VectorLayer;
+         polygonColor?: boolean;
+         polygonSize?: boolean;
+         polygonShape?: string;
+         strokeColor?: boolean;
+         strokeSize?: boolean;
+      }) => {
+         const oldStyle = layer.getStyle();
+         const { points, angle, rotation, radius, radius2 } = getShape(layer.get('shape'));
+
+         if (polygonColor) {
+            const newColor = (document.getElementById(
+               `colorPicker${layer.get('id')}`
+            )! as HTMLInputElement).value;
+
+            layer.setStyle(
+               new Style({
+                  fill: new Fill({
+                     color: newColor,
+                  }),
+                  //@ts-ignore
+                  stroke: oldStyle.getStroke(),
+                  image: new RegularShape({
+                     fill: new Fill({
+                        color: newColor,
+                     }),
+                     //@ts-ignore
+                     stroke: oldStyle.getStroke(),
+                     points,
+                     angle,
+                     rotation,
+                     radius,
+                     radius2,
+                  }),
+               })
+            );
+         }
+      },
+      [getShape]
    );
 
    const handleOnDragStart = useCallback(
@@ -346,7 +412,16 @@ export default function WorldMap(props: any) {
                                        </button>
                                        {isPolygonMenuVisible[index] && (
                                           <div className="polygonMenu menu container">
-                                             <input type="color" className="colorPicker" />
+                                             <input
+                                                type="color"
+                                                id={`colorPicker${layer.get('id')}`}
+                                                className="colorPicker"
+                                                //@ts-ignore
+                                                value={layer.getStyle().getFill().getColor()}
+                                                onChange={() =>
+                                                   handleLayerStyle({ layer, polygonColor: true })
+                                                }
+                                             />
                                              <input
                                                 type="range"
                                                 className="sizePicker"
