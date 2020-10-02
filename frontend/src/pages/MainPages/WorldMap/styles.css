@@ -304,6 +304,19 @@
    padding: 0;
 }
 
+#mapContainer
+   #mainContainer
+   #subtitleContainer
+   #layersContainer
+   .layer
+   .buttons
+   .customizePolygon
+   .polygonMenu
+   .polygonShapesPicker
+   .selectedShape {
+   background: var(--color-secondary-dark);
+}
+
 #mapContainer #mainContainer #subtitleContainer #layersContainer .layer .text {
    margin-top: 0.3rem;
    padding-left: 0.2rem;

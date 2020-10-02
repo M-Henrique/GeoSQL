@@ -67,8 +67,11 @@ export default function WorldMap(props: any) {
    const [isLabelMenuVisible, setIsLabelMenuVisible] = useState<boolean[]>([]);
    const [isLayerVisible, setIsLayerVisible] = useState<boolean[]>([]);
 
-   const [colors, setColors] = useState<string[]>([]);
-   const [sizes, setSizes] = useState<number[]>([]);
+   // Estados de utilidade. São estados utilizados para indicar ao react que o valor dos inputs foi atualizado (utilizando o set), o que  faz com que o react renderize novamente o componente em questão.
+   // Ex: ao alterar o input de cor (do polígono ou da linha), usamos o setColor para dizer ao react que o input mudou, fazendo com que ele altere o input visualmente e renderize-o novamente.
+   const [color, setColor] = useState<string>();
+   const [size, setSize] = useState<number>();
+   const [shape, setShape] = useState<string>();
 
    const initialDnDState: DnDProps = {
       draggedFrom: null,
@@ -150,26 +153,6 @@ export default function WorldMap(props: any) {
       [isLayerVisible, map]
    );
 
-   const updateColorArray = useCallback(
-      (id: number, color: string) => {
-         let activeColors = [...colors];
-
-         activeColors[id] = color;
-         setColors(activeColors);
-      },
-      [colors]
-   );
-
-   const updateSizeArray = useCallback(
-      (id: number, size: number) => {
-         let activeSizes = [...sizes];
-
-         activeSizes[id] = size;
-         setSizes(activeSizes);
-      },
-      [sizes]
-   );
-
    const getShape = useCallback((shape: string) => {
       const shapes = [
          { name: 'square', points: 4, radius: 15, angle: Math.PI / 4 },
@@ -229,7 +212,7 @@ export default function WorldMap(props: any) {
                })
             );
 
-            updateColorArray(layer.get('id'), newColor);
+            setColor(newColor);
          }
 
          if (polygonSize) {
@@ -260,7 +243,7 @@ export default function WorldMap(props: any) {
                })
             );
 
-            updateSizeArray(layer.get('id'), newSize);
+            setSize(newSize);
          }
 
          if (polygonShape) {
@@ -364,6 +347,8 @@ export default function WorldMap(props: any) {
                   })
                );
             }
+
+            setShape(polygonShape);
          }
 
          if (strokeColor) {
@@ -397,7 +382,7 @@ export default function WorldMap(props: any) {
                })
             );
 
-            updateColorArray(layer.get('id'), newColor);
+            setColor(newColor);
          }
 
          if (strokeSize) {
@@ -432,10 +417,10 @@ export default function WorldMap(props: any) {
                })
             );
 
-            updateSizeArray(layer.get('id'), newSize);
+            setSize(newSize);
          }
       },
-      [getShape, updateColorArray, updateSizeArray]
+      [getShape]
    );
 
    const handleOnDragStart = useCallback(
@@ -677,7 +662,11 @@ export default function WorldMap(props: any) {
                                              />
                                              <div className="polygonShapesPicker container">
                                                 <button
-                                                   className="shape"
+                                                   className={
+                                                      layer.get('shape') === 'square'
+                                                         ? 'selectedShape shape'
+                                                         : 'shape'
+                                                   }
                                                    onClick={() =>
                                                       handleLayerStyle({
                                                          layer,
@@ -688,7 +677,11 @@ export default function WorldMap(props: any) {
                                                    <FaSquare />
                                                 </button>
                                                 <button
-                                                   className="shape"
+                                                   className={
+                                                      layer.get('shape') === 'triangle'
+                                                         ? 'selectedShape shape'
+                                                         : 'shape'
+                                                   }
                                                    onClick={() =>
                                                       handleLayerStyle({
                                                          layer,
@@ -699,7 +692,11 @@ export default function WorldMap(props: any) {
                                                    <FaPlay />
                                                 </button>
                                                 <button
-                                                   className="shape"
+                                                   className={
+                                                      layer.get('shape') === 'star'
+                                                         ? 'selectedShape shape'
+                                                         : 'shape'
+                                                   }
                                                    onClick={() =>
                                                       handleLayerStyle({
                                                          layer,
@@ -710,7 +707,11 @@ export default function WorldMap(props: any) {
                                                    <FaStar />
                                                 </button>
                                                 <button
-                                                   className="shape"
+                                                   className={
+                                                      layer.get('shape') === 'circle'
+                                                         ? 'selectedShape shape'
+                                                         : 'shape'
+                                                   }
                                                    onClick={() =>
                                                       handleLayerStyle({
                                                          layer,
