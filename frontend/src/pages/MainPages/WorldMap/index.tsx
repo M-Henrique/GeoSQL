@@ -33,6 +33,11 @@ import TileLayer from 'ol/layer/Tile';
 import OSM from 'ol/source/OSM';
 import { fromLonLat } from 'ol/proj';
 import VectorLayer from 'ol/layer/Vector';
+import Style from 'ol/style/Style';
+import Fill from 'ol/style/Fill';
+import Stroke from 'ol/style/Stroke';
+import RegularShape from 'ol/style/RegularShape';
+import Text from 'ol/style/Text';
 
 import LayersContext from '../../../contexts/layers';
 
@@ -42,10 +47,6 @@ import 'ol/ol.css';
 import 'react-slidedown/lib/slidedown.css';
 
 import './styles.css';
-import Style from 'ol/style/Style';
-import Fill from 'ol/style/Fill';
-import Stroke from 'ol/style/Stroke';
-import RegularShape from 'ol/style/RegularShape';
 
 interface DnDProps {
    draggedFrom: number | null;
@@ -55,8 +56,8 @@ interface DnDProps {
    updatedOrder: VectorLayer[];
 }
 
-export default function WorldMap(props: any) {
-   const { layers } = useContext(LayersContext);
+export default function WorldMap() {
+   const { layers, setLayers } = useContext(LayersContext);
 
    const [map, setMap] = useState<Map>();
 
@@ -65,12 +66,19 @@ export default function WorldMap(props: any) {
    const [isPolygonMenuVisible, setIsPolygonMenuVisible] = useState<boolean[]>([]);
    const [isStrokeMenuVisible, setIsStrokeMenuVisible] = useState<boolean[]>([]);
    const [isLabelMenuVisible, setIsLabelMenuVisible] = useState<boolean[]>([]);
-   const [isLayerVisible, setIsLayerVisible] = useState<boolean[]>([]);
+   const [isLayerVisible, setIsLayerVisible] = useState<boolean[]>((): boolean[] => {
+      const layersVisibilities = [...layers].reverse().map((layer) => layer.getVisible());
+      return layersVisibilities;
+   });
 
    // Estados de utilidade. São estados utilizados para indicar ao react que o valor dos inputs foi atualizado (utilizando o set), o que  faz com que o react renderize novamente o componente em questão.
    // Ex: ao alterar o input de cor (do polígono ou da linha), usamos o setColor para dizer ao react que o input mudou, fazendo com que ele altere o input visualmente e renderize-o novamente.
+   // eslint desativado para evitar os avisos das variáveis inutilizadas
+   // eslint-disable-next-line
    const [color, setColor] = useState<string>();
+   // eslint-disable-next-line
    const [size, setSize] = useState<number>();
+   // eslint-disable-next-line
    const [shape, setShape] = useState<string>();
 
    const initialDnDState: DnDProps = {
@@ -126,12 +134,39 @@ export default function WorldMap(props: any) {
       [isLabelMenuVisible, isPolygonMenuVisible, isStrokeMenuVisible]
    );
 
-   const handleLabelChange = useCallback(() => {
-      let labelMenus = [...isLabelMenuVisible];
-      labelMenus.fill(false);
+   const handleLabelChange = useCallback(
+      (layer: VectorLayer, label: string) => {
+         layer
+            .getSource()
+            .getFeatures()
+            .forEach((feature) => {
+               //@ts-ignore
+               feature.setStyle(
+                  new Style({
+                     fill: new Fill({
+                        color: '#423423',
+                     }),
+                     stroke: new Stroke({
+                        color: '#967076',
+                        width: 1,
+                     }),
+                     text: new Text({
+                        text: feature.get('text')['sigla'],
+                        fill: new Fill({
+                           color: '#fff',
+                        }),
+                     }),
+                  })
+               );
+            });
 
-      setIsLabelMenuVisible(labelMenus);
-   }, [isLabelMenuVisible]);
+         let labelMenus = [...isLabelMenuVisible];
+         labelMenus.fill(false);
+
+         setIsLabelMenuVisible(labelMenus);
+      },
+      [isLabelMenuVisible]
+   );
 
    const handleLayerVisibility = useCallback(
       (index, layer: VectorLayer) => {
@@ -153,12 +188,12 @@ export default function WorldMap(props: any) {
       [isLayerVisible, map]
    );
 
-   const getShape = useCallback((shape: string) => {
+   const getShape = useCallback((shape: string, size: number) => {
       const shapes = [
-         { name: 'square', points: 4, radius: 15, angle: Math.PI / 4 },
-         { name: 'triangle', points: 3, radius: 15, rotation: Math.PI / 4, angle: 0 },
-         { name: 'star', points: 5, radius: 15, radius2: 4, angle: 0 },
-         { name: 'circle', points: 100, radius: 15 },
+         { name: 'square', points: 4, radius: size, angle: Math.PI / 4 },
+         { name: 'triangle', points: 3, radius: size, rotation: Math.PI / 4, angle: 0 },
+         { name: 'star', points: 5, radius: size, radius2: size / 3, angle: 0 },
+         { name: 'circle', points: 100, radius: size },
       ];
 
       const [correctShape] = shapes.filter((format) => format.name === shape);
@@ -181,36 +216,44 @@ export default function WorldMap(props: any) {
          strokeColor?: boolean;
          strokeSize?: boolean;
       }) => {
-         const oldStyle = layer.getStyle();
+         const features = layer.getSource().getFeatures();
+         const oldStyle = features[0].getStyle();
          // Openlayers não disponibiliza métodos para capturar a antiga regularShape da camada, tendo de ser feito um processo manual
-         const { points, angle, rotation, radius, radius2 } = getShape(layer.get('shape'));
+         const { points, angle, rotation, radius, radius2 } = getShape(
+            layer.get('shape'),
+            layer.get('size')
+         );
 
          if (polygonColor) {
             const newColor = (document.getElementById(
                `polygonColorPicker${layer.get('id')}`
             )! as HTMLInputElement).value;
 
-            layer.setStyle(
-               new Style({
-                  fill: new Fill({
-                     color: newColor,
-                  }),
-                  //@ts-ignore
-                  stroke: oldStyle.getStroke(),
-                  image: new RegularShape({
+            features.forEach((feature) => {
+               feature.setStyle(
+                  new Style({
                      fill: new Fill({
                         color: newColor,
                      }),
                      //@ts-ignore
                      stroke: oldStyle.getStroke(),
-                     points,
-                     angle,
-                     rotation,
-                     radius,
-                     radius2,
-                  }),
-               })
-            );
+                     //@ts-ignore
+                     text: oldStyle.getText(),
+                     image: new RegularShape({
+                        fill: new Fill({
+                           color: newColor,
+                        }),
+                        //@ts-ignore
+                        stroke: oldStyle.getStroke(),
+                        points,
+                        angle,
+                        rotation,
+                        radius,
+                        radius2,
+                     }),
+                  })
+               );
+            });
 
             setColor(newColor);
          }
@@ -223,129 +266,153 @@ export default function WorldMap(props: any) {
 
             layer.set('size', newSize);
 
-            layer.setStyle(
-               new Style({
-                  //@ts-ignore
-                  fill: oldStyle.getFill(),
-                  //@ts-ignore
-                  stroke: oldStyle.getStroke(),
-                  image: new RegularShape({
+            features.forEach((feature) => {
+               feature.setStyle(
+                  new Style({
                      //@ts-ignore
                      fill: oldStyle.getFill(),
                      //@ts-ignore
                      stroke: oldStyle.getStroke(),
-                     points,
-                     angle,
-                     rotation,
-                     radius: newSize,
-                     radius2,
-                  }),
-               })
-            );
+                     //@ts-ignore
+                     text: oldStyle.getText(),
+                     image: new RegularShape({
+                        //@ts-ignore
+                        fill: oldStyle.getFill(),
+                        //@ts-ignore
+                        stroke: oldStyle.getStroke(),
+                        points,
+                        angle,
+                        rotation,
+                        radius: newSize,
+                        radius2,
+                     }),
+                  })
+               );
+            });
 
             setSize(newSize);
          }
 
          if (polygonShape) {
             if (polygonShape === 'square') {
-               const { points, angle, rotation, radius, radius2 } = getShape('square');
+               const { points, angle, rotation, radius, radius2 } = getShape(
+                  'square',
+                  layer.get('size')
+               );
 
                layer.set('shape', 'square');
 
-               layer.setStyle(
-                  new Style({
-                     //@ts-ignore
-                     fill: oldStyle.getFill(),
-                     //@ts-ignore
-                     stroke: oldStyle.getStroke(),
-                     image: new RegularShape({
+               features.forEach((feature) => {
+                  feature.setStyle(
+                     new Style({
                         //@ts-ignore
                         fill: oldStyle.getFill(),
                         //@ts-ignore
                         stroke: oldStyle.getStroke(),
-                        points,
-                        angle,
-                        rotation,
-                        radius,
-                        radius2,
-                     }),
-                  })
-               );
+                        image: new RegularShape({
+                           //@ts-ignore
+                           fill: oldStyle.getFill(),
+                           //@ts-ignore
+                           stroke: oldStyle.getStroke(),
+                           points,
+                           angle,
+                           rotation,
+                           radius,
+                           radius2,
+                        }),
+                     })
+                  );
+               });
             }
             if (polygonShape === 'triangle') {
-               const { points, angle, rotation, radius, radius2 } = getShape('triangle');
+               const { points, angle, rotation, radius, radius2 } = getShape(
+                  'triangle',
+                  layer.get('size')
+               );
 
                layer.set('shape', 'triangle');
 
-               layer.setStyle(
-                  new Style({
-                     //@ts-ignore
-                     fill: oldStyle.getFill(),
-                     //@ts-ignore
-                     stroke: oldStyle.getStroke(),
-                     image: new RegularShape({
+               features.forEach((feature) => {
+                  feature.setStyle(
+                     new Style({
                         //@ts-ignore
                         fill: oldStyle.getFill(),
                         //@ts-ignore
                         stroke: oldStyle.getStroke(),
-                        points,
-                        angle,
-                        rotation,
-                        radius,
-                        radius2,
-                     }),
-                  })
-               );
+                        image: new RegularShape({
+                           //@ts-ignore
+                           fill: oldStyle.getFill(),
+                           //@ts-ignore
+                           stroke: oldStyle.getStroke(),
+                           points,
+                           angle,
+                           rotation,
+                           radius,
+                           radius2,
+                        }),
+                     })
+                  );
+               });
             }
             if (polygonShape === 'star') {
-               const { points, angle, rotation, radius, radius2 } = getShape('star');
+               const { points, angle, rotation, radius, radius2 } = getShape(
+                  'star',
+                  layer.get('size')
+               );
 
                layer.set('shape', 'star');
 
-               layer.setStyle(
-                  new Style({
-                     //@ts-ignore
-                     fill: oldStyle.getFill(),
-                     //@ts-ignore
-                     stroke: oldStyle.getStroke(),
-                     image: new RegularShape({
+               features.forEach((feature) => {
+                  feature.setStyle(
+                     new Style({
                         //@ts-ignore
                         fill: oldStyle.getFill(),
                         //@ts-ignore
                         stroke: oldStyle.getStroke(),
-                        points,
-                        angle,
-                        rotation,
-                        radius,
-                        radius2,
-                     }),
-                  })
-               );
+                        image: new RegularShape({
+                           //@ts-ignore
+                           fill: oldStyle.getFill(),
+                           //@ts-ignore
+                           stroke: oldStyle.getStroke(),
+                           points,
+                           angle,
+                           rotation,
+                           radius,
+                           radius2,
+                        }),
+                     })
+                  );
+               });
             }
             if (polygonShape === 'circle') {
-               const { points, angle, rotation, radius, radius2 } = getShape('circle');
+               const { points, angle, rotation, radius, radius2 } = getShape(
+                  'circle',
+                  layer.get('size')
+               );
 
                layer.set('shape', 'circle');
 
-               layer.setStyle(
-                  new Style({
-                     //@ts-ignore
-                     fill: oldStyle.getFill(),
-                     //@ts-ignore
-                     stroke: oldStyle.getStroke(),
-                     image: new RegularShape({
+               features.forEach((feature) => {
+                  feature.setStyle(
+                     new Style({
                         //@ts-ignore
                         fill: oldStyle.getFill(),
                         //@ts-ignore
                         stroke: oldStyle.getStroke(),
-                        points,
-                        angle,
-                        rotation,
-                        radius,
-                        radius2,
-                     }),
-                  })
-               );
+                        image: new RegularShape({
+                           //@ts-ignore
+                           fill: oldStyle.getFill(),
+                           //@ts-ignore
+                           stroke: oldStyle.getStroke(),
+                           points,
+                           angle,
+                           rotation,
+                           radius,
+                           radius2,
+                        }),
+                     })
+                  );
+               });
             }
 
             setShape(polygonShape);
@@ -356,16 +423,9 @@ export default function WorldMap(props: any) {
                `strokeColorPicker${layer.get('id')}`
             )! as HTMLInputElement).value;
 
-            layer.setStyle(
-               new Style({
-                  //@ts-ignore
-                  fill: oldStyle.getFill(),
-                  stroke: new Stroke({
-                     color: newColor,
-                     //@ts-ignore
-                     width: oldStyle.getStroke().getWidth(),
-                  }),
-                  image: new RegularShape({
+            features.forEach((feature) => {
+               feature.setStyle(
+                  new Style({
                      //@ts-ignore
                      fill: oldStyle.getFill(),
                      stroke: new Stroke({
@@ -373,14 +433,25 @@ export default function WorldMap(props: any) {
                         //@ts-ignore
                         width: oldStyle.getStroke().getWidth(),
                      }),
-                     points,
-                     angle,
-                     rotation,
-                     radius,
-                     radius2,
-                  }),
-               })
-            );
+                     //@ts-ignore
+                     text: oldStyle.getText(),
+                     image: new RegularShape({
+                        //@ts-ignore
+                        fill: oldStyle.getFill(),
+                        stroke: new Stroke({
+                           color: newColor,
+                           //@ts-ignore
+                           width: oldStyle.getStroke().getWidth(),
+                        }),
+                        points,
+                        angle,
+                        rotation,
+                        radius,
+                        radius2,
+                     }),
+                  })
+               );
+            });
 
             setColor(newColor);
          }
@@ -391,16 +462,9 @@ export default function WorldMap(props: any) {
                   .value
             );
 
-            layer.setStyle(
-               new Style({
-                  //@ts-ignore
-                  fill: oldStyle.getFill(),
-                  stroke: new Stroke({
-                     //@ts-ignore
-                     color: oldStyle.getStroke().getColor(),
-                     width: newSize,
-                  }),
-                  image: new RegularShape({
+            features.forEach((feature) => {
+               feature.setStyle(
+                  new Style({
                      //@ts-ignore
                      fill: oldStyle.getFill(),
                      stroke: new Stroke({
@@ -408,19 +472,63 @@ export default function WorldMap(props: any) {
                         color: oldStyle.getStroke().getColor(),
                         width: newSize,
                      }),
-                     points,
-                     angle,
-                     rotation,
-                     radius,
-                     radius2,
-                  }),
-               })
-            );
+                     //@ts-ignore
+                     text: oldStyle.getText(),
+                     image: new RegularShape({
+                        //@ts-ignore
+                        fill: oldStyle.getFill(),
+                        stroke: new Stroke({
+                           //@ts-ignore
+                           color: oldStyle.getStroke().getColor(),
+                           width: newSize,
+                        }),
+                        points,
+                        angle,
+                        rotation,
+                        radius,
+                        radius2,
+                     }),
+                  })
+               );
+            });
 
             setSize(newSize);
          }
       },
       [getShape]
+   );
+
+   const handleLayerDownload = useCallback((layer: VectorLayer) => {
+      const geoJson = JSON.stringify(layer.get('geoJson'));
+
+      const file = new Blob([geoJson], { type: 'text/plain' });
+      const downloadUrl = URL.createObjectURL(file);
+
+      const downloadLink = document.createElement('a');
+      downloadLink.download = `Layer ${layer.get('id')} - GeoJson.json`;
+      downloadLink.href = downloadUrl;
+      downloadLink.click();
+   }, []);
+
+   const handleLayerDelete = useCallback(
+      (layer: VectorLayer) => {
+         if (layer.get('id') === 0) {
+            map?.setTarget('');
+         }
+
+         const listWithoutDeletedLayer = list.filter(
+            (notDeletedLayer) => notDeletedLayer.get('id') !== layer.get('id')
+         );
+         setList(listWithoutDeletedLayer);
+
+         const layersWithoutDeletedLayer = layers.filter(
+            (notDeletedLayer) => notDeletedLayer.get('id') !== layer.get('id')
+         );
+         setLayers(layersWithoutDeletedLayer);
+
+         for (let layer of layers) map?.removeLayer(layer);
+      },
+      [layers, list, map, setLayers]
    );
 
    const handleOnDragStart = useCallback(
@@ -541,7 +649,12 @@ export default function WorldMap(props: any) {
    }, []);
 
    useEffect(() => {
-      for (let layer of layers) map?.addLayer(layer);
+      for (let layer of layers) {
+         setList([...layers].reverse());
+
+         map?.removeLayer(layer);
+         map?.addLayer(layer);
+      }
    }, [layers, map]);
 
    return (
@@ -608,7 +721,10 @@ export default function WorldMap(props: any) {
                                        </button>
                                     )}
 
-                                    <button className="delete">
+                                    <button
+                                       className="delete"
+                                       onClick={() => handleLayerDelete(layer)}
+                                    >
                                        <FaTrash />
                                     </button>
                                  </div>
@@ -640,8 +756,13 @@ export default function WorldMap(props: any) {
                                                 type="color"
                                                 id={`polygonColorPicker${layer.get('id')}`}
                                                 className="colorPicker"
-                                                //@ts-ignore
-                                                value={layer.getStyle().getFill().getColor()}
+                                                value={layer
+                                                   .getSource()
+                                                   .getFeatures()[0]
+                                                   .getStyle()
+                                                   //@ts-ignore
+                                                   .getFill()
+                                                   .getColor()}
                                                 onChange={() =>
                                                    handleLayerStyle({ layer, polygonColor: true })
                                                 }
@@ -741,6 +862,8 @@ export default function WorldMap(props: any) {
                                                 id={`strokeColorPicker${layer.get('id')}`}
                                                 className="colorPicker" //
                                                 value={layer
+                                                   .getSource()
+                                                   .getFeatures()[0]
                                                    .getStyle()
                                                    //@ts-ignore
                                                    .getStroke()
@@ -757,7 +880,13 @@ export default function WorldMap(props: any) {
                                                 max={5}
                                                 step={0.1}
                                                 //@ts-ignore
-                                                value={layer.getStyle().getStroke().getWidth()}
+                                                value={layer
+                                                   .getSource()
+                                                   .getFeatures()[0]
+                                                   .getStyle()
+                                                   //@ts-ignore
+                                                   .getStroke()
+                                                   .getWidth()}
                                                 onChange={() =>
                                                    handleLayerStyle({ layer, strokeSize: true })
                                                 }
@@ -777,15 +906,19 @@ export default function WorldMap(props: any) {
                                        </button>
                                        {isLabelMenuVisible[index] && (
                                           <ul className="labelMenu menu container">
-                                             <li className="label" onClick={handleLabelChange}>
-                                                Oi
-                                             </li>
-                                             <li className="label" onClick={handleLabelChange}>
-                                                Oi
-                                             </li>
-                                             <li className="label" onClick={handleLabelChange}>
-                                                Oi
-                                             </li>
+                                             {layer
+                                                .get('labels')
+                                                .map((label: string, index: number) => (
+                                                   <li
+                                                      key={index}
+                                                      className="label"
+                                                      onClick={() =>
+                                                         handleLabelChange(layer, 'gid')
+                                                      }
+                                                   >
+                                                      {label}
+                                                   </li>
+                                                ))}
                                           </ul>
                                        )}
                                     </div>
@@ -807,11 +940,17 @@ export default function WorldMap(props: any) {
                                        </button>
                                     )}
 
-                                    <button className="download">
+                                    <button
+                                       className="download"
+                                       onClick={() => handleLayerDownload(layer)}
+                                    >
                                        <FaDownload />
                                     </button>
 
-                                    <button className="delete">
+                                    <button
+                                       className="delete"
+                                       onClick={() => handleLayerDelete(layer)}
+                                    >
                                        <FaTrash />
                                     </button>
                                  </div>
