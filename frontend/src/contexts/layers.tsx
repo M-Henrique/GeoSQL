@@ -120,7 +120,7 @@ export const LayersProvider: React.FC = ({ children }) => {
                      text: '',
                      font: '12px roboto',
                      fill: new Fill({
-                        color: '#fff',
+                        color: '#000',
                      }),
                   }),
                   image: new RegularShape({

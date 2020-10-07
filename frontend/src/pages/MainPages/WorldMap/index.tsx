@@ -33,11 +33,9 @@ import TileLayer from 'ol/layer/Tile';
 import OSM from 'ol/source/OSM';
 import { fromLonLat } from 'ol/proj';
 import VectorLayer from 'ol/layer/Vector';
-import Style from 'ol/style/Style';
 import Fill from 'ol/style/Fill';
 import Stroke from 'ol/style/Stroke';
 import RegularShape from 'ol/style/RegularShape';
-import Text from 'ol/style/Text';
 
 import LayersContext from '../../../contexts/layers';
 
@@ -187,6 +185,7 @@ export default function WorldMap() {
          labelIdentifier?: number;
       }) => {
          const features = layer.getSource().getFeatures();
+         const source = layer.getSource();
          // Openlayers não disponibiliza métodos para capturar a antiga regularShape da camada, tendo de ser feito um processo manual
          const { points, angle, rotation, radius, radius2 } = getShape(
             layer.get('shape'),
@@ -200,27 +199,21 @@ export default function WorldMap() {
 
             features.forEach((feature) => {
                const oldStyle = feature.getStyle();
-               feature.setStyle(
-                  new Style({
+               //@ts-ignore
+               feature.getStyle().getFill().setColor(newColor);
+               //@ts-ignore
+               feature.getStyle().setImage(
+                  new RegularShape({
                      fill: new Fill({
                         color: newColor,
                      }),
                      //@ts-ignore
                      stroke: oldStyle.getStroke(),
-                     //@ts-ignore
-                     text: oldStyle.getText(),
-                     image: new RegularShape({
-                        fill: new Fill({
-                           color: newColor,
-                        }),
-                        //@ts-ignore
-                        stroke: oldStyle.getStroke(),
-                        points,
-                        angle,
-                        rotation,
-                        radius,
-                        radius2,
-                     }),
+                     points,
+                     angle,
+                     rotation,
+                     radius,
+                     radius2,
                   })
                );
             });
@@ -238,25 +231,18 @@ export default function WorldMap() {
 
             features.forEach((feature) => {
                const oldStyle = feature.getStyle();
-               feature.setStyle(
-                  new Style({
+               //@ts-ignore
+               feature.getStyle().setImage(
+                  new RegularShape({
                      //@ts-ignore
                      fill: oldStyle.getFill(),
                      //@ts-ignore
                      stroke: oldStyle.getStroke(),
-                     //@ts-ignore
-                     text: oldStyle.getText(),
-                     image: new RegularShape({
-                        //@ts-ignore
-                        fill: oldStyle.getFill(),
-                        //@ts-ignore
-                        stroke: oldStyle.getStroke(),
-                        points,
-                        angle,
-                        rotation,
-                        radius: newSize,
-                        radius2,
-                     }),
+                     points,
+                     angle,
+                     rotation,
+                     radius: newSize,
+                     radius2,
                   })
                );
             });
@@ -275,25 +261,18 @@ export default function WorldMap() {
 
                features.forEach((feature) => {
                   const oldStyle = feature.getStyle();
-                  feature.setStyle(
-                     new Style({
+                  //@ts-ignore
+                  feature.getStyle().setImage(
+                     new RegularShape({
                         //@ts-ignore
                         fill: oldStyle.getFill(),
                         //@ts-ignore
                         stroke: oldStyle.getStroke(),
-                        //@ts-ignore
-                        text: oldStyle.getText(),
-                        image: new RegularShape({
-                           //@ts-ignore
-                           fill: oldStyle.getFill(),
-                           //@ts-ignore
-                           stroke: oldStyle.getStroke(),
-                           points,
-                           angle,
-                           rotation,
-                           radius,
-                           radius2,
-                        }),
+                        points,
+                        angle,
+                        rotation,
+                        radius,
+                        radius2,
                      })
                   );
                });
@@ -308,25 +287,18 @@ export default function WorldMap() {
 
                features.forEach((feature) => {
                   const oldStyle = feature.getStyle();
-                  feature.setStyle(
-                     new Style({
+                  //@ts-ignore
+                  feature.getStyle().setImage(
+                     new RegularShape({
                         //@ts-ignore
                         fill: oldStyle.getFill(),
                         //@ts-ignore
                         stroke: oldStyle.getStroke(),
-                        //@ts-ignore
-                        text: oldStyle.getText(),
-                        image: new RegularShape({
-                           //@ts-ignore
-                           fill: oldStyle.getFill(),
-                           //@ts-ignore
-                           stroke: oldStyle.getStroke(),
-                           points,
-                           angle,
-                           rotation,
-                           radius,
-                           radius2,
-                        }),
+                        points,
+                        angle,
+                        rotation,
+                        radius,
+                        radius2,
                      })
                   );
                });
@@ -341,25 +313,18 @@ export default function WorldMap() {
 
                features.forEach((feature) => {
                   const oldStyle = feature.getStyle();
-                  feature.setStyle(
-                     new Style({
+                  //@ts-ignore
+                  feature.getStyle().setImage(
+                     new RegularShape({
                         //@ts-ignore
                         fill: oldStyle.getFill(),
                         //@ts-ignore
                         stroke: oldStyle.getStroke(),
-                        //@ts-ignore
-                        text: oldStyle.getText(),
-                        image: new RegularShape({
-                           //@ts-ignore
-                           fill: oldStyle.getFill(),
-                           //@ts-ignore
-                           stroke: oldStyle.getStroke(),
-                           points,
-                           angle,
-                           rotation,
-                           radius,
-                           radius2,
-                        }),
+                        points,
+                        angle,
+                        rotation,
+                        radius,
+                        radius2,
                      })
                   );
                });
@@ -374,25 +339,18 @@ export default function WorldMap() {
 
                features.forEach((feature) => {
                   const oldStyle = feature.getStyle();
-                  feature.setStyle(
-                     new Style({
+                  //@ts-ignore
+                  feature.getStyle().setImage(
+                     new RegularShape({
                         //@ts-ignore
                         fill: oldStyle.getFill(),
                         //@ts-ignore
                         stroke: oldStyle.getStroke(),
-                        //@ts-ignore
-                        text: oldStyle.getText(),
-                        image: new RegularShape({
-                           //@ts-ignore
-                           fill: oldStyle.getFill(),
-                           //@ts-ignore
-                           stroke: oldStyle.getStroke(),
-                           points,
-                           angle,
-                           rotation,
-                           radius,
-                           radius2,
-                        }),
+                        points,
+                        angle,
+                        rotation,
+                        radius,
+                        radius2,
                      })
                   );
                });
@@ -408,8 +366,11 @@ export default function WorldMap() {
 
             features.forEach((feature) => {
                const oldStyle = feature.getStyle();
-               feature.setStyle(
-                  new Style({
+               //@ts-ignore
+               feature.getStyle().getStroke().setColor(newColor);
+               //@ts-ignore
+               feature.getStyle().setImage(
+                  new RegularShape({
                      //@ts-ignore
                      fill: oldStyle.getFill(),
                      stroke: new Stroke({
@@ -417,22 +378,11 @@ export default function WorldMap() {
                         //@ts-ignore
                         width: oldStyle.getStroke().getWidth(),
                      }),
-                     //@ts-ignore
-                     text: oldStyle.getText(),
-                     image: new RegularShape({
-                        //@ts-ignore
-                        fill: oldStyle.getFill(),
-                        stroke: new Stroke({
-                           color: newColor,
-                           //@ts-ignore
-                           width: oldStyle.getStroke().getWidth(),
-                        }),
-                        points,
-                        angle,
-                        rotation,
-                        radius,
-                        radius2,
-                     }),
+                     points,
+                     angle,
+                     rotation,
+                     radius,
+                     radius2,
                   })
                );
             });
@@ -448,8 +398,11 @@ export default function WorldMap() {
 
             features.forEach((feature) => {
                const oldStyle = feature.getStyle();
-               feature.setStyle(
-                  new Style({
+               //@ts-ignore
+               feature.getStyle().getStroke().setWidth(newSize);
+               //@ts-ignore
+               feature.getStyle().setImage(
+                  new RegularShape({
                      //@ts-ignore
                      fill: oldStyle.getFill(),
                      stroke: new Stroke({
@@ -457,22 +410,11 @@ export default function WorldMap() {
                         color: oldStyle.getStroke().getColor(),
                         width: newSize,
                      }),
-                     //@ts-ignore
-                     text: oldStyle.getText(),
-                     image: new RegularShape({
-                        //@ts-ignore
-                        fill: oldStyle.getFill(),
-                        stroke: new Stroke({
-                           //@ts-ignore
-                           color: oldStyle.getStroke().getColor(),
-                           width: newSize,
-                        }),
-                        points,
-                        angle,
-                        rotation,
-                        radius,
-                        radius2,
-                     }),
+                     points,
+                     angle,
+                     rotation,
+                     radius,
+                     radius2,
                   })
                );
             });
@@ -488,40 +430,14 @@ export default function WorldMap() {
                .toString();
 
             features.forEach((feature) => {
-               const oldStyle = feature.getStyle();
-               feature.setStyle(
-                  new Style({
-                     //@ts-ignore
-                     fill: oldStyle.getFill(),
-                     //@ts-ignore
-                     stroke: oldStyle.getStroke(),
-                     //@ts-ignore
-                     text: new Text({
-                        text: newLabel === '' ? '' : feature.get('info')[newLabel].toString(),
-                        font: '12px roboto',
-                        fill: new Fill({
-                           color: '#000',
-                        }),
-                     }),
-                     image: new RegularShape({
-                        //@ts-ignore
-                        fill: oldStyle.getFill(),
-                        stroke: new Stroke({
-                           //@ts-ignore
-                           color: oldStyle.getStroke().getColor(),
-                           //@ts-ignore
-                           width: oldStyle.getStroke().getWidth(),
-                        }),
-                        points,
-                        angle,
-                        rotation,
-                        radius,
-                        radius2,
-                     }),
-                  })
-               );
+               feature
+                  .getStyle()
+                  //@ts-ignore
+                  .getText()
+                  .setText(newLabel === '' ? '' : feature.get('info')[newLabel].toString());
             });
          }
+         source.changed();
       },
       [getShape]
    );
