@@ -17,6 +17,8 @@ import Fill from 'ol/style/Fill';
 import RegularShape from 'ol/style/RegularShape';
 import Stroke from 'ol/style/Stroke';
 import Text from 'ol/style/Text';
+import { Feature } from 'ol';
+import Geometry from 'ol/geom/Geometry';
 
 import QueryContext from './query';
 
@@ -58,6 +60,7 @@ export const LayersProvider: React.FC = ({ children }) => {
       return shapes[Math.floor(Math.random() * shapes.length)];
    }, []);
 
+   // Flag utilizada para demarcar a primeira renderização
    const isInitialMount = useRef(true);
    useEffect(() => {
       // Pseudo-layer do mapa (usada para indexação da legenda)
@@ -73,52 +76,37 @@ export const LayersProvider: React.FC = ({ children }) => {
 
          isInitialMount.current = false;
       } else if (hasGeomValue) {
-         // results.forEach((result: any) => {
-         //    let geojson = { ...JSON.parse(result.geojson) };
-         //    result.geojson = { geojson, properties: { name: 'oi' } };
-         // });
-
+         // Armazenamento do geojson de cada resultado, para uso no Objeto que será o download da camada
          const resultsGeoJSON = results.map((result: any) => JSON.parse(result.geojson));
 
-         resultsGeoJSON.forEach((geojson) => (geojson.properties = { name: 'oi' }));
+         // Geração das features individualmente para que seja possível armazenar em cada uma as informações referentes à própria
+         let features: Feature<Geometry>[] = [];
+         results.forEach((result: any, index) => {
+            result.geojson = JSON.parse(result.geojson);
+            features.push(
+               new GeoJSON().readFeature(result.geojson, {
+                  featureProjection: 'EPSG:3857',
+               })
+            );
 
-         let layerLabels = null;
-         if (results.length > 0) {
-            layerLabels = Object.keys(results[0]);
-         }
+            delete result.geom;
+            delete result.geojson;
 
-         const geoJSONObject = {
-            type: 'FeatureCollection',
-            features: [...resultsGeoJSON],
-         };
+            features[index].set('info', result);
+         });
 
+         // A fonte (source) das informações para geração da camada
          const vectorSource = new VectorSource({
-            features: new GeoJSON().readFeatures(geoJSONObject, {
+            features: new GeoJSON().readFeatures(new GeoJSON().writeFeaturesObject(features), {
                featureProjection: 'EPSG:3857',
             }),
          });
 
-         console.log(new GeoJSON().writeFeatureObject(vectorSource.getFeatures()[0]));
-
+         // Estilização randômica das features
          const [colorFill, colorStroke] = getRandomColor();
          const { shape, points, angle, rotation, radius, radius2 } = getRandomShape();
 
-         // resultsGeoJSON.forEach((result) => {
-         //    vectorSource.getFeatures().forEach((feature, index) => {
-         //       if (
-         //          result.coordinates ===
-         //          (new GeoJSON().writeFeatureObject(feature).geometry as any).coordinates
-         //       ) {
-         //          console.log(result);
-         //       }
-         //    });
-         // });
-
          vectorSource.getFeatures().forEach((feature, index) => {
-            // reusltsGeoJson.forEach((result) => {
-            //    const geomFeature = new GeoJSON().writeFeatureObject(feature);
-            //    if geomFeature === result.geom
-            // })
             feature.setStyle(
                new Style({
                   fill: new Fill({
@@ -130,6 +118,7 @@ export const LayersProvider: React.FC = ({ children }) => {
                   }),
                   text: new Text({
                      text: '',
+                     font: '12px roboto',
                      fill: new Fill({
                         color: '#fff',
                      }),
@@ -152,6 +141,19 @@ export const LayersProvider: React.FC = ({ children }) => {
             );
          });
 
+         // Captação dos rótulos (colunas) da query feita para exibição no menu de rótulos
+         let layerLabels = null;
+         if (results.length > 0) {
+            layerLabels = Object.keys(results[0]);
+         }
+
+         // Captação do objeto GeoJSON representando a camada a ser renderizada, para posterior utilização no download das camadas
+         const geoJSONObject = {
+            type: 'FeatureCollection',
+            features: [...resultsGeoJSON],
+         };
+
+         // A layer em si
          const vectorLayer = new VectorLayer({
             // Tipagem desnecessária nesse caso (openlayers reconhece atributos personalizados automaticamente)
             //@ts-ignore
@@ -173,6 +175,7 @@ export const LayersProvider: React.FC = ({ children }) => {
             }),
          });
 
+         // Atualização do vetor de layers e do contador de ID das layers
          setLayers((oldLayers) => [...oldLayers, vectorLayer]);
          setId((id) => id + 1);
       }

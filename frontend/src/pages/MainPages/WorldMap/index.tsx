@@ -134,40 +134,6 @@ export default function WorldMap() {
       [isLabelMenuVisible, isPolygonMenuVisible, isStrokeMenuVisible]
    );
 
-   const handleLabelChange = useCallback(
-      (layer: VectorLayer, label: string) => {
-         layer
-            .getSource()
-            .getFeatures()
-            .forEach((feature) => {
-               //@ts-ignore
-               feature.setStyle(
-                  new Style({
-                     fill: new Fill({
-                        color: '#423423',
-                     }),
-                     stroke: new Stroke({
-                        color: '#967076',
-                        width: 1,
-                     }),
-                     text: new Text({
-                        text: feature.get('text')['sigla'],
-                        fill: new Fill({
-                           color: '#fff',
-                        }),
-                     }),
-                  })
-               );
-            });
-
-         let labelMenus = [...isLabelMenuVisible];
-         labelMenus.fill(false);
-
-         setIsLabelMenuVisible(labelMenus);
-      },
-      [isLabelMenuVisible]
-   );
-
    const handleLayerVisibility = useCallback(
       (index, layer: VectorLayer) => {
          let layerVisibility = [...isLayerVisible];
@@ -208,6 +174,8 @@ export default function WorldMap() {
          polygonShape,
          strokeColor,
          strokeSize,
+         label,
+         labelIdentifier,
       }: {
          layer: VectorLayer;
          polygonColor?: boolean;
@@ -215,9 +183,10 @@ export default function WorldMap() {
          polygonShape?: string;
          strokeColor?: boolean;
          strokeSize?: boolean;
+         label?: boolean;
+         labelIdentifier?: number;
       }) => {
          const features = layer.getSource().getFeatures();
-         const oldStyle = features[0].getStyle();
          // Openlayers não disponibiliza métodos para capturar a antiga regularShape da camada, tendo de ser feito um processo manual
          const { points, angle, rotation, radius, radius2 } = getShape(
             layer.get('shape'),
@@ -230,6 +199,7 @@ export default function WorldMap() {
             )! as HTMLInputElement).value;
 
             features.forEach((feature) => {
+               const oldStyle = feature.getStyle();
                feature.setStyle(
                   new Style({
                      fill: new Fill({
@@ -267,6 +237,7 @@ export default function WorldMap() {
             layer.set('size', newSize);
 
             features.forEach((feature) => {
+               const oldStyle = feature.getStyle();
                feature.setStyle(
                   new Style({
                      //@ts-ignore
@@ -303,12 +274,15 @@ export default function WorldMap() {
                layer.set('shape', 'square');
 
                features.forEach((feature) => {
+                  const oldStyle = feature.getStyle();
                   feature.setStyle(
                      new Style({
                         //@ts-ignore
                         fill: oldStyle.getFill(),
                         //@ts-ignore
                         stroke: oldStyle.getStroke(),
+                        //@ts-ignore
+                        text: oldStyle.getText(),
                         image: new RegularShape({
                            //@ts-ignore
                            fill: oldStyle.getFill(),
@@ -333,12 +307,15 @@ export default function WorldMap() {
                layer.set('shape', 'triangle');
 
                features.forEach((feature) => {
+                  const oldStyle = feature.getStyle();
                   feature.setStyle(
                      new Style({
                         //@ts-ignore
                         fill: oldStyle.getFill(),
                         //@ts-ignore
                         stroke: oldStyle.getStroke(),
+                        //@ts-ignore
+                        text: oldStyle.getText(),
                         image: new RegularShape({
                            //@ts-ignore
                            fill: oldStyle.getFill(),
@@ -363,12 +340,15 @@ export default function WorldMap() {
                layer.set('shape', 'star');
 
                features.forEach((feature) => {
+                  const oldStyle = feature.getStyle();
                   feature.setStyle(
                      new Style({
                         //@ts-ignore
                         fill: oldStyle.getFill(),
                         //@ts-ignore
                         stroke: oldStyle.getStroke(),
+                        //@ts-ignore
+                        text: oldStyle.getText(),
                         image: new RegularShape({
                            //@ts-ignore
                            fill: oldStyle.getFill(),
@@ -393,12 +373,15 @@ export default function WorldMap() {
                layer.set('shape', 'circle');
 
                features.forEach((feature) => {
+                  const oldStyle = feature.getStyle();
                   feature.setStyle(
                      new Style({
                         //@ts-ignore
                         fill: oldStyle.getFill(),
                         //@ts-ignore
                         stroke: oldStyle.getStroke(),
+                        //@ts-ignore
+                        text: oldStyle.getText(),
                         image: new RegularShape({
                            //@ts-ignore
                            fill: oldStyle.getFill(),
@@ -424,6 +407,7 @@ export default function WorldMap() {
             )! as HTMLInputElement).value;
 
             features.forEach((feature) => {
+               const oldStyle = feature.getStyle();
                feature.setStyle(
                   new Style({
                      //@ts-ignore
@@ -463,6 +447,7 @@ export default function WorldMap() {
             );
 
             features.forEach((feature) => {
+               const oldStyle = feature.getStyle();
                feature.setStyle(
                   new Style({
                      //@ts-ignore
@@ -493,6 +478,49 @@ export default function WorldMap() {
             });
 
             setSize(newSize);
+         }
+
+         if (label) {
+            const newLabel = (document.getElementById(
+               `labelPicker${labelIdentifier}`
+            ) as HTMLLIElement)
+               .getAttribute('value')!
+               .toString();
+
+            features.forEach((feature) => {
+               const oldStyle = feature.getStyle();
+               feature.setStyle(
+                  new Style({
+                     //@ts-ignore
+                     fill: oldStyle.getFill(),
+                     //@ts-ignore
+                     stroke: oldStyle.getStroke(),
+                     //@ts-ignore
+                     text: new Text({
+                        text: newLabel === '' ? '' : feature.get('info')[newLabel].toString(),
+                        font: '12px roboto',
+                        fill: new Fill({
+                           color: '#000',
+                        }),
+                     }),
+                     image: new RegularShape({
+                        //@ts-ignore
+                        fill: oldStyle.getFill(),
+                        stroke: new Stroke({
+                           //@ts-ignore
+                           color: oldStyle.getStroke().getColor(),
+                           //@ts-ignore
+                           width: oldStyle.getStroke().getWidth(),
+                        }),
+                        points,
+                        angle,
+                        rotation,
+                        radius,
+                        radius2,
+                     }),
+                  })
+               );
+            });
          }
       },
       [getShape]
@@ -571,6 +599,7 @@ export default function WorldMap() {
       (event) => {
          event.preventDefault();
 
+         // Garante que o objeto seja "dragável" apenas sobre a legenda
          if (event.currentTarget.tagName === 'LI') {
             // Store the content of the original list in this variable that we'll update
             let newList = dragAndDrop.originalOrder;
@@ -906,14 +935,36 @@ export default function WorldMap() {
                                        </button>
                                        {isLabelMenuVisible[index] && (
                                           <ul className="labelMenu menu container">
+                                             <li
+                                                id={`labelPicker-1`}
+                                                className="label"
+                                                value={''}
+                                                style={{ color: '#A83232' }}
+                                                onClick={() =>
+                                                   handleLayerStyle({
+                                                      layer,
+                                                      label: true,
+                                                      labelIdentifier: -1,
+                                                   })
+                                                }
+                                             >
+                                                {' '}
+                                                VAZIO{' '}
+                                             </li>
                                              {layer
                                                 .get('labels')
                                                 .map((label: string, index: number) => (
                                                    <li
                                                       key={index}
+                                                      id={`labelPicker${index}`}
                                                       className="label"
+                                                      value={label}
                                                       onClick={() =>
-                                                         handleLabelChange(layer, 'gid')
+                                                         handleLayerStyle({
+                                                            layer,
+                                                            label: true,
+                                                            labelIdentifier: index,
+                                                         })
                                                       }
                                                    >
                                                       {label}
