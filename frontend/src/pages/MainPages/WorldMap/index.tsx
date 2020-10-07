@@ -627,6 +627,8 @@ export default function WorldMap() {
             // we check if the targets are actually
             // different:
             if (draggedTo !== dragAndDrop.draggedTo) {
+               setLayers([...newList].reverse());
+
                setDragAndDrop({
                   ...dragAndDrop,
 
@@ -638,7 +640,7 @@ export default function WorldMap() {
             }
          }
       },
-      [dragAndDrop]
+      [dragAndDrop, setLayers]
    );
 
    const handleOnDrop = useCallback(() => {
