@@ -445,7 +445,7 @@ export default function WorldMap() {
    const handleLayerDownload = useCallback((layer: VectorLayer) => {
       const geoJson = JSON.stringify(layer.get('geoJson'));
 
-      const file = new Blob([geoJson], { type: 'text/plain' });
+      const file = new Blob([geoJson], { type: 'application/json' });
       const downloadUrl = URL.createObjectURL(file);
 
       const downloadLink = document.createElement('a');

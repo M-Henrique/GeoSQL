@@ -36,6 +36,18 @@ export default function Query() {
       [submitQuery]
    );
 
+   const handleSaveQuery = useCallback(() => {
+      const query = document.getElementById('query')!.innerHTML;
+
+      const file = new Blob([query], { type: 'text/plain' });
+      const downloadUrl = URL.createObjectURL(file);
+
+      const downloadLink = document.createElement('a');
+      downloadLink.download = `Query.txt`;
+      downloadLink.href = downloadUrl;
+      downloadLink.click();
+   }, []);
+
    return (
       <div id="queryContainer" className="firstContainer container">
          <header>
@@ -102,7 +114,7 @@ export default function Query() {
                      <FiSearch className="queryIcon" />
                      Pesquisar
                   </Link>
-                  <button id="saveQuery" className="queryButton">
+                  <button id="saveQuery" className="queryButton" onClick={handleSaveQuery}>
                      <FiSave className="queryIcon" />
                      Salvar
                   </button>

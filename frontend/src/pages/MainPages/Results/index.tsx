@@ -1,10 +1,13 @@
 // Torna possível o retorno do map apenas em condicionais.
 /* eslint-disable array-callback-return */
 
-import React, { useContext } from 'react';
+import React, { useCallback, useContext } from 'react';
 
 import { FiDownload } from 'react-icons/fi';
 import { ClipLoader } from 'react-spinners';
+
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 import QueryContext from '../../../contexts/query';
 
@@ -15,6 +18,59 @@ import './styles.css';
 export default function Results() {
    const { results, loading } = useContext(QueryContext);
 
+   const handleSaveResults = useCallback(
+      (format: string) => {
+         const content = JSON.stringify(results);
+
+         let file = null;
+         let fileName = '';
+         switch (format) {
+            case 'json':
+               file = new Blob([content], { type: 'application/json' });
+               fileName = `Results.json`;
+               break;
+            case 'pdf':
+               file = new jsPDF();
+               autoTable(file, { html: '#resultsTable', styles: { lineWidth: 0.2 } });
+               file.save('Results.pdf');
+               return;
+            case 'txt':
+               file = new Blob([content], { type: 'text/plain' });
+               fileName = `Results.txt`;
+               break;
+            case 'csv':
+               const table = document.getElementById('resultsTable') as HTMLTableElement;
+               let csvContent = '';
+
+               for (let i = 0, row; (row = table.rows[i]); i++) {
+                  for (let j = 0, col; (col = row.cells[j]); j++) {
+                     if (j === row.cells.length - 1) {
+                        csvContent += col.innerHTML.toString();
+                        continue;
+                     }
+
+                     csvContent += `${col.innerHTML.toString()}, `;
+                  }
+
+                  csvContent += '\n';
+               }
+
+               file = new Blob([csvContent], { type: 'text/plain' });
+               fileName = `Results.csv`;
+               break;
+            default:
+               break;
+         }
+         const downloadUrl = URL.createObjectURL(file);
+
+         const downloadLink = document.createElement('a');
+         downloadLink.download = fileName;
+         downloadLink.href = downloadUrl;
+         downloadLink.click();
+      },
+      [results]
+   );
+
    return (
       <div id="resultsContainer" className="firstContainer container">
          <header>
@@ -23,19 +79,19 @@ export default function Results() {
 
          <div id="mainContainer" className="container">
             <aside className="container">
-               <button className="saveResults">
+               <button className="saveResults" onClick={() => handleSaveResults('json')}>
                   <FiDownload className="saveIcon" />
                   JSON
                </button>
-               <button className="saveResults">
+               <button className="saveResults" onClick={() => handleSaveResults('pdf')}>
                   <FiDownload className="saveIcon" />
                   PDF
                </button>
-               <button className="saveResults">
+               <button className="saveResults" onClick={() => handleSaveResults('txt')}>
                   <FiDownload className="saveIcon" />
                   TXT
                </button>
-               <button className="saveResults">
+               <button className="saveResults" onClick={() => handleSaveResults('csv')}>
                   <FiDownload className="saveIcon" />
                   CSV
                </button>
@@ -56,7 +112,7 @@ export default function Results() {
                      <p>{results}</p>
                   </div>
                ) : (
-                  <table>
+                  <table id="resultsTable">
                      <thead>
                         <tr>
                            {Object.keys(results[0]).map((column, index) => {
