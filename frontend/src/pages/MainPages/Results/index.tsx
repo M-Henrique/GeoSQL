@@ -24,6 +24,7 @@ export default function Results() {
 
          let file = null;
          let fileName = '';
+         
          switch (format) {
             case 'json':
                file = new Blob([content], { type: 'application/json' });

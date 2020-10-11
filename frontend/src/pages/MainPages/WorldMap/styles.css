@@ -7,6 +7,92 @@
    width: 100vw;
 }
 
+/* ----------------------- Estilo do Popup ----------------------*/
+#mapContainer #mainContainer #popup {
+   position: absolute;
+   background-color: white;
+   box-shadow: 0 0.1rem 0.2rem rgba(0, 0, 0, 0.2);
+   padding: 1rem;
+   border-radius: 1rem;
+   border: 0.2rem solid var(--color-primary-darker);
+   bottom: 1rem;
+   left: -4rem;
+   min-width: 23rem;
+}
+
+#mapContainer #mainContainer #popup:after,
+#popup:before {
+   top: 100%;
+   border: solid transparent;
+   content: ' ';
+   height: 0;
+   width: 0;
+   position: absolute;
+   pointer-events: none;
+}
+
+#mapContainer #mainContainer #popup:before {
+   left: 4rem;
+   margin-left: -1rem;
+
+   border-width: 1rem;
+   border-top: 1.2rem solid var(--color-primary-darker);
+}
+
+#mapContainer #mainContainer #popup:after {
+   left: 4rem;
+   margin-left: -1rem;
+
+   border-top-color: white;
+   border-width: 1rem;
+}
+
+#mapContainer #mainContainer #popup #popupContent code {
+   font-size: 1.7rem;
+   color: var(--color-primary-dark);
+}
+
+#mapContainer #mainContainer #popup #popupContent ul {
+   line-height: 2rem;
+
+   list-style: none;
+}
+
+#mapContainer #mainContainer #popup #popupContent ul span {
+   font-weight: bold;
+}
+
+#mapContainer #mainContainer #popup #popupCloser {
+   width: 2rem;
+   height: 2rem;
+
+   position: absolute;
+   top: 0.2rem;
+   right: 0.1rem;
+
+   display: flex;
+   justify-content: center;
+   align-items: center;
+
+   border: none;
+
+   color: var(--color-primary-dark);
+   text-decoration: none;
+   font-weight: bold;
+
+   background: transparent;
+
+   outline: none;
+
+   cursor: pointer;
+}
+
+#mapContainer #mainContainer #popup #popupCloser:hover {
+   color: var(--color-primary-darker);
+}
+
+/*---------------------------------------------------------------*/
+
 #mapContainer #mainContainer #subtitleContainer {
    flex-direction: column;
    align-items: flex-end;

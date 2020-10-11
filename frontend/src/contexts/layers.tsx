@@ -164,15 +164,6 @@ export const LayersProvider: React.FC = ({ children }) => {
             shape,
             size: radius,
             source: vectorSource,
-            style: new Style({
-               fill: new Fill({
-                  color: colorFill,
-               }),
-               stroke: new Stroke({
-                  color: colorStroke,
-                  width: 1,
-               }),
-            }),
          });
 
          // Atualização do vetor de layers e do contador de ID das layers

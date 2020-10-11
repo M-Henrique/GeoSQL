@@ -1,6 +1,6 @@
 import { Router } from 'express';
 
-import client from '../database';
+import pool from '../database';
 
 import QueryService from '../services/QueryService';
 
@@ -9,6 +9,8 @@ const routes = Router();
 // Todas as tabelas do banco
 routes.get('/query', async (request, response) => {
    try {
+      const client = await pool.connect();
+
       const { rows: tablesColumns } = await client.query(
          `SELECT DISTINCT table_name as table, column_name as name FROM information_schema.columns WHERE table_schema = 'geodata' ORDER BY table_name;`
       );
@@ -16,6 +18,8 @@ routes.get('/query', async (request, response) => {
       const { rows: tables } = await client.query(
          `SELECT DISTINCT table_name as name FROM information_schema.columns WHERE table_schema = 'geodata' ORDER BY table_name;`
       );
+
+      client.release();
 
       return response.json({ tablesColumns, tables });
    } catch (error) {

@@ -21,6 +21,7 @@ export default class QueryService {
       }
 
       client.release();
+      await pool.end();
 
       return tempTable;
    }

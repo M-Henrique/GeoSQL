@@ -31,11 +31,14 @@ import Map from 'ol/Map';
 import View from 'ol/View';
 import TileLayer from 'ol/layer/Tile';
 import OSM from 'ol/source/OSM';
-import { fromLonLat } from 'ol/proj';
+import { fromLonLat, toLonLat } from 'ol/proj';
 import VectorLayer from 'ol/layer/Vector';
 import Fill from 'ol/style/Fill';
 import Stroke from 'ol/style/Stroke';
 import RegularShape from 'ol/style/RegularShape';
+import Overlay from 'ol/Overlay';
+import { toStringHDMS } from 'ol/coordinate';
+import Select from 'ol/interaction/Select';
 
 import LayersContext from '../../../contexts/layers';
 
@@ -475,6 +478,16 @@ export default function WorldMap() {
       [layers, list, map, setLayers]
    );
 
+   const handleClosePopup = useCallback(() => {
+      const overlay = map?.getOverlayById('overlay');
+      const select = map?.getInteractions().getArray()[0] as Select;
+      const popupCloser = document.getElementById('popupCloser');
+
+      select.getFeatures().clear();
+      overlay?.setPosition(undefined);
+      popupCloser?.blur();
+   }, [map]);
+
    const handleOnDragStart = useCallback(
       (event) => {
          setIsPolygonMenuVisible(isPolygonMenuVisible.fill(false));
@@ -579,6 +592,19 @@ export default function WorldMap() {
    }, [dragAndDrop]);
 
    useEffect(() => {
+      const container = document.getElementById('popup')!;
+      const content = document.getElementById('popupContent')!;
+
+      const overlay = new Overlay({
+         id: 'overlay',
+         element: container,
+         autoPan: true,
+         autoPanAnimation: {
+            duration: 250,
+         },
+      });
+      const select = new Select();
+
       const initialMap = new Map({
          target: 'map',
          layers: [
@@ -590,9 +616,39 @@ export default function WorldMap() {
             center: fromLonLat([-57.41, -15]),
             zoom: 4.5,
          }),
+         overlays: [overlay],
+         interactions: [select],
+      });
+
+      initialMap.on('singleclick', function (event) {
+         const coordinate = event.coordinate;
+         const hdms = toStringHDMS(toLonLat(coordinate));
+         const feature = initialMap.getFeaturesAtPixel(event.pixel)[0];
+
+         content.innerHTML = '<p>Você clicou aqui:</p><code>' + hdms + '</code>';
+
+         if (feature) {
+            let featureInfo = '<br><br><ul>';
+
+            for (let [label, value] of Object.entries(feature.get('info'))) {
+               featureInfo += `<li><span>${label.toUpperCase()}:</span> ${value}</li>`;
+            }
+
+            featureInfo += '</ul>';
+            content.innerHTML += featureInfo;
+         }
+
+         overlay.setPosition(coordinate);
       });
 
       setMap(initialMap);
+
+      // Desmonte do componente (para evitar que o select permaneça após sair da página)
+      return () => {
+         select.getFeatures().clear();
+      };
+      // Necessário para evitar loops infinitos na criação do mapa
+      // eslint-disable-next-line react-hooks/exhaustive-deps
    }, []);
 
    useEffect(() => {
@@ -617,6 +673,12 @@ export default function WorldMap() {
 
          <section id="mainContainer" className="container">
             <div id="map"></div>
+            <div id="popup">
+               <button id="popupCloser" onClick={handleClosePopup}>
+                  X
+               </button>
+               <div id="popupContent"></div>
+            </div>
             <div id="subtitleContainer" className="container">
                <button
                   id="toggleSubtitle"
