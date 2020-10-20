@@ -5,9 +5,10 @@ import pool from '../database/index';
 export default class QueryController {
    public async show(request: Request, response: Response) {
       const query = request.body.query;
+      let client;
 
       try {
-         const client = await pool.connect();
+         client = await pool.connect();
 
          await client.query(`DROP TABLE IF EXISTS resultados;`);
 
@@ -27,10 +28,15 @@ export default class QueryController {
 
          client.release();
          // REMOVER AO SUBIR PRA PRODUÇÃO
-         await pool.end();
+         // await pool.end();
 
          return response.json(results.rows);
       } catch (error) {
+         if (client) {
+            client.release();
+         } else {
+         }
+
          return response.json(error.message);
       }
    }

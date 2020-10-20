@@ -4,8 +4,10 @@ import pool from '../database/index';
 
 export default class TablesController {
    public async index(request: Request, response: Response) {
+      let client;
+
       try {
-         const client = await pool.connect();
+         client = await pool.connect();
 
          // Retorna as tabelas junto de suas respectivas colunas (para saber qual coluna pertence a qual tabela).
          const { rows: tablesColumns } = await client.query(
