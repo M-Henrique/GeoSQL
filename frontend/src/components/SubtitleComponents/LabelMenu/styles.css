@@ -1,0 +1,81 @@
+/* Estilização presente no arquivo do mapa. */
+
+#mapContainer
+   #mainContainer
+   #subtitleContainer
+   #layersContainer
+   .layer
+   .buttons
+   .customization
+   .labelMenu {
+   align-items: center;
+}
+
+#mapContainer
+   #mainContainer
+   #subtitleContainer
+   #layersContainer
+   .layer
+   .buttons
+   .customization
+   .menu
+   .label {
+   width: 100%;
+
+   margin: auto;
+   padding: 0.2rem 0.5rem;
+
+   cursor: pointer;
+
+   list-style: none;
+}
+
+#mapContainer
+   #mainContainer
+   #subtitleContainer
+   #layersContainer
+   .layer
+   .buttons
+   .customization
+   .menu
+   .label:not(:last-child) {
+   border-bottom: 0.1rem solid var(--color-secondary-dark);
+}
+
+#mapContainer
+   #mainContainer
+   #subtitleContainer
+   #layersContainer
+   .layer
+   .buttons
+   .customization
+   .menu
+   .label:hover {
+   background: var(--color-secondary-light);
+}
+
+#mapContainer
+   #mainContainer
+   #subtitleContainer
+   #layersContainer
+   .layer
+   .buttons
+   .customization
+   .menu
+   .label:first-child:hover {
+   border-top-left-radius: 1rem;
+   border-top-right-radius: 1rem;
+}
+
+#mapContainer
+   #mainContainer
+   #subtitleContainer
+   #layersContainer
+   .layer
+   .buttons
+   .customization
+   .menu
+   .label:last-child:hover {
+   border-bottom-left-radius: 1rem;
+   border-bottom-right-radius: 1rem;
+}

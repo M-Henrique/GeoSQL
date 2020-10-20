@@ -2,7 +2,7 @@
 |  A tipagem do Openlayers sofre um bug so utilizar a função getStyle,                                                   |
 |     da VectorLayer. Apesar de, no arquivo "C:\Apache24\htdocs\TCC\frontend\node_modules\@types\ol\style\Style.d.ts"    |
 |        o retorno ser especificado como "Style", por algum motivo esse retorno não é reconhecido, forçando a utilização |
-|           de @ts-ignore por diversas vezes ao longo do arquivo,                                                        |
+|           de @ts-ignore por diversas vezes ao longo do arquivo.                                                        |
 |                                                                                                                        |
 |                                                                                                                        |
 |                                                                                                                        |
@@ -18,10 +18,6 @@ import {
    FaDownload,
    FaTrash,
    FaCaretDown,
-   FaSquare,
-   FaPlay,
-   FaStar,
-   FaCircle,
    FaEye,
 } from 'react-icons/fa';
 
@@ -33,9 +29,6 @@ import TileLayer from 'ol/layer/Tile';
 import OSM from 'ol/source/OSM';
 import { fromLonLat, toLonLat } from 'ol/proj';
 import VectorLayer from 'ol/layer/Vector';
-import Fill from 'ol/style/Fill';
-import Stroke from 'ol/style/Stroke';
-import RegularShape from 'ol/style/RegularShape';
 import Overlay from 'ol/Overlay';
 import { toStringHDMS } from 'ol/coordinate';
 import Select from 'ol/interaction/Select';
@@ -44,15 +37,22 @@ import LayersContext from '../../../contexts/layers';
 
 import TabsMenu from '../../../components/TabsMenu';
 
+import PolygonMenu from '../../../components/SubtitleComponents/PolygonMenu';
+import StrokeMenu from '../../../components/SubtitleComponents/StrokeMenu';
+import LabelMenu from '../../../components/SubtitleComponents/LabelMenu';
+
 import 'ol/ol.css';
 import 'react-slidedown/lib/slidedown.css';
 
 import './styles.css';
 
+// Interface para ajudar na detecção e controle da funcionalidade de drag da legenda.
 interface DnDProps {
    draggedFrom: number | null;
    draggedTo: number | null;
+
    isDragging: boolean;
+
    originalOrder: VectorLayer[];
    updatedOrder: VectorLayer[];
 }
@@ -64,23 +64,18 @@ export default function WorldMap() {
 
    const [showSubtitle, setShowSubtitle] = useState(true);
 
+   // Flags para controlar qual menu de qual camada está aberto (na legenda).
    const [isPolygonMenuVisible, setIsPolygonMenuVisible] = useState<boolean[]>([]);
    const [isStrokeMenuVisible, setIsStrokeMenuVisible] = useState<boolean[]>([]);
    const [isLabelMenuVisible, setIsLabelMenuVisible] = useState<boolean[]>([]);
+
+   // Estado inicial criado a partir da configuração de visualização das camadas, para que, ao mudar de página, o ícone de visibilidade continue de acordo com a visiblidade da respectiva camada.
    const [isLayerVisible, setIsLayerVisible] = useState<boolean[]>((): boolean[] => {
       const layersVisibilities = [...layers].reverse().map((layer) => layer.getVisible());
       return layersVisibilities;
    });
 
-   // Estados de utilidade. São estados utilizados para indicar ao react que o valor dos inputs foi atualizado (utilizando o set), o que  faz com que o react renderize novamente o componente em questão.
-   // Ex: ao alterar o input de cor (do polígono ou da linha), usamos o setColor para dizer ao react que o input mudou, fazendo com que ele altere o input visualmente e renderize-o novamente.
-   // eslint desativado para evitar os avisos das variáveis inutilizadas
-   // eslint-disable-next-line
-   const [color, setColor] = useState<string>();
-   // eslint-disable-next-line
-   const [size, setSize] = useState<number>();
-   // eslint-disable-next-line
-   const [shape, setShape] = useState<string>();
+   /*----------------------- Estados e funções relativos à funcionalidade de drag das camadas na legenda (referência: https://dev.to/florantara/creating-a-drag-and-drop-list-with-react-hooks-4c0i) -----------------------*/
 
    const initialDnDState: DnDProps = {
       draggedFrom: null,
@@ -93,14 +88,87 @@ export default function WorldMap() {
    // Reverse para correto display na legenda (últimas camadas por cima)
    const [list, setList] = useState([...layers].reverse());
 
+   const handleOnDragStart = useCallback(
+      (event) => {
+         // Remove a visibilidade de todos os menus, para evitar inconsistências no drag.
+         setIsPolygonMenuVisible(isPolygonMenuVisible.fill(false));
+         setIsStrokeMenuVisible(isStrokeMenuVisible.fill(false));
+         setIsLabelMenuVisible(isLabelMenuVisible.fill(false));
+
+         //Acessamos o elemento "data-position" do elemento sendo draggado.
+         const initialPosition = Number(event.currentTarget.dataset.position);
+
+         setDragAndDrop({
+            ...dragAndDrop,
+
+            draggedFrom: initialPosition,
+            isDragging: true,
+            originalOrder: list,
+         });
+
+         // Apenas para o Firefox.
+         event.dataTransfer.setData('text/html', '');
+      },
+      [dragAndDrop, isLabelMenuVisible, isPolygonMenuVisible, isStrokeMenuVisible, list]
+   );
+
+   const handleOnDragOver = useCallback(
+      (event) => {
+         event.preventDefault();
+
+         // Garante que o objeto seja "dragável" apenas sobre a legenda.
+         if (event.currentTarget.tagName === 'LI') {
+            let newList = dragAndDrop.originalOrder;
+            const draggedFrom = dragAndDrop.draggedFrom;
+            const draggedTo = Number(event.currentTarget.dataset.position);
+            const itemDragged = newList[draggedFrom!];
+            const remainingItems = newList.filter((item, index) => index !== draggedFrom);
+
+            // Reposicionamento do elemento na lista.
+            newList = [
+               ...remainingItems.slice(0, draggedTo),
+               itemDragged,
+               ...remainingItems.slice(draggedTo),
+            ];
+
+            // Checagem se os elementos são de fato diferentes, para evitar renders desnecessários.
+            if (draggedTo !== dragAndDrop.draggedTo) {
+               // Atualiza a ordem do array de layers, reposicionando as mesmas em mapa.
+               setLayers([...newList].reverse());
+
+               setDragAndDrop({
+                  ...dragAndDrop,
+
+                  updatedOrder: newList,
+                  draggedTo: draggedTo,
+               });
+            }
+         }
+      },
+      [dragAndDrop, setLayers]
+   );
+
+   const handleOnDrop = useCallback(() => {
+      setDragAndDrop({
+         ...dragAndDrop,
+         draggedFrom: null,
+         draggedTo: null,
+         isDragging: false,
+      });
+   }, [dragAndDrop]);
+
+   /*------------------------------ Funções de controle sobre os menus que estão abertos --------------------------------------------*/
+
    const handlePolygonMenuVisibility = useCallback(
       (index) => {
+         // Alterna a visibilidade apenas do menu referente à camada selecionada visível.
          let polygonMenus = [...isPolygonMenuVisible];
          polygonMenus.fill(false);
 
          polygonMenus[index] = !isPolygonMenuVisible[index];
          setIsPolygonMenuVisible(polygonMenus);
 
+         // Remove a visibilidade dos outros menus.
          setIsStrokeMenuVisible(isStrokeMenuVisible.fill(false));
          setIsLabelMenuVisible(isLabelMenuVisible.fill(false));
       },
@@ -135,8 +203,11 @@ export default function WorldMap() {
       [isLabelMenuVisible, isPolygonMenuVisible, isStrokeMenuVisible]
    );
 
+   /*----------------------------------------- Funções referentes às outras funcionalidades da legenda --------------------------------------------------*/
+
    const handleLayerVisibility = useCallback(
       (index, layer: VectorLayer) => {
+         // Alterna a visibilidade apenas da camada selecionada.
          let layerVisibility = [...isLayerVisible];
 
          layerVisibility[index] = !isLayerVisible[index];
@@ -146,303 +217,16 @@ export default function WorldMap() {
 
          setIsLayerVisible(layerVisibility);
 
+         // Caso a camada selecionada seja referente ao mapa, torna o mapa invisível.
          if (layer.get('id') === 0) {
             if (map?.getTarget() === 'map') map.setTarget('');
             else map?.setTarget('map');
          }
+
+         // Alterna a visibilidade da camada em mapa.
          layer.setVisible(layerVisibility[index]);
       },
       [isLayerVisible, map]
-   );
-
-   const getShape = useCallback((shape: string, size: number) => {
-      const shapes = [
-         { name: 'square', points: 4, radius: size, angle: Math.PI / 4 },
-         { name: 'triangle', points: 3, radius: size, rotation: Math.PI / 4, angle: 0 },
-         { name: 'star', points: 5, radius: size, radius2: size / 3, angle: 0 },
-         { name: 'circle', points: 100, radius: size },
-      ];
-
-      const [correctShape] = shapes.filter((format) => format.name === shape);
-      return correctShape;
-   }, []);
-
-   const handleLayerStyle = useCallback(
-      ({
-         layer,
-         polygonColor,
-         polygonSize,
-         polygonShape,
-         strokeColor,
-         strokeSize,
-         label,
-         labelIdentifier,
-      }: {
-         layer: VectorLayer;
-         polygonColor?: boolean;
-         polygonSize?: boolean;
-         polygonShape?: string;
-         strokeColor?: boolean;
-         strokeSize?: boolean;
-         label?: boolean;
-         labelIdentifier?: number;
-      }) => {
-         const features = layer.getSource().getFeatures();
-         const source = layer.getSource();
-         // Openlayers não disponibiliza métodos para capturar a antiga regularShape da camada, tendo de ser feito um processo manual
-         const { points, angle, rotation, radius, radius2 } = getShape(
-            layer.get('shape'),
-            layer.get('size')
-         );
-
-         if (polygonColor) {
-            const newColor = (document.getElementById(
-               `polygonColorPicker${layer.get('id')}`
-            )! as HTMLInputElement).value;
-
-            features.forEach((feature) => {
-               const oldStyle = feature.getStyle();
-               //@ts-ignore
-               feature.getStyle().getFill().setColor(newColor);
-               //@ts-ignore
-               feature.getStyle().setImage(
-                  new RegularShape({
-                     fill: new Fill({
-                        color: newColor,
-                     }),
-                     //@ts-ignore
-                     stroke: oldStyle.getStroke(),
-                     points,
-                     angle,
-                     rotation,
-                     radius,
-                     radius2,
-                  })
-               );
-            });
-
-            setColor(newColor);
-         }
-
-         if (polygonSize) {
-            const newSize = Number(
-               (document.getElementById(`polygonSizePicker${layer.get('id')}`)! as HTMLInputElement)
-                  .value
-            );
-
-            layer.set('size', newSize);
-
-            features.forEach((feature) => {
-               const oldStyle = feature.getStyle();
-               //@ts-ignore
-               feature.getStyle().setImage(
-                  new RegularShape({
-                     //@ts-ignore
-                     fill: oldStyle.getFill(),
-                     //@ts-ignore
-                     stroke: oldStyle.getStroke(),
-                     points,
-                     angle,
-                     rotation,
-                     radius: newSize,
-                     radius2,
-                  })
-               );
-            });
-
-            setSize(newSize);
-         }
-
-         if (polygonShape) {
-            if (polygonShape === 'square') {
-               const { points, angle, rotation, radius, radius2 } = getShape(
-                  'square',
-                  layer.get('size')
-               );
-
-               layer.set('shape', 'square');
-
-               features.forEach((feature) => {
-                  const oldStyle = feature.getStyle();
-                  //@ts-ignore
-                  feature.getStyle().setImage(
-                     new RegularShape({
-                        //@ts-ignore
-                        fill: oldStyle.getFill(),
-                        //@ts-ignore
-                        stroke: oldStyle.getStroke(),
-                        points,
-                        angle,
-                        rotation,
-                        radius,
-                        radius2,
-                     })
-                  );
-               });
-            }
-            if (polygonShape === 'triangle') {
-               const { points, angle, rotation, radius, radius2 } = getShape(
-                  'triangle',
-                  layer.get('size')
-               );
-
-               layer.set('shape', 'triangle');
-
-               features.forEach((feature) => {
-                  const oldStyle = feature.getStyle();
-                  //@ts-ignore
-                  feature.getStyle().setImage(
-                     new RegularShape({
-                        //@ts-ignore
-                        fill: oldStyle.getFill(),
-                        //@ts-ignore
-                        stroke: oldStyle.getStroke(),
-                        points,
-                        angle,
-                        rotation,
-                        radius,
-                        radius2,
-                     })
-                  );
-               });
-            }
-            if (polygonShape === 'star') {
-               const { points, angle, rotation, radius, radius2 } = getShape(
-                  'star',
-                  layer.get('size')
-               );
-
-               layer.set('shape', 'star');
-
-               features.forEach((feature) => {
-                  const oldStyle = feature.getStyle();
-                  //@ts-ignore
-                  feature.getStyle().setImage(
-                     new RegularShape({
-                        //@ts-ignore
-                        fill: oldStyle.getFill(),
-                        //@ts-ignore
-                        stroke: oldStyle.getStroke(),
-                        points,
-                        angle,
-                        rotation,
-                        radius,
-                        radius2,
-                     })
-                  );
-               });
-            }
-            if (polygonShape === 'circle') {
-               const { points, angle, rotation, radius, radius2 } = getShape(
-                  'circle',
-                  layer.get('size')
-               );
-
-               layer.set('shape', 'circle');
-
-               features.forEach((feature) => {
-                  const oldStyle = feature.getStyle();
-                  //@ts-ignore
-                  feature.getStyle().setImage(
-                     new RegularShape({
-                        //@ts-ignore
-                        fill: oldStyle.getFill(),
-                        //@ts-ignore
-                        stroke: oldStyle.getStroke(),
-                        points,
-                        angle,
-                        rotation,
-                        radius,
-                        radius2,
-                     })
-                  );
-               });
-            }
-
-            setShape(polygonShape);
-         }
-
-         if (strokeColor) {
-            const newColor = (document.getElementById(
-               `strokeColorPicker${layer.get('id')}`
-            )! as HTMLInputElement).value;
-
-            features.forEach((feature) => {
-               const oldStyle = feature.getStyle();
-               //@ts-ignore
-               feature.getStyle().getStroke().setColor(newColor);
-               //@ts-ignore
-               feature.getStyle().setImage(
-                  new RegularShape({
-                     //@ts-ignore
-                     fill: oldStyle.getFill(),
-                     stroke: new Stroke({
-                        color: newColor,
-                        //@ts-ignore
-                        width: oldStyle.getStroke().getWidth(),
-                     }),
-                     points,
-                     angle,
-                     rotation,
-                     radius,
-                     radius2,
-                  })
-               );
-            });
-
-            setColor(newColor);
-         }
-
-         if (strokeSize) {
-            const newSize = Number(
-               (document.getElementById(`strokeSizePicker${layer.get('id')}`)! as HTMLInputElement)
-                  .value
-            );
-
-            features.forEach((feature) => {
-               const oldStyle = feature.getStyle();
-               //@ts-ignore
-               feature.getStyle().getStroke().setWidth(newSize);
-               //@ts-ignore
-               feature.getStyle().setImage(
-                  new RegularShape({
-                     //@ts-ignore
-                     fill: oldStyle.getFill(),
-                     stroke: new Stroke({
-                        //@ts-ignore
-                        color: oldStyle.getStroke().getColor(),
-                        width: newSize,
-                     }),
-                     points,
-                     angle,
-                     rotation,
-                     radius,
-                     radius2,
-                  })
-               );
-            });
-
-            setSize(newSize);
-         }
-
-         if (label) {
-            const newLabel = (document.getElementById(
-               `labelPicker${labelIdentifier}`
-            ) as HTMLLIElement)
-               .getAttribute('value')!
-               .toString();
-
-            features.forEach((feature) => {
-               feature
-                  .getStyle()
-                  //@ts-ignore
-                  .getText()
-                  .setText(newLabel === '' ? '' : feature.get('info')[newLabel].toString());
-            });
-         }
-         source.changed();
-      },
-      [getShape]
    );
 
    const handleLayerDownload = useCallback((layer: VectorLayer) => {
@@ -459,128 +243,47 @@ export default function WorldMap() {
 
    const handleLayerDelete = useCallback(
       (layer: VectorLayer) => {
+         // Caso seja a camada referente ao mapa.
          if (layer.get('id') === 0) {
             map?.setTarget('');
          }
 
+         // Atualiza a legenda.
          const listWithoutDeletedLayer = list.filter(
             (notDeletedLayer) => notDeletedLayer.get('id') !== layer.get('id')
          );
          setList(listWithoutDeletedLayer);
 
+         // Atualiza o array de camadas.
          const layersWithoutDeletedLayer = layers.filter(
             (notDeletedLayer) => notDeletedLayer.get('id') !== layer.get('id')
          );
          setLayers(layersWithoutDeletedLayer);
 
+         // Remove todas as layers para que possam ser renderizadas novamente, para evitar duplicação de adição de camadas.
          for (let layer of layers) map?.removeLayer(layer);
       },
       [layers, list, map, setLayers]
    );
 
-   const handleClosePopup = useCallback(() => {
-      const overlay = map?.getOverlayById('overlay');
-      const select = map?.getInteractions().getArray()[0] as Select;
-      const popupCloser = document.getElementById('popupCloser');
+   /*----------------------------------------- Função que fecha o popup --------------------------------------------------*/
 
+   const handleClosePopup = useCallback(() => {
+      // Seleciona a overlay e o select do mapa, além do X que fecha o popup.
+      const overlay = map?.getOverlayById('overlay');
+      const popupCloser = document.getElementById('popupCloser');
+      const select = map
+         ?.getInteractions()
+         .getArray()
+         .filter((interaction) => interaction.getProperties().id)[0] as Select;
+
+      // Limpa as seleções, apaga o overlay e o X.
       select.getFeatures().clear();
       overlay?.setPosition(undefined);
       popupCloser?.blur();
    }, [map]);
 
-   const handleOnDragStart = useCallback(
-      (event) => {
-         setIsPolygonMenuVisible(isPolygonMenuVisible.fill(false));
-         setIsStrokeMenuVisible(isStrokeMenuVisible.fill(false));
-         setIsLabelMenuVisible(isLabelMenuVisible.fill(false));
-
-         // We'll access the "data-position" attribute
-         // of the current element dragged
-         const initialPosition = Number(event.currentTarget.dataset.position);
-
-         setDragAndDrop({
-            // we spread the previous content
-            // of the hook variable
-            // so we don't override the properties
-            // not being updated
-            ...dragAndDrop,
-
-            draggedFrom: initialPosition, // set the draggedFrom position
-            isDragging: true,
-            originalOrder: list, // store the current state of "list"
-         });
-
-         // Note: this is only for Firefox.
-         // Without it, the DnD won't work.
-         // But we are not using it.
-         event.dataTransfer.setData('text/html', '');
-      },
-      [dragAndDrop, isLabelMenuVisible, isPolygonMenuVisible, isStrokeMenuVisible, list]
-   );
-
-   // Função de utilidade para impedir que o arrasto do input de slider inicie um drag da camada.
-   const handleInputDrag = useCallback((event) => {
-      event.preventDefault();
-      event.stopPropagation();
-   }, []);
-
-   const handleOnDragOver = useCallback(
-      (event) => {
-         event.preventDefault();
-
-         // Garante que o objeto seja "dragável" apenas sobre a legenda
-         if (event.currentTarget.tagName === 'LI') {
-            // Store the content of the original list in this variable that we'll update
-            let newList = dragAndDrop.originalOrder;
-
-            // index of the item being dragged
-            const draggedFrom = dragAndDrop.draggedFrom;
-
-            // index of the drop area being hovered
-            const draggedTo = Number(event.currentTarget.dataset.position);
-
-            // get the element that's at the position of "draggedFrom"
-            const itemDragged = newList[draggedFrom!];
-
-            // filter out the item being dragged
-            const remainingItems = newList.filter((item, index) => index !== draggedFrom);
-
-            // update the list
-            newList = [
-               ...remainingItems.slice(0, draggedTo),
-               itemDragged,
-               ...remainingItems.slice(draggedTo),
-            ];
-
-            // since this event fires many times
-            // we check if the targets are actually
-            // different:
-            if (draggedTo !== dragAndDrop.draggedTo) {
-               setLayers([...newList].reverse());
-
-               setDragAndDrop({
-                  ...dragAndDrop,
-
-                  // save the updated list state
-                  // we will render this onDrop
-                  updatedOrder: newList,
-                  draggedTo: draggedTo,
-               });
-            }
-         }
-      },
-      [dragAndDrop, setLayers]
-   );
-
-   const handleOnDrop = useCallback(() => {
-      // and reset the state of the DnD
-      setDragAndDrop({
-         ...dragAndDrop,
-         draggedFrom: null,
-         draggedTo: null,
-         isDragging: false,
-      });
-   }, [dragAndDrop]);
+   /*----------------------------------------- Função que realiza o update visual da legenda após o drag --------------------------------------------------*/
 
    const isInitialMount = useRef(true);
    useEffect(() => {
@@ -591,10 +294,14 @@ export default function WorldMap() {
       }
    }, [dragAndDrop]);
 
+   /*------------------------------------- Função que monta o mapa e adiciona as funcionalidades de popup e seleção de features ------------------------------------*/
+
    useEffect(() => {
+      // Elementos do popup.
       const container = document.getElementById('popup')!;
       const content = document.getElementById('popupContent')!;
 
+      // Overlay que permite o popup aparecer acima do mapa.
       const overlay = new Overlay({
          id: 'overlay',
          element: container,
@@ -603,8 +310,12 @@ export default function WorldMap() {
             duration: 250,
          },
       });
-      const select = new Select();
 
+      // Seleção das features.
+      const select = new Select();
+      select.set('id', 'select');
+
+      // O mapa em si.
       const initialMap = new Map({
          target: 'map',
          layers: [
@@ -617,9 +328,11 @@ export default function WorldMap() {
             zoom: 4.5,
          }),
          overlays: [overlay],
-         interactions: [select],
       });
 
+      initialMap?.addInteraction(select);
+
+      // Interação de clique para gerar o popup.
       initialMap.on('singleclick', function (event) {
          const coordinate = event.coordinate;
          const hdms = toStringHDMS(toLonLat(coordinate));
@@ -651,6 +364,7 @@ export default function WorldMap() {
       // eslint-disable-next-line react-hooks/exhaustive-deps
    }, []);
 
+   /*--------------------------------- Função que realiza a renderização das layers no mapa ------------------------------------*/
    useEffect(() => {
       for (let layer of layers) {
          setList([...layers].reverse());
@@ -760,99 +474,7 @@ export default function WorldMap() {
                                           <FaCaretDown />
                                        </button>
                                        {isPolygonMenuVisible[index] && (
-                                          <div className="polygonMenu menu container">
-                                             <input
-                                                type="color"
-                                                id={`polygonColorPicker${layer.get('id')}`}
-                                                className="colorPicker"
-                                                value={layer
-                                                   .getSource()
-                                                   .getFeatures()[0]
-                                                   .getStyle()
-                                                   //@ts-ignore
-                                                   .getFill()
-                                                   .getColor()}
-                                                onChange={() =>
-                                                   handleLayerStyle({ layer, polygonColor: true })
-                                                }
-                                             />
-                                             <input
-                                                id={`polygonSizePicker${layer.get('id')}`}
-                                                type="range"
-                                                className="sizePicker"
-                                                min={5}
-                                                max={15}
-                                                step={0.1}
-                                                value={layer.get('size')}
-                                                onChange={() =>
-                                                   handleLayerStyle({ layer, polygonSize: true })
-                                                }
-                                                draggable="true"
-                                                onDragStart={handleInputDrag}
-                                             />
-                                             <div className="polygonShapesPicker container">
-                                                <button
-                                                   className={
-                                                      layer.get('shape') === 'square'
-                                                         ? 'selectedShape shape'
-                                                         : 'shape'
-                                                   }
-                                                   onClick={() =>
-                                                      handleLayerStyle({
-                                                         layer,
-                                                         polygonShape: 'square',
-                                                      })
-                                                   }
-                                                >
-                                                   <FaSquare />
-                                                </button>
-                                                <button
-                                                   className={
-                                                      layer.get('shape') === 'triangle'
-                                                         ? 'selectedShape shape'
-                                                         : 'shape'
-                                                   }
-                                                   onClick={() =>
-                                                      handleLayerStyle({
-                                                         layer,
-                                                         polygonShape: 'triangle',
-                                                      })
-                                                   }
-                                                >
-                                                   <FaPlay />
-                                                </button>
-                                                <button
-                                                   className={
-                                                      layer.get('shape') === 'star'
-                                                         ? 'selectedShape shape'
-                                                         : 'shape'
-                                                   }
-                                                   onClick={() =>
-                                                      handleLayerStyle({
-                                                         layer,
-                                                         polygonShape: 'star',
-                                                      })
-                                                   }
-                                                >
-                                                   <FaStar />
-                                                </button>
-                                                <button
-                                                   className={
-                                                      layer.get('shape') === 'circle'
-                                                         ? 'selectedShape shape'
-                                                         : 'shape'
-                                                   }
-                                                   onClick={() =>
-                                                      handleLayerStyle({
-                                                         layer,
-                                                         polygonShape: 'circle',
-                                                      })
-                                                   }
-                                                >
-                                                   <FaCircle />
-                                                </button>
-                                             </div>
-                                          </div>
+                                          <PolygonMenu layer={layer} />
                                        )}
                                     </div>
 
@@ -864,46 +486,7 @@ export default function WorldMap() {
                                           <FaGripLines />
                                           <FaCaretDown />
                                        </button>
-                                       {isStrokeMenuVisible[index] && (
-                                          <div className="strokeMenu menu container">
-                                             <input
-                                                type="color"
-                                                id={`strokeColorPicker${layer.get('id')}`}
-                                                className="colorPicker" //
-                                                value={layer
-                                                   .getSource()
-                                                   .getFeatures()[0]
-                                                   .getStyle()
-                                                   //@ts-ignore
-                                                   .getStroke()
-                                                   .getColor()}
-                                                onChange={() =>
-                                                   handleLayerStyle({ layer, strokeColor: true })
-                                                }
-                                             />
-                                             <input
-                                                id={`strokeSizePicker${layer.get('id')}`}
-                                                type="range"
-                                                className="sizePicker"
-                                                min={1}
-                                                max={5}
-                                                step={0.1}
-                                                //@ts-ignore
-                                                value={layer
-                                                   .getSource()
-                                                   .getFeatures()[0]
-                                                   .getStyle()
-                                                   //@ts-ignore
-                                                   .getStroke()
-                                                   .getWidth()}
-                                                onChange={() =>
-                                                   handleLayerStyle({ layer, strokeSize: true })
-                                                }
-                                                draggable="true"
-                                                onDragStart={handleInputDrag}
-                                             />
-                                          </div>
-                                       )}
+                                       {isStrokeMenuVisible[index] && <StrokeMenu layer={layer} />}
                                     </div>
 
                                     <div className="customizeLabel customization">
@@ -913,45 +496,7 @@ export default function WorldMap() {
                                        >
                                           Rótulo <FaCaretDown />
                                        </button>
-                                       {isLabelMenuVisible[index] && (
-                                          <ul className="labelMenu menu container">
-                                             <li
-                                                id={`labelPicker-1`}
-                                                className="label"
-                                                value={''}
-                                                style={{ color: '#A83232' }}
-                                                onClick={() =>
-                                                   handleLayerStyle({
-                                                      layer,
-                                                      label: true,
-                                                      labelIdentifier: -1,
-                                                   })
-                                                }
-                                             >
-                                                {' '}
-                                                VAZIO{' '}
-                                             </li>
-                                             {layer
-                                                .get('labels')
-                                                .map((label: string, index: number) => (
-                                                   <li
-                                                      key={index}
-                                                      id={`labelPicker${index}`}
-                                                      className="label"
-                                                      value={label}
-                                                      onClick={() =>
-                                                         handleLayerStyle({
-                                                            layer,
-                                                            label: true,
-                                                            labelIdentifier: index,
-                                                         })
-                                                      }
-                                                   >
-                                                      {label}
-                                                   </li>
-                                                ))}
-                                          </ul>
-                                       )}
+                                       {isLabelMenuVisible[index] && <LabelMenu layer={layer} />}
                                     </div>
 
                                     {isLayerVisible[index] ||

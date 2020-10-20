@@ -9,7 +9,7 @@ const pool = new Pool({
    password: 'ge0sq1',
 
    max: 10,
-   idleTimeoutMillis: 0,
+   idleTimeoutMillis: 100000000,
 });
 
 pool.on('error', (err, client) => {

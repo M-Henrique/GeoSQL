@@ -1,44 +1,16 @@
 import { Router } from 'express';
 
-import pool from '../database';
-
-import QueryService from '../services/QueryService';
+import TablesController from '../controllers/TablesController';
+import QueryController from '../controllers/QueryController';
 
 const routes = Router();
+const tablesController = new TablesController();
+const queryController = new QueryController();
 
 // Todas as tabelas do banco
-routes.get('/query', async (request, response) => {
-   try {
-      const client = await pool.connect();
-
-      const { rows: tablesColumns } = await client.query(
-         `SELECT DISTINCT table_name as table, column_name as name FROM information_schema.columns WHERE table_schema = 'geodata' ORDER BY table_name;`
-      );
-
-      const { rows: tables } = await client.query(
-         `SELECT DISTINCT table_name as name FROM information_schema.columns WHERE table_schema = 'geodata' ORDER BY table_name;`
-      );
-
-      client.release();
-
-      return response.json({ tablesColumns, tables });
-   } catch (error) {
-      return response.status(400).json(error.message);
-   }
-});
+routes.get('/query', tablesController.index);
 
 // Resultados da query realizada
-routes.post('/results', async (request, response) => {
-   const query = request.body.query;
-
-   try {
-      const queryService = new QueryService();
-      const { rows } = await queryService.execute(query);
-
-      return response.json(rows);
-   } catch (error) {
-      return response.json(error.message);
-   }
-});
+routes.post('/results', queryController.show);
 
 export default routes;

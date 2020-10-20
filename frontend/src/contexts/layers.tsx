@@ -1,3 +1,5 @@
+/* Contexto que armazena o vetor de layers, juntamente de suas informações e características, que serão mostradas em mapa. */
+
 import React, {
    createContext,
    Dispatch,
@@ -9,13 +11,13 @@ import React, {
    useState,
 } from 'react';
 
-import VectorLayer from 'ol/layer/Vector';
 import VectorSource from 'ol/source/Vector';
+import VectorLayer from 'ol/layer/Vector';
 import GeoJSON from 'ol/format/GeoJSON';
 import Style from 'ol/style/Style';
 import Fill from 'ol/style/Fill';
-import RegularShape from 'ol/style/RegularShape';
 import Stroke from 'ol/style/Stroke';
+import RegularShape from 'ol/style/RegularShape';
 import Text from 'ol/style/Text';
 import { Feature } from 'ol';
 import Geometry from 'ol/geom/Geometry';
@@ -32,23 +34,27 @@ const LayersContext = createContext<ContextData>({} as ContextData);
 export const LayersProvider: React.FC = ({ children }) => {
    const { query, results, hasGeomValue } = useContext(QueryContext);
 
+   // IDs das camadas (para facilitar identificação de cada uma).
    const [id, setId] = useState(0);
+   // Vetor de camadas em si.
    const [layers, setLayers] = useState<VectorLayer[]>([]);
 
    //Função auxiliar para geração randômica da cor inicial
    const getRandomColor = useCallback(() => {
       const letters = '0123456789ABCDEF';
       let color = [];
+
       for (let i = 0; i < 2; i++) {
          color.push('#');
          for (let j = 0; j < 6; j++) {
             color[i] += letters[Math.floor(Math.random() * 16)];
          }
       }
+
       return color;
    }, []);
 
-   // Função auxiliar para geração randômica do formato inicial da camada
+   // Função auxiliar para geração randômica do formato inicial da camada (caso aplicável).
    const getRandomShape = useCallback(() => {
       const shapes = [
          { shape: 'square', points: 4, radius: 15, angle: Math.PI / 4 },
@@ -60,10 +66,10 @@ export const LayersProvider: React.FC = ({ children }) => {
       return shapes[Math.floor(Math.random() * shapes.length)];
    }, []);
 
-   // Flag utilizada para demarcar a primeira renderização
+   // Flag utilizada para demarcar a primeira renderização.
    const isInitialMount = useRef(true);
    useEffect(() => {
-      // Pseudo-layer do mapa (usada para indexação da legenda)
+      // Pseudo-layer do mapa (usada para indexação da legenda).
       if (isInitialMount.current) {
          setLayers([
             new VectorLayer({
@@ -76,14 +82,12 @@ export const LayersProvider: React.FC = ({ children }) => {
 
          isInitialMount.current = false;
       } else if (hasGeomValue) {
-         // Armazenamento do geojson de cada resultado, para uso no Objeto que será o download da camada
-         const resultsGeoJSON = results.map((result: any) => JSON.parse(result.geojson));
-
-         // Geração das features individualmente para que seja possível armazenar em cada uma as informações referentes à própria
+         // Geração das features individualmente para que seja possível armazenar em cada uma as informações referentes à própria.
          let features: Feature<Geometry>[] = [];
          results.forEach((result: any, index) => {
             result.geojson = JSON.parse(result.geojson);
             features.push(
+               // Nova feature gerada a partir da leitura do geoJSON do resultado.
                new GeoJSON().readFeature(result.geojson, {
                   featureProjection: 'EPSG:3857',
                })
@@ -92,20 +96,23 @@ export const LayersProvider: React.FC = ({ children }) => {
             delete result.geom;
             delete result.geojson;
 
+            // Armazenamento das informações de cada feature.
             features[index].set('info', result);
          });
 
-         // A fonte (source) das informações para geração da camada
+         // A fonte (source) das informações para geração da camada.
          const vectorSource = new VectorSource({
+            // Features da fonte serão aquelas geradas anteriormente, transformadas em apenas um objeto geoJSON.
             features: new GeoJSON().readFeatures(new GeoJSON().writeFeaturesObject(features), {
                featureProjection: 'EPSG:3857',
             }),
          });
 
-         // Estilização randômica das features
+         // Obtenção das cores e formatos randômicos iniciais.
          const [colorFill, colorStroke] = getRandomColor();
          const { shape, points, angle, rotation, radius, radius2 } = getRandomShape();
 
+         // Estilização das features.
          vectorSource.getFeatures().forEach((feature, index) => {
             feature.setStyle(
                new Style({
@@ -141,13 +148,16 @@ export const LayersProvider: React.FC = ({ children }) => {
             );
          });
 
-         // Captação dos rótulos (colunas) da query feita para exibição no menu de rótulos
+         // Captação dos rótulos (colunas) da query feita para exibição no menu de rótulos.
          let layerLabels = null;
          if (results.length > 0) {
             layerLabels = Object.keys(results[0]);
          }
 
-         // Captação do objeto GeoJSON representando a camada a ser renderizada, para posterior utilização no download das camadas
+         // Armazenamento do geojson de cada resultado, para uso no objeto que será o download da camada.
+         const resultsGeoJSON = results.map((result: any) => result.geojson);
+
+         // Captação do objeto GeoJSON representando a camada a ser renderizada, para posterior utilização no download das camadas.
          const geoJSONObject = {
             type: 'FeatureCollection',
             features: [...resultsGeoJSON],
@@ -155,18 +165,21 @@ export const LayersProvider: React.FC = ({ children }) => {
 
          // A layer em si
          const vectorLayer = new VectorLayer({
-            // Tipagem desnecessária nesse caso (openlayers reconhece atributos personalizados automaticamente)
+            // Tipagem desnecessária nesse caso (openlayers reconhece atributos personalizados automaticamente).
             //@ts-ignore
             id,
+            // Query realizada pelo usuário (para exibição ao manter o mouse em cima da camada, na legenda).
             query,
             labels: layerLabels,
             geoJson: geoJSONObject,
+            // Armazenamento do formato da camada (caso aplicável).
             shape,
+            // Armazenamento do tamanho das features da camada (caso aplicável).
             size: radius,
             source: vectorSource,
          });
 
-         // Atualização do vetor de layers e do contador de ID das layers
+         // Atualização do vetor de layers e do contador de ID das layers.
          setLayers((oldLayers) => [...oldLayers, vectorLayer]);
          setId((id) => id + 1);
       }

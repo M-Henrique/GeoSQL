@@ -18,7 +18,7 @@ export default function About() {
                <strong>Matheus Henrique</strong>, alunos de Iniciação Científica do Departamento de
                Ciência da Computadação da Universidade Federal de Minas Gerais. Este trabalho foi
                realizado sob a orientação do Professor Dr. Clodoveu Davis Jr. e financiado pelo
-               PIBIC/CNPq para os próximos alunos da Disciplina de Banco de Dados Geográficos e de
+               PIBIC/CNPq para os próximos alunos da Disciplina de Banco de Dados Geográficos e
                outras disciplinas correlatas.
             </p>
             <br />

@@ -1,4 +1,4 @@
-import React, { useState, useContext, useCallback } from 'react';
+import React, { useContext, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 
 import { FiSearch, FiSave, FiHelpCircle } from 'react-icons/fi';
@@ -12,30 +12,19 @@ import TabsMenu from '../../../components/TabsMenu';
 import './styles.css';
 
 export default function Query() {
-   const { query, submitQuery, setQueryValue } = useContext(QueryContext);
+   const { query, setQuery, submitQuery } = useContext(QueryContext);
    const { tables, tablesColumns, loading } = useContext(TablesContext);
 
-   const [queryText, setQueryText] = useState(query);
+   // Função que submete a consulta do usuário.
+   const handleSubmitQuery = useCallback(async () => {
+      try {
+         await submitQuery(query);
+      } catch {
+         return;
+      }
+   }, [query, submitQuery]);
 
-   const handleQueryTextChange = useCallback(
-      (query: string) => {
-         setQueryText(query);
-         setQueryValue(query);
-      },
-      [setQueryValue]
-   );
-
-   const handleSubmitQuery = useCallback(
-      async (queryText: string) => {
-         try {
-            await submitQuery(queryText);
-         } catch {
-            return;
-         }
-      },
-      [submitQuery]
-   );
-
+   // Função que salva a consulta em um arquivo txt.
    const handleSaveQuery = useCallback(() => {
       const query = document.getElementById('query')!.innerHTML;
 
@@ -92,8 +81,8 @@ export default function Query() {
                      id="query"
                      placeholder="SELECT * FROM ..."
                      autoFocus
-                     value={queryText}
-                     onChange={(e) => handleQueryTextChange(e.target.value)}
+                     value={query}
+                     onChange={(e) => setQuery(e.target.value)}
                   ></textarea>
                   <small>
                      Obs: ao realizar consultas com funções geográficas, como ST_Union por exemplo,
@@ -107,9 +96,7 @@ export default function Query() {
                      to="/results"
                      id="submitQuery"
                      className="queryButton"
-                     onClick={() => {
-                        handleSubmitQuery(queryText);
-                     }}
+                     onClick={handleSubmitQuery}
                   >
                      <FiSearch className="queryIcon" />
                      Pesquisar

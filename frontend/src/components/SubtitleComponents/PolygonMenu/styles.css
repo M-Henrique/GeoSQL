@@ -1,0 +1,41 @@
+/* Estilização presente no arquivo do mapa. */
+
+#mapContainer
+   #mainContainer
+   #subtitleContainer
+   #layersContainer
+   .layer
+   .buttons
+   .customizePolygon
+   .polygonMenu
+   .polygonShapesPicker {
+   align-items: center;
+}
+
+#mapContainer
+   #mainContainer
+   #subtitleContainer
+   #layersContainer
+   .layer
+   .buttons
+   .customizePolygon
+   .polygonMenu
+   .polygonShapesPicker
+   .shape {
+   width: 3.5rem;
+   margin: 0 0.5rem;
+   padding: 0;
+}
+
+#mapContainer
+   #mainContainer
+   #subtitleContainer
+   #layersContainer
+   .layer
+   .buttons
+   .customizePolygon
+   .polygonMenu
+   .polygonShapesPicker
+   .selectedShape {
+   background: var(--color-secondary-dark);
+}

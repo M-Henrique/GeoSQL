@@ -14,8 +14,13 @@ import './styles.css';
 export default function Landing() {
    const { getTables } = useContext(TablesContext);
 
+   // Função para recuperar as tabelas do banco.
    const handleGetTables = useCallback(async () => {
-      await getTables();
+      try {
+         await getTables();
+      } catch {
+         return;
+      }
    }, [getTables]);
 
    return (

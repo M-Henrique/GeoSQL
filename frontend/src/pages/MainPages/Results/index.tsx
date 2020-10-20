@@ -18,59 +18,71 @@ import './styles.css';
 export default function Results() {
    const { results, loading } = useContext(QueryContext);
 
-   const handleSaveResults = useCallback(
-      (format: string) => {
-         const content = JSON.stringify(results);
+   // Funções que salvam os resultados em diferentes formatos.
+   const handleSaveResultsJson = useCallback(() => {
+      const content = JSON.stringify(results);
 
-         let file = null;
-         let fileName = '';
-         
-         switch (format) {
-            case 'json':
-               file = new Blob([content], { type: 'application/json' });
-               fileName = `Results.json`;
-               break;
-            case 'pdf':
-               file = new jsPDF();
-               autoTable(file, { html: '#resultsTable', styles: { lineWidth: 0.2 } });
-               file.save('Results.pdf');
-               return;
-            case 'txt':
-               file = new Blob([content], { type: 'text/plain' });
-               fileName = `Results.txt`;
-               break;
-            case 'csv':
-               const table = document.getElementById('resultsTable') as HTMLTableElement;
-               let csvContent = '';
+      const file = new Blob([content], { type: 'application/json' });
+      const fileName = `Results.json`;
 
-               for (let i = 0, row; (row = table.rows[i]); i++) {
-                  for (let j = 0, col; (col = row.cells[j]); j++) {
-                     if (j === row.cells.length - 1) {
-                        csvContent += col.innerHTML.toString();
-                        continue;
-                     }
+      const downloadUrl = URL.createObjectURL(file);
 
-                     csvContent += `${col.innerHTML.toString()}, `;
-                  }
+      const downloadLink = document.createElement('a');
+      downloadLink.download = fileName;
+      downloadLink.href = downloadUrl;
+      downloadLink.click();
+   }, [results]);
 
-                  csvContent += '\n';
-               }
+   const handleSaveResultsPdf = useCallback(() => {
+      const file = new jsPDF();
 
-               file = new Blob([csvContent], { type: 'text/plain' });
-               fileName = `Results.csv`;
-               break;
-            default:
-               break;
+      autoTable(file, { html: '#resultsTable', styles: { lineWidth: 0.2 } });
+
+      file.save('Results.pdf');
+   }, []);
+
+   const handleSaveResultsTxt = useCallback(() => {
+      const content = JSON.stringify(results);
+
+      const file = new Blob([content], { type: 'text/plain' });
+      const fileName = `Results.txt`;
+
+      const downloadUrl = URL.createObjectURL(file);
+
+      const downloadLink = document.createElement('a');
+      downloadLink.download = fileName;
+      downloadLink.href = downloadUrl;
+      downloadLink.click();
+   }, [results]);
+
+   const handleSaveResultsCsv = useCallback(() => {
+      const table = document.getElementById('resultsTable') as HTMLTableElement;
+      let csvContent = '';
+
+      // Formatação CSV.
+      for (let i = 0, row; (row = table.rows[i]); i++) {
+         for (let j = 0, col; (col = row.cells[j]); j++) {
+            if (j === row.cells.length - 1) {
+               csvContent += col.innerHTML.toString();
+               continue;
+            }
+
+            csvContent += `${col.innerHTML.toString()}, `;
          }
-         const downloadUrl = URL.createObjectURL(file);
 
-         const downloadLink = document.createElement('a');
-         downloadLink.download = fileName;
-         downloadLink.href = downloadUrl;
-         downloadLink.click();
-      },
-      [results]
-   );
+         csvContent += '\n';
+      }
+
+      const file = new Blob([csvContent], { type: 'text/plain' });
+      const fileName = `Results.csv`;
+
+      const downloadUrl = URL.createObjectURL(file);
+
+      const downloadLink = document.createElement('a');
+      downloadLink.download = fileName;
+      downloadLink.href = downloadUrl;
+      downloadLink.click();
+   }, []);
 
    return (
       <div id="resultsContainer" className="firstContainer container">
@@ -80,19 +92,19 @@ export default function Results() {
 
          <div id="mainContainer" className="container">
             <aside className="container">
-               <button className="saveResults" onClick={() => handleSaveResults('json')}>
+               <button className="saveResults" onClick={handleSaveResultsJson}>
                   <FiDownload className="saveIcon" />
                   JSON
                </button>
-               <button className="saveResults" onClick={() => handleSaveResults('pdf')}>
+               <button className="saveResults" onClick={handleSaveResultsPdf}>
                   <FiDownload className="saveIcon" />
                   PDF
                </button>
-               <button className="saveResults" onClick={() => handleSaveResults('txt')}>
+               <button className="saveResults" onClick={handleSaveResultsTxt}>
                   <FiDownload className="saveIcon" />
                   TXT
                </button>
-               <button className="saveResults" onClick={() => handleSaveResults('csv')}>
+               <button className="saveResults" onClick={handleSaveResultsCsv}>
                   <FiDownload className="saveIcon" />
                   CSV
                </button>
