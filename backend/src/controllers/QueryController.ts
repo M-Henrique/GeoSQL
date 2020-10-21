@@ -28,7 +28,7 @@ export default class QueryController {
 
          client.release();
          // REMOVER AO SUBIR PRA PRODUÇÃO
-         // await pool.end();
+         await pool.end();
 
          return response.json(results.rows);
       } catch (error) {

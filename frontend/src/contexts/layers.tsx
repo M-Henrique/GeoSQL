@@ -82,6 +82,9 @@ export const LayersProvider: React.FC = ({ children }) => {
 
          isInitialMount.current = false;
       } else if (hasGeomValue) {
+         // Armazenamento do geojson de cada resultado, para uso no objeto que será o download da camada.
+         const resultsGeoJSON = results.map((result: any) => result.geojson);
+
          // Geração das features individualmente para que seja possível armazenar em cada uma as informações referentes à própria.
          let features: Feature<Geometry>[] = [];
          results.forEach((result: any, index) => {
@@ -153,9 +156,6 @@ export const LayersProvider: React.FC = ({ children }) => {
          if (results.length > 0) {
             layerLabels = Object.keys(results[0]);
          }
-
-         // Armazenamento do geojson de cada resultado, para uso no objeto que será o download da camada.
-         const resultsGeoJSON = results.map((result: any) => result.geojson);
 
          // Captação do objeto GeoJSON representando a camada a ser renderizada, para posterior utilização no download das camadas.
          const geoJSONObject = {
