@@ -7,6 +7,8 @@ import { AxiosRequestConfig } from 'axios';
 import api from '../services/api';
 
 interface ContextData {
+   firstTime: boolean;
+
    query: string;
    setQuery: Dispatch<SetStateAction<string>>;
    submitQuery(query: string): Promise<void>;
@@ -25,6 +27,8 @@ interface Query extends AxiosRequestConfig {
 const QueryContext = createContext<ContextData>({} as ContextData);
 
 export const QueryProvider: React.FC = ({ children }) => {
+   // Flag para identificar se o usuário ainda não fez nenhuma consulta.
+   const [firstTime, setFirstTime] = useState(true);
    // Consulta realizada pelo usuário.
    const [query, setQuery] = useState('');
    // Resultados obtidos da consulta.
@@ -35,31 +39,40 @@ export const QueryProvider: React.FC = ({ children }) => {
    const [loading, setLoading] = useState(false);
 
    // Função que realiza a chamda à api, passando a query realizada pelo usuário.
-   const submitQuery = useCallback(async (query: string) => {
-      try {
-         setLoading(true);
+   const submitQuery = useCallback(
+      async (query: string) => {
+         try {
+            setLoading(true);
 
-         const { data } = await api.post('/results', {
-            query,
-         } as Query);
+            if (firstTime) {
+               setFirstTime(false);
+            }
 
-         // Checa se os objetos recebidos em resposta possuem a propriedade geométrica, e marca a flag.
-         if (data[0].hasOwnProperty('geojson')) {
-            setHasGeomValue(true);
-         } else {
-            setHasGeomValue(false);
+            const { data } = await api.post('/results', {
+               query,
+            } as Query);
+
+            // Checa se os objetos recebidos em resposta possuem a propriedade geométrica, e marca a flag.
+            if (data[0]) {
+               if (data[0].hasOwnProperty('geojson')) {
+                  setHasGeomValue(true);
+               } else {
+                  setHasGeomValue(false);
+               }
+            }
+
+            setResults(data);
+            setLoading(false);
+         } catch {
+            return;
          }
-
-         setResults(data);
-         setLoading(false);
-      } catch {
-         return;
-      }
-   }, []);
+      },
+      [firstTime]
+   );
 
    return (
       <QueryContext.Provider
-         value={{ query, setQuery, submitQuery, results, hasGeomValue, loading }}
+         value={{ firstTime, query, setQuery, submitQuery, results, hasGeomValue, loading }}
       >
          {children}
       </QueryContext.Provider>

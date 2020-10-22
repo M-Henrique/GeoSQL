@@ -16,7 +16,7 @@ import TabsMenu from '../../../components/TabsMenu';
 import './styles.css';
 
 export default function Results() {
-   const { results, loading } = useContext(QueryContext);
+   const { firstTime, results, loading } = useContext(QueryContext);
 
    // Funções que salvam os resultados em diferentes formatos.
    const handleSaveResultsJson = useCallback(() => {
@@ -114,10 +114,15 @@ export default function Results() {
                   <div id="loadingContainer" className="container">
                      <ClipLoader color={'var(--color-primary-dark)'} size={220} />
                   </div>
-               ) : results.length <= 0 ? (
+               ) : firstTime ? (
                   <div id="firstTimeContainer" className="container">
                      <p>Nenhum resultado a ser exibido até o momento.</p>{' '}
                      <p>Vá até a aba "consulta" e realize uma consulta.</p>{' '}
+                  </div>
+               ) : results.length <= 0 ? (
+                  <div id="firstTimeContainer" className="container">
+                     <p>Nenhum resultado a ser exibido.</p>{' '}
+                     <p>Verifique a consulta e tente novamente.</p>{' '}
                   </div>
                ) : typeof results === 'string' ? (
                   <div id="errorContainer" className="container">
