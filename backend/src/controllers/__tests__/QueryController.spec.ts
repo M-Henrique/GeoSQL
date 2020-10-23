@@ -3,7 +3,7 @@ import request from 'supertest';
 import pool from '../../database';
 import app from './TestApp';
 
-describe('TablesController', () => {
+describe('QueryController', () => {
    afterAll(async () => {
       await pool.end();
    });
