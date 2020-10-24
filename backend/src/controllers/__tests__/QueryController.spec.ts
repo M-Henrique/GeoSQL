@@ -4,10 +4,6 @@ import pool from '../../database';
 import app from './TestApp';
 
 describe('QueryController', () => {
-   afterAll(async () => {
-      await pool.end();
-   });
-
    it('should execute a non geometric query', async () => {
       const query = `select sigla from estado where sigla='MG'`;
       const { body } = await request(app).post('/results').send({ query });

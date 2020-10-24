@@ -4,10 +4,6 @@ import pool from '../../database';
 import app from './TestApp';
 
 describe('TablesController', () => {
-   afterAll(async () => {
-      await pool.end();
-   });
-
    it('should retrieve tables from the database', async () => {
       const { body } = await request(app).get('/query');
 

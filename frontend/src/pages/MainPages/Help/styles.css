@@ -25,6 +25,8 @@
 }
 
 #helpContainer .imgTutorial {
+   max-width: 100rem;
+
    align-self: center;
 }
 

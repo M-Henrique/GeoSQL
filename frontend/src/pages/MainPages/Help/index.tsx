@@ -1,8 +1,13 @@
 import React from 'react';
 
+import Landing from './Prints/Landing.png';
+import Query from './Prints/Query.png';
+import Results from './Prints/Results.png';
+import Map from './Prints/Map.png';
+
 import './styles.css';
 
-export default function Query() {
+export default function Help() {
    return (
       <div id="helpContainer" className="firstContainer container">
          <h5 className="titleTutorial">OLÁ!</h5>
@@ -13,27 +18,32 @@ export default function Query() {
             correto funcionamento da mesma. Vamos lá!
          </p>
          <p>Ao acessar o sistema, você será defrontado com a seguinte página: </p>
+         <br />
 
-         <img className="imgTutorial" src="imagens/Página_Inicial.png" alt="Página Inicial" />
+         <img className="imgTutorial" src={Landing} alt="Página Inicial" />
 
+         <br />
          <p>
             Aqui você pode acessar as informações referentes à criação e desenvolvimento do GeoSQL,
             ou também visualizar os contatos dos principais responsáveis pelo projeto, assim como
             acessar a página do mesmo no GitHub. Quando estiver pronto, selecione o banco de dados
             ao qual deseja conectar-se e clique em Iniciar. Você será levado à página abaixo:{' '}
          </p>
+         <br />
 
-         <img className="imgTutorial" src="imagens/Página_Consulta.png" alt="Página de Consulta" />
+         <img className="imgTutorial" src={Query} alt="Página de Consulta" />
 
+         <br />
          <p>
             Temos várias informações na tela, então destrincharemo-as aos poucos para melhor
             entendimento:{' '}
          </p>
          <ol className="listTutorial">
+            <li>Clique na logo caso deseje voltar à tela principal.</li>
             <li>
                Nesta área, temos as abas que compõem o sistema. "Consulta" refere-se à aba atual,
                "Tabela" mostra os resultados discretos obtidos, assim como opções de armazenamento,
-               e, por fim, "Mapa" é a aba responsável por demonstrar os resultados geograficamente,
+               e. Por fim, "Mapa" é a aba responsável por demonstrar os resultados geograficamente,
                com várias opções de personalização das camadas. Falaremos mais das duas outras abas
                em breve.
             </li>
@@ -42,7 +52,7 @@ export default function Query() {
          <h5 className="titleTutorial">
             <strong>ABA "CONSULTA"</strong>
          </h5>
-         <ol className="listTutorial" start={2}>
+         <ol className="listTutorial" start={3}>
             <li>
                Aqui encontram-se as tabelas do banco de dados escolhido. A apresentação das mesmas
                visa dar suporte e facilitar na confecção das consultas.
@@ -52,18 +62,16 @@ export default function Query() {
                "Avisos" para algumas diretivas de boa utilização do sistema).
             </li>
             <li>
-               Ao clicar neste botão, sua consulta será enviada ao banco de dados e os resultados,
-               se disponíveis, retornados.
+               Botões que, de cima para baixo, realiza: o envio da consulta, o download do conteúdo
+               digitado, e a navegação até a página em que se encontra.
             </li>
-            <li>Botão que realiza o armazenamento da consulta criada, em formato txt.</li>
-            <li>Acessa a página em que você se encontra.</li>
          </ol>
 
          <h5 className="titleTutorial">
             <strong>ABA "TABELA"</strong>
          </h5>
 
-         <img className="imgTutorial" src="imagens/Página_Tabela.png" alt="Página de Resultados" />
+         <img className="imgTutorial" src={Results} alt="Página de Resultados" />
 
          <ol className="listTutorial">
             <li>
@@ -80,39 +88,21 @@ export default function Query() {
             <strong>ABA "MAPA"</strong>
          </h5>
 
-         <img className="imgTutorial" src="imagens/Página_Mapa.png" alt="Página do Mapa" />
+         <img className="imgTutorial" src={Map} alt="Página do Mapa" />
 
+         <br />
          <ol className="listTutorial">
+            <li>Controles que permitem o ajuste de zoom do mapa (pode ser feito com scroll).</li>
             <li>
-               Esta barra serve para ajustar o nível de zoom do mapa (pode ser feito através do
-               scroll do mouse).
+               Botões que, da esquerda pra direita, permitem: a customização dos polígonos (cor de
+               preenchimento, tamanho e formato), customização das linhas (cor e grossura), escolha
+               do rótulo (coluna) cujos valores serão exibidos no mapa, alternar a visibilidade da
+               camada, baixar o geoJSON que gera a camada, e deletar a camada.
             </li>
-            <li>
-               Botão referente à apresentação da legenda de camadas (clique para alternar entre
-               visível e não visível).
-            </li>
-            <li>
-               Menu que permite escolher a cor de preenchimento, o tamanho (em caso de pontos) e o
-               formato (novamente, em caso de pontos) da geometria.
-            </li>
-            <li>
-               Menu que permite escolher a cor e a grossura das linhas de contorno das geometrias.
-            </li>
-            <li>
-               Menu que permite escolher o rótulo (coluna) cujos valores serão exibidos no mapa.
-            </li>
-            <li>Botão que permite alternar a visibilidade da camada.</li>
-            <li>Botão que realiza o download e armazenamento das informações da camada.</li>
-            <li>Botão que deleta a camada do mapa.</li>
-            <li>
-               Número* que representa a posição em que a camada foi gerada desde a abertura ou
-               última atualização de página do sistema.
-            </li>
+            <br />
+            Importante mencionar que os itens das camadas podem ser reorganizados na lista,
+            alterando sua apresentação em mapa.
          </ol>
-         <small>
-            *Camada 0 refere-se à camada do mapa em si, e, se deletada por acidente, faz-se
-            necessário atualizar a página para gerá-la novamente.
-         </small>
 
          <h5 className="titleTutorial" id="warning">
             AVISOS!!!
