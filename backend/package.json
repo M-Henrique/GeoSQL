@@ -6,7 +6,8 @@
    "scripts": {
       "build": "tsc",
       "dev:server": "ts-node-dev --inspect --transpile-only --ignore-watch node_modules src/server.ts",
-      "test": "jest"
+      "test": "jest",
+      "start": "node dist/server.js"
    },
    "dependencies": {
       "cors": "^2.8.5",
