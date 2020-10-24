@@ -8,7 +8,7 @@ import Contact from './pages/LandingPages/Contact';
 import Query from './pages/MainPages/Query';
 import Results from './pages/MainPages/Results';
 import WorldMap from './pages/MainPages/WorldMap';
-import Help from './pages/MainPages/Help - em construção';
+import Help from './pages/MainPages/Help';
 
 function Routes() {
    return (

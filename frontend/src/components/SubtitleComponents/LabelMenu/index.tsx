@@ -18,7 +18,7 @@ interface LabelMenuProps {
    layer: VectorLayer;
 }
 
-const StrokeMenu: React.FC<LabelMenuProps> = ({ layer }) => {
+const LabelMenu: React.FC<LabelMenuProps> = ({ layer }) => {
    const source = layer.getSource();
    const features = source.getFeatures();
 
@@ -71,4 +71,4 @@ const StrokeMenu: React.FC<LabelMenuProps> = ({ layer }) => {
    );
 };
 
-export default StrokeMenu;
+export default LabelMenu;
