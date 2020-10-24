@@ -29,10 +29,7 @@
    --color-generic-link: #007bff;
 
    --font-family-title: Montserrat, sans-seriff;
-   --font-size-title: 1.6rem;
-
    --font-family-text: 'Baloo Tamma 2', cursive;
-   --font-size-text: 1.4rem;
 
    font-size: 75%;
 }
@@ -65,7 +62,7 @@ body,
 input,
 button,
 textarea {
-   font: 400 var(--font-size-text) var(--font-family-text);
+   font: 400 1.4rem var(--font-family-text);
    color: var(--color-text-in-primary);
 }
 

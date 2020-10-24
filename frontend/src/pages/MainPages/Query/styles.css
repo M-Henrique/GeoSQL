@@ -49,7 +49,7 @@
 #queryContainer #schemaContainer table caption {
    text-align: left;
    color: var(--color-title-in-primary);
-   font: 700 var(--font-size-title) var(--font-family-title);
+   font: 700 1.6rem var(--font-family-title);
 }
 
 #queryContainer #schemaContainer table td {
@@ -138,7 +138,7 @@
    border: none;
    border-radius: 0.5rem;
 
-   font: 400 var(--font-size-title) var(--font-family-title);
+   font: 400 1.6rem var(--font-family-title);
    text-decoration: none;
    color: var(--color-text-in-success-button);
 

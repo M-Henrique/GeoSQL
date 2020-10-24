@@ -24,7 +24,7 @@
    border-radius: 0.5rem;
    border: none;
 
-   font: 400 var(--font-size-title) var(--font-family-title);
+   font: 400 1.6rem var(--font-family-title);
    color: var(--color-title-in-secondary);
 
    background: var(--color-secondary);
@@ -77,7 +77,7 @@
 }
 
 #resultsContainer #mainContainer #tableContainer table thead {
-   font: 700 var(--font-size-title) var(--font-family-title);
+   font: 700 1.6rem var(--font-family-title);
 
    background: var(--color-primary-light);
 }

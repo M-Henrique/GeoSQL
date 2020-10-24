@@ -27,7 +27,7 @@
 
    text-decoration: none;
    color: var(--color-primary-dark);
-   font: 700 var(--font-size-title) var(--font-family-title);
+   font: 700 1.6rem var(--font-family-title);
 
    transition: font-size 0.2s;
 }

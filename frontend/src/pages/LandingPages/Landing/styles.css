@@ -15,7 +15,7 @@
    margin-top: 5rem;
 
    text-align: center;
-   font: 400 var(--font-size-title) var(--font-family-title);
+   font: 400 1.6rem var(--font-family-title);
    line-height: 4rem;
 }
 
@@ -52,7 +52,7 @@
 
    text-decoration: none;
    color: var(--color-text-in-success-button);
-   font: 400 var(--font-size-title) var(--font-family-title);
+   font: 400 1.6rem var(--font-family-title);
 
    background: var(--color-success-button);
 

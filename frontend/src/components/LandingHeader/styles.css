@@ -28,7 +28,7 @@
 }
 
 #homeLink {
-   font: 700 var(--font-size-title) var(--font-family-title);
+   font: 700 1.6rem var(--font-family-title);
 }
 
 #githubLink {

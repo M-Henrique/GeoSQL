@@ -353,7 +353,7 @@
    margin-top: 0.3rem;
    padding-left: 0.2rem;
 
-   font: 400 var(--font-size-title) var(--font-family-title);
+   font: 400 1.6rem var(--font-family-title);
    color: var(--color-title-in-primary);
 
    cursor: move;
