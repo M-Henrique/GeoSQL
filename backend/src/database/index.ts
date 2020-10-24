@@ -8,7 +8,7 @@ const pool = new Pool({
    user: 'geosql',
    password: 'ge0sq1',
 
-   max: 10,
+   max: 20,
    idleTimeoutMillis: 100000000,
 });
 
