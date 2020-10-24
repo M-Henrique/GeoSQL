@@ -3,13 +3,14 @@ FROM node:12
 WORKDIR /app
 
 COPY package*.json ./
+COPY . /app
 
-RUN npm ci --only=production
+RUN npm install
 
-RUN mkdir ./dist
+RUN npm run build
 
-COPY ./dist ./dist
+RUN npm install http-server
 
-EXPOSE 3333
+EXPOSE 3000
 
-CMD [ "npm", "start" ]
+CMD [ "http-server", "build" ]
