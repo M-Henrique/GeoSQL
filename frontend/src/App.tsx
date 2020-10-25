@@ -9,7 +9,6 @@ import Routes from './routes';
 import './assets/styles/globals.css';
 
 function App() {
-   console.log(process.env.REACT_APP_API_URL);
    return (
       <TablesProvider>
          <QueryProvider>
