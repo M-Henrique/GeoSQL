@@ -1,0 +1,16 @@
+version: '3.8'
+services:
+  backend:
+      build: './backend'
+      container_name: geosql-backend
+      restart: always
+      ports:
+        - '3333:3333'
+  frontend:
+      build: './frontend'
+      container_name: geosql-frontend
+      restart: always
+      ports:
+        - '3000:3000'
+      depends_on:
+        - backend
