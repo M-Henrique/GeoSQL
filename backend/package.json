@@ -1,6 +1,6 @@
 {
-   "name": "backend",
-   "version": "1.0.0",
+   "name": "geosql-backend",
+   "version": "3.0.0",
    "main": "index.js",
    "license": "MIT",
    "scripts": {
