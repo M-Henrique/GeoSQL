@@ -1,0 +1,14 @@
+version: '3.5'
+services:
+  backend:
+      build: './backend'
+      image: geosql/backend:${VERSION}
+  frontend:
+      build:
+        context: './frontend'
+        args:
+          #          - NODE_ENV=production
+          - PUBLIC_URL=http://greenwich.lbd.dcc.ufmg.br
+          - BASE_URL=/
+          - REACT_APP_API_URL=/api
+      image: geosql/frontend:${VERSION}

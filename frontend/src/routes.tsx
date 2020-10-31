@@ -12,7 +12,7 @@ import Help from './pages/MainPages/Help';
 
 function Routes() {
    return (
-      <BrowserRouter>
+      <BrowserRouter basename={process.env.BASE_URL}>
          <Route path="/" exact component={Landing}></Route>
          <Route path="/about" exact component={About}></Route>
          <Route path="/contact" exact component={Contact}></Route>

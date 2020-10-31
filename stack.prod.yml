@@ -1,0 +1,26 @@
+version: '3.8'
+services:
+  backend:
+    image: geosql/backend:${VERSION}
+    networks:
+      - loadbalancer
+    deploy:
+      restart_policy:
+        condition: on-failure
+  frontend:
+    image: geosql/frontend:${VERSION}
+    environment:
+      - API_URL=/api
+    ports:
+      - 80:3000
+    networks:
+      - loadbalancer
+    volumes:
+      - ./frontend/nginx/nginx.conf:/etc/nginx/conf.d/nginx.conf
+    deploy:      
+      restart_policy:
+        condition: on-failure
+
+networks:
+  loadbalancer:
+    external: true
