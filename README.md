@@ -3,17 +3,17 @@
 
 ## Exposed ports
 
-. Frontend: Nginx with port 3000
-. Backend: Express.JS with port 3333
+- Frontend: Nginx with port 3000
+- Backend: Express.JS with port 3333
 
 ## Build with Docker
 
 ### Build Arguments
 
 #### Frontend
-. PUBLIC_URL: public url of the applications, this argument is needed for react change js source locations when bundling front.
-. BASE_URL: base url used by react router if the application is under some route like http://www.example.com/geosql
-. REACT_APP_API_URL: representes the backend public url, where axios can found the api
+- PUBLIC_URL: public url of the applications, this argument is needed for react change js source locations when bundling front.
+- BASE_URL: base url used by react router if the application is under some route like http://www.example.com/geosql
+- REACT_APP_API_URL: representes the backend public url, where axios can found the api
 
 ```
 export VERSION=$(git log -n 1 --pretty=format:'%h')
