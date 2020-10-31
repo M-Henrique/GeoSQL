@@ -3,6 +3,12 @@ FROM node:12.16.1-alpine3.9 as build
 WORKDIR /app
 COPY ./package.json /app/
 COPY . /app
+
+ARG NODE_ENV
+ARG PUBLIC_URL
+ARG BASE_URL
+ARG REACT_APP_API_URL
+
 RUN npm install
 RUN npm run build
 
