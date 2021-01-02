@@ -13,7 +13,7 @@ import './styles.css';
 
 export default function Query() {
    const { query, setQuery, submitQuery } = useContext(QueryContext);
-   const { tables, tablesColumns, loading } = useContext(TablesContext);
+   const { database, tables, tablesColumns, getTables, loading } = useContext(TablesContext);
 
    // Função que submete a consulta do usuário.
    const handleSubmitQuery = useCallback(async () => {
@@ -37,6 +37,13 @@ export default function Query() {
       downloadLink.click();
    }, []);
 
+   // Função que muda o banco de dados selecionado.
+   const handleChangeDatabase = useCallback(() => {
+      const database = (document.getElementById('databaseSelector')! as HTMLSelectElement).value;
+
+      getTables(database);
+   }, [getTables]);
+
    return (
       <div id="queryContainer" className="firstContainer container">
          <header>
@@ -51,7 +58,7 @@ export default function Query() {
                   </div>
                ) : tables.length <= 0 ? (
                   <div id="firstTimeContainer" className="container">
-                     <p>Sem tabelas para exibir até o momento.</p>
+                     <p>Sem tabelas para exibir.</p>
                      <p>Selecione um banco de dados.</p>
                   </div>
                ) : (
@@ -109,6 +116,22 @@ export default function Query() {
                      <FiHelpCircle className="queryIcon" />
                      Ajuda
                   </Link>
+               </div>
+
+               <div id="databaseSelectionContainer" className="container">
+                  <span>Escolha o banco de dados:</span>
+                  <select name="databases" id="databaseSelector" onChange={handleChangeDatabase}>
+                     <option value="" selected={database === ''}></option>
+                     <option value="brasil" selected={database === 'brasil'}>
+                        Brasil
+                     </option>
+                     <option value="minasgerais" selected={database === 'minasgerais'}>
+                        Minas Gerais
+                     </option>
+                     <option value="belohorizonte" selected={database === 'belohorizonte'}>
+                        Belo Horizonte
+                     </option>
+                  </select>
                </div>
             </div>
          </main>

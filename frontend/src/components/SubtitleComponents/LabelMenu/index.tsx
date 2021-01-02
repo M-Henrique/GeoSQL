@@ -36,7 +36,11 @@ const LabelMenu: React.FC<LabelMenuProps> = ({ layer }) => {
                .getStyle()
                //@ts-ignore
                .getText()
-               .setText(newLabel === '' ? '' : feature.get('info')[newLabel].toString());
+               .setText(
+                  newLabel === '' || feature.get('info')[newLabel] === null || undefined
+                     ? ''
+                     : feature.get('info')[newLabel].toString()
+               );
          });
 
          source.changed();

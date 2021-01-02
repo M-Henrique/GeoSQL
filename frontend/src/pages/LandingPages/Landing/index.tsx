@@ -1,9 +1,7 @@
-import React, { useCallback, useContext } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 
 import { FiPlayCircle } from 'react-icons/fi';
-
-import TablesContext from '../../../contexts/tables';
 
 import LandingHeader from '../../../components/LandingHeader';
 
@@ -12,17 +10,6 @@ import Logo from '../../../assets/images/logGeosqlplus743x232.png';
 import './styles.css';
 
 export default function Landing() {
-   const { getTables } = useContext(TablesContext);
-
-   // Função para recuperar as tabelas do banco.
-   const handleGetTables = useCallback(async () => {
-      try {
-         await getTables();
-      } catch {
-         return;
-      }
-   }, [getTables]);
-
    return (
       <div id="landingContainer" className="firstContainer container">
          <header>
@@ -34,18 +21,12 @@ export default function Landing() {
             <h1>
                Esse é o GeoSQL+, um ambiente online para aprendizado de SQL espacialmente estendido.
                <br />
-               Escolha um Banco de Dados para começar:
             </h1>
 
-            <div id="databaseSelection" className="container">
-               <select name="Banco">
-                  <option value="Brasil">Brasil</option>
-               </select>
-               <Link to="/query" id="start" onClick={handleGetTables}>
-                  <FiPlayCircle id="startIcon" />
-                  Iniciar
-               </Link>
-            </div>
+            <Link to="/query" id="start">
+               <FiPlayCircle id="startIcon" />
+               Iniciar
+            </Link>
          </section>
 
          <footer>

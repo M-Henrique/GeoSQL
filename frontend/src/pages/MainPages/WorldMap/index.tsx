@@ -30,9 +30,10 @@ import OSM from 'ol/source/OSM';
 import { fromLonLat, toLonLat } from 'ol/proj';
 import VectorLayer from 'ol/layer/Vector';
 import Overlay from 'ol/Overlay';
-import { toStringHDMS } from 'ol/coordinate';
+import { Coordinate, toStringHDMS } from 'ol/coordinate';
 import Select from 'ol/interaction/Select';
 
+import TablesContext from '../../../contexts/tables';
 import LayersContext from '../../../contexts/layers';
 
 import TabsMenu from '../../../components/TabsMenu';
@@ -58,6 +59,7 @@ interface DnDProps {
 }
 
 export default function WorldMap() {
+   const { database } = useContext(TablesContext);
    const { layers, setLayers } = useContext(LayersContext);
 
    const [map, setMap] = useState<Map>();
@@ -74,6 +76,33 @@ export default function WorldMap() {
       const layersVisibilities = [...layers].reverse().map((layer) => layer.getVisible());
       return layersVisibilities;
    });
+
+   /*----------------------------- Funções responsáveis por aplicar o zoom e o centro ao mapa baseados no banco selecionado -------------------------------------------*/
+   const handleMapCenter = useCallback((): Coordinate => {
+      switch (database) {
+         case 'brasil':
+            return fromLonLat([-50.809373, -18.022386]);
+         case 'minasgerais':
+            return fromLonLat([-45.00894, -19.264079]);
+         case 'belohorizonte':
+            return fromLonLat([-43.951818, -19.936346]);
+         default:
+            return fromLonLat([35.083466, 4.561883]);
+      }
+   }, [database]);
+
+   const handleMapZoom = useCallback((): number => {
+      switch (database) {
+         case 'brasil':
+            return 4.9;
+         case 'minasgerais':
+            return 7;
+         case 'belohorizonte':
+            return 11.95;
+         default:
+            return 1.5;
+      }
+   }, [database]);
 
    /*----------------------- Estados e funções relativos à funcionalidade de drag das camadas na legenda (referência: https://dev.to/florantara/creating-a-drag-and-drop-list-with-react-hooks-4c0i) -----------------------*/
 
@@ -324,8 +353,8 @@ export default function WorldMap() {
             }),
          ],
          view: new View({
-            center: fromLonLat([-57.41, -15]),
-            zoom: 4.5,
+            center: handleMapCenter(),
+            zoom: handleMapZoom(),
          }),
          overlays: [overlay],
       });

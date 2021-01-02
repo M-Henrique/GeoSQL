@@ -5,9 +5,11 @@ import React, { createContext, useCallback, useState } from 'react';
 import api from '../services/api';
 
 interface ContextData {
+   database: string;
+
    tables: Array<any>;
    tablesColumns: Array<any>;
-   getTables(): Promise<void>;
+   getTables(database: string): Promise<void>;
 
    loading: boolean;
 }
@@ -15,6 +17,8 @@ interface ContextData {
 const TablesContext = createContext<ContextData>({} as ContextData);
 
 export const TablesProvider: React.FC = ({ children }) => {
+   // Banco de dados selecionado atualmente.
+   const [database, setDatabase] = useState('');
    // Tabelas (para facilitar indexação).
    const [tables, setTables] = useState([]);
    // Tabelas com suas respectivas colunas.
@@ -23,16 +27,25 @@ export const TablesProvider: React.FC = ({ children }) => {
    const [loading, setLoading] = useState(false);
 
    // Função que realiza a chamada à api, para recuperar as tabelas do banco.
-   const getTables = useCallback(async () => {
+   const getTables = useCallback(async (database: string) => {
       try {
+         if (database === '') {
+            setDatabase(database);
+            setTables([]);
+            setTablesColumns([]);
+            return;
+         }
+
          setLoading(true);
+         setDatabase(database);
 
          const {
             data: { tables, tablesColumns },
-         } = await api.get('/query');
+         } = await api.get('/query', { params: { database } });
 
          setTables(tables);
          setTablesColumns(tablesColumns);
+
          setLoading(false);
       } catch {
          return;
@@ -40,7 +53,7 @@ export const TablesProvider: React.FC = ({ children }) => {
    }, []);
 
    return (
-      <TablesContext.Provider value={{ tables, tablesColumns, getTables, loading }}>
+      <TablesContext.Provider value={{ database, tables, tablesColumns, getTables, loading }}>
          {children}
       </TablesContext.Provider>
    );

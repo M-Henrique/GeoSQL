@@ -89,6 +89,7 @@ export const LayersProvider: React.FC = ({ children }) => {
          let features: Feature<Geometry>[] = [];
          results.forEach((result: any, index) => {
             result.geojson = JSON.parse(result.geojson);
+
             features.push(
                // Nova feature gerada a partir da leitura do geoJSON do resultado.
                new GeoJSON().readFeature(result.geojson, {
@@ -96,7 +97,6 @@ export const LayersProvider: React.FC = ({ children }) => {
                })
             );
 
-            delete result.geom;
             delete result.geojson;
 
             // Armazenamento das informações de cada feature.

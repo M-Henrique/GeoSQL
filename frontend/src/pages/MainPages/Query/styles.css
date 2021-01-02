@@ -119,12 +119,11 @@
 
 #queryContainer #inputsContainer #buttonsContainer {
    height: 20vh;
-   margin-left: 5rem;
 
-   flex: 1;
+   flex: 0.5;
    flex-direction: column;
    justify-content: space-between;
-   align-items: flex-start;
+   align-items: center;
 }
 
 #queryContainer #inputsContainer #buttonsContainer .queryButton {
@@ -165,4 +164,22 @@
 
 #queryContainer #inputsContainer #buttonsContainer .queryButton .queryIcon {
    margin-right: 0.2rem;
+}
+
+#queryContainer #inputsContainer #databaseSelectionContainer {
+   flex: 0.5;
+   display: flex;
+   flex-direction: column;
+}
+
+#queryContainer #inputsContainer #databaseSelectionContainer span {
+   font-size: 1.5rem;
+}
+
+#queryContainer #inputsContainer #databaseSelectionContainer select {
+   height: 2rem;
+}
+
+#queryContainer #inputsContainer #databaseSelectionContainer select option {
+   height: 2rem;
 }

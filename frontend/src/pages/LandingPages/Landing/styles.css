@@ -19,28 +19,10 @@
    line-height: 4rem;
 }
 
-#landingContainer #introContainer #databaseSelection {
-   margin-top: 5rem;
-
-   justify-content: center;
-   align-items: center;
-}
-
-#landingContainer #introContainer #databaseSelection select {
-   min-width: 18rem;
-   height: 3.5rem;
-   padding: 1rem;
-   margin-right: 5rem;
-
-   flex: 2;
-
-   border-radius: 0.5rem;
-   border: 1px solid #ced4da;
-}
-
-#landingContainer #introContainer #databaseSelection #start {
+#landingContainer #introContainer #start {
    min-width: 8rem;
    height: 3.5rem;
+   margin-top: 2rem;
    padding: 0.8rem;
 
    flex: 1;
@@ -59,11 +41,11 @@
    transition: background 0.2s ease;
 }
 
-#landingContainer #introContainer #databaseSelection #start:hover {
+#landingContainer #introContainer #start:hover {
    background: var(--color-success-button-dark);
 }
 
-#landingContainer #introContainer #databaseSelection #start #startIcon {
+#landingContainer #introContainer #start #startIcon {
    margin-right: 0.5rem;
 }
 

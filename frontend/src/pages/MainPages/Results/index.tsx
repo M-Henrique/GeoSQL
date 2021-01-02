@@ -134,7 +134,7 @@ export default function Results() {
                      <thead>
                         <tr>
                            {Object.keys(results[0]).map((column, index) => {
-                              if (column !== 'geom' && column !== 'geojson') {
+                              if (column !== 'geojson') {
                                  return <th key={index}>{column}</th>;
                               }
                            })}
@@ -147,7 +147,7 @@ export default function Results() {
                                  {Object.values(row).map((value, index) => {
                                     // A tipagem do typescript não aceita a comparação direta por meio da string 'geom'. Como a tipagem estática não pode ser feita (devido às diferentes colunas que virão em cada resultado), o ts-ignore fez-se necessário).
                                     //@ts-ignore
-                                    if (row['geom'] !== value && row['geojson'] !== value)
+                                    if (row['geojson'] !== value)
                                        return <td key={index}>{value}</td>;
                                  })}
                               </tr>

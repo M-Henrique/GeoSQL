@@ -1,20 +1,21 @@
-import { Pool } from 'pg';
+import { Pool, PoolClient } from 'pg';
 
-const pool = new Pool({
-   host: 'greenwich.lbd.dcc.ufmg.br',
-   database: 'brasil',
-   port: 5432,
+export default function createPool(database: string): void {
+   if (global.pool) {
+      global.pool.end();
+   }
 
-   user: 'geosql',
-   password: 'ge0sq1',
+   global.pool = new Pool({
+      host: 'greenwich.lbd.dcc.ufmg.br',
+      database,
+      port: 5432,
 
-   max: 20,
-   idleTimeoutMillis: 100000000,
-});
+      user: 'geosql',
+      password: 'ge0sq1',
+   });
 
-pool.on('error', (err, client) => {
-   console.error('Unexpected error on idle client', err);
-   process.exit(-1);
-});
-
-export default pool;
+   global.pool.on('error', (err: Error, client: PoolClient) => {
+      console.error('Unexpected error on idle client', err);
+      process.exit(-1);
+   });
+}
