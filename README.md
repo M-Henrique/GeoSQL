@@ -13,16 +13,16 @@
 <p align="center">
   <img alt="GitHub top language" src="https://img.shields.io/github/languages/top/M-Henrique/GeoSQL?style=for-the-badge">
   <img alt="GitHub language count" src="https://img.shields.io/github/languages/count/M-Henrique/GeoSQL?style=for-the-badge&color=yellowgreen">
-  <img alt="GitHub" src="https://img.shields.io/github/license/M-Henrique/GeoSQL?style=for-the-badge&color=brightgreen"> 
-  <img alt="UFMG-DCC" src="https://img.shields.io/badge/UFMG-DCC-red?style=for-the-badge"><br/>
-  <img alt="UFMG-DCC" src="https://img.shields.io/badge/v-3.0-lightgrey?style=for-the-badge&color=blueviolet"><br/>
+  <img alt="GitHub license" src="https://img.shields.io/github/license/M-Henrique/GeoSQL?style=for-the-badge&color=brightgreen"> 
+  <img alt="Github UFMG-DCC" src="https://img.shields.io/badge/UFMG-DCC-red?style=for-the-badge">
+  <img alt="Github version" src="https://img.shields.io/badge/v-3.0-lightgrey?style=for-the-badge&color=blueviolet">
 </p>
 
 
 
 ## :clipboard: About the Project
    <p align="justify">Learning database usages and tools can often prove to be a daunting task. Students face many new and exotic concepts in doing so, which may hinder the process.<br /><br />
-    With the objective of easing the learning curve, GeoSQL was born and improved as a practicing tool of SQL, the main language that Database Management Systems use on their task of communicating with databases. It is a powerful system, providing users with robust and varied databases, handling of complex queries and visual representation and customization of the results.
+    With the objective of easing the learning curve, GeoSQL was born and improved as a practicing tool of SQL, the main language that Database Management Systems use on their task of communicating with databases. It is a powerful system, providing users with robust and varied databases, handling of complex queries and visual representation and customization of the results.<br /><br />
     It is expected that, with such tools, the vital knowledge of database applications will be sped up and made easier to acquire and disseminate.
     </p>
    
@@ -46,9 +46,8 @@
   
   - Frontend: Port 3000
   - Backend: Port 3333
-
   - BASE_URL: base url used by react router if the application is under some route like http://www.example.com/geosql
-  - REACT_APP_API_URL: represents the backend public url, where axios can found the api
+  - REACT_APP_API_URL: represents the backend public url, where axios can find the api
 
 ## :computer: Usage
   The platform is available for use at [http://greenwich.lbd.dcc.ufmg.br/](http://greenwich.lbd.dcc.ufmg.br/). The help page offers an extensive tutorial on the features and tools of the system.
