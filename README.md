@@ -53,7 +53,7 @@
   The platform is available for use at [http://greenwich.lbd.dcc.ufmg.br/](http://greenwich.lbd.dcc.ufmg.br/). The help page offers an extensive tutorial on the features and tools of the system.
     
 ## :information_source: License
-  This project is under the [MIT](LICENSE.md) license.
+  This project is under the [GNU v2](LICENSE.md) license.
   
 ## :email: Contact
   If you like the project and have the interest in contacting the responsibles directly, please send an email to [mhenrique.silva408@gmail.com](mhenrique.silva408@gmail.com) or [clodoveu@dcc.ufmg.br](clodoveu@dcc.ufmg.br) with the subject "GeoSQL".
