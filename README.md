@@ -13,7 +13,7 @@
 <p align="center">
   <img alt="GitHub top language" src="https://img.shields.io/github/languages/top/M-Henrique/GeoSQL?style=for-the-badge">
   <img alt="GitHub language count" src="https://img.shields.io/github/languages/count/M-Henrique/GeoSQL?style=for-the-badge&color=yellowgreen">
-  <img alt="GitHub license" src="https://img.shields.io/github/license/M-Henrique/GeoSQL?style=for-the-badge&color=brightgreen"> 
+  <img alt="GitHub license" src="https://img.shields.io/badge/LICENSE-GNU%20v2-brightgreen?style=for-the-badge"> 
   <img alt="Github UFMG-DCC" src="https://img.shields.io/badge/UFMG-DCC-red?style=for-the-badge">
   <img alt="Github version" src="https://img.shields.io/badge/v-3.0-lightgrey?style=for-the-badge&color=blueviolet">
 </p>
