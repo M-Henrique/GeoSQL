@@ -82,6 +82,19 @@ export default function Query() {
             </div>
 
             <div id="inputsContainer" className="container">
+               <div id="historyContainer" className="container">
+                  <ul>
+                     <li>select * from estado where sigla = 'MG'</li>
+                     <li>select * from refinaria</li>
+                     <li>select * from refinaria</li>
+                     <li>select * from refinaria</li>
+                     <li>select * from refinaria</li>
+                     <li>select * from refinaria</li>
+                     <li>select * from refinaria</li>
+                     <li>select * from refinaria</li>
+                  </ul>
+               </div>
+
                <div id="textAreaContainer" className="container">
                   <textarea
                      name="query"
@@ -120,17 +133,16 @@ export default function Query() {
 
                <div id="databaseSelectionContainer" className="container">
                   <span>Escolha o banco de dados:</span>
-                  <select name="databases" id="databaseSelector" onChange={handleChangeDatabase}>
-                     <option value="" selected={database === ''}></option>
-                     <option value="brasil" selected={database === 'brasil'}>
-                        Brasil
-                     </option>
-                     <option value="minasgerais" selected={database === 'minasgerais'}>
-                        Minas Gerais
-                     </option>
-                     <option value="belohorizonte" selected={database === 'belohorizonte'}>
-                        Belo Horizonte
-                     </option>
+                  <select
+                     name="databases"
+                     id="databaseSelector"
+                     value={database}
+                     onChange={handleChangeDatabase}
+                  >
+                     <option value=""></option>
+                     <option value="brasil">Brasil</option>
+                     <option value="minasgerais">Minas Gerais</option>
+                     <option value="belohorizonte">Belo Horizonte</option>
                   </select>
                </div>
             </div>
