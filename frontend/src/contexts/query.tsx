@@ -38,6 +38,23 @@ export const QueryProvider: React.FC = ({ children }) => {
    // Flag ativada durante a chamada à api.
    const [loading, setLoading] = useState(false);
 
+   // Função que realiza o armazenamento da query no histórico.
+   const handleQueryHistory = useCallback(() => {
+      let queryHistory = sessionStorage.getItem('@geosql/query-history');
+      if (queryHistory) {
+         let queryHistoryArray = queryHistory.split('@geosqlidentifier@');
+
+         queryHistoryArray.push(query);
+         sessionStorage.setItem(
+            '@geosql/query-history',
+            queryHistoryArray.join('@geosqlidentifier@')
+         );
+      } else {
+         const queryWithIdentifier = query + '@geosqlidentifier@';
+         sessionStorage.setItem('@geosql/query-history', queryWithIdentifier);
+      }
+   }, [query]);
+
    // Função que realiza a chamda à api, passando a query realizada pelo usuário.
    const submitQuery = useCallback(
       async (query: string) => {
@@ -62,12 +79,15 @@ export const QueryProvider: React.FC = ({ children }) => {
             }
 
             setResults(data);
+
+            handleQueryHistory();
+
             setLoading(false);
          } catch {
             return;
          }
       },
-      [firstTime]
+      [firstTime, handleQueryHistory]
    );
 
    return (

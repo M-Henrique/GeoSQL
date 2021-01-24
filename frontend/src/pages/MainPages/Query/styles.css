@@ -112,18 +112,37 @@
 }
 
 #queryContainer #inputsContainer #historyContainer ul {
-   max-width: 100%;
+   width: 100%;
 
    list-style: none;
 }
 
 #queryContainer #inputsContainer #historyContainer ul li {
+   padding: 0 0.2rem;
+
    overflow: hidden;
+
    text-overflow: ellipsis;
 }
 
+#queryContainer #inputsContainer #historyContainer ul li:first-child {
+   border-top-left-radius: 1rem;
+   border-top-right-radius: 1rem;
+}
+
+#queryContainer #inputsContainer #historyContainer ul li:last-child {
+   border-bottom-left-radius: 1rem;
+   border-bottom-right-radius: 1rem;
+}
+
+#queryContainer #inputsContainer #historyContainer ul li:hover {
+   background: #ddd;
+
+   cursor: pointer;
+}
+
 #queryContainer #inputsContainer #historyContainer ul li:not(:last-child) {
-   border-bottom: 0.1rem solid var(--color-secondary);
+   border-bottom: 0.1rem solid var(--color-secondary-light);
 }
 
 #queryContainer #inputsContainer #historyContainer::-webkit-scrollbar {

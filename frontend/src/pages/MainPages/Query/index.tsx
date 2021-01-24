@@ -1,4 +1,4 @@
-import React, { useContext, useCallback } from 'react';
+import React, { useContext, useCallback, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 import { FiSearch, FiSave, FiHelpCircle } from 'react-icons/fi';
@@ -14,6 +14,15 @@ import './styles.css';
 export default function Query() {
    const { query, setQuery, submitQuery } = useContext(QueryContext);
    const { database, tables, tablesColumns, getTables, loading } = useContext(TablesContext);
+
+   // Estado que armazena o histórico de queries, filtrado para não incluir os resultados vazios do método split, e revertido para ser visualizado corretamente.
+   const [queryHistory] = useState(
+      sessionStorage
+         .getItem('@geosql/query-history')
+         ?.split('@geosqlidentifier@')
+         .filter((nonEmpty) => nonEmpty)
+         .reverse()
+   );
 
    // Função que submete a consulta do usuário.
    const handleSubmitQuery = useCallback(async () => {
@@ -84,14 +93,12 @@ export default function Query() {
             <div id="inputsContainer" className="container">
                <div id="historyContainer" className="container">
                   <ul>
-                     <li>select * from estado where sigla = 'MG'</li>
-                     <li>select * from refinaria</li>
-                     <li>select * from refinaria</li>
-                     <li>select * from refinaria</li>
-                     <li>select * from refinaria</li>
-                     <li>select * from refinaria</li>
-                     <li>select * from refinaria</li>
-                     <li>select * from refinaria</li>
+                     {console.log(queryHistory)}
+                     {queryHistory?.map((pastQuery: string, index) => (
+                        <li key={index} title={pastQuery} onClick={() => setQuery(pastQuery)}>
+                           {pastQuery}
+                        </li>
+                     ))}
                   </ul>
                </div>
 
