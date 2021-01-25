@@ -25,13 +25,9 @@ interface PolygonMenuProps {
 const PolygonMenu: React.FC<PolygonMenuProps> = ({ layer }) => {
    // Estados de utilidade. São estados utilizados para indicar ao react que o valor dos inputs foi atualizado (utilizando o set), o que  faz com que o react renderize novamente o componente em questão.
    // Ex: ao alterar o input de cor (do polígono ou da linha), usamos o setColor para dizer ao react que o input mudou, fazendo com que ele altere o input visualmente e renderize-o novamente.
-   // eslint desativado para evitar os avisos das variáveis inutilizadas
-   // eslint-disable-next-line
-   const [color, setColor] = useState<string>();
-   // eslint-disable-next-line
-   const [size, setSize] = useState<number>();
-   // eslint-disable-next-line
-   const [shape, setShape] = useState<string>();
+   const [, setColor] = useState<string>();
+   const [, setSize] = useState<number>();
+   const [, setShape] = useState<string>();
 
    // Função de utilidade para pegar o formato atual da camada (caso aplicável).
    const getShape = useCallback((shape: string, size: number) => {

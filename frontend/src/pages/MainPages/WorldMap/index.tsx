@@ -104,6 +104,22 @@ export default function WorldMap() {
       }
    }, [database]);
 
+   /*----------------------------------------- Função que fecha o popup --------------------------------------------------*/
+   const handleClosePopup = useCallback(() => {
+      // Seleciona a overlay e o select do mapa, além do X que fecha o popup.
+      const overlay = map?.getOverlayById('overlay');
+      const popupCloser = document.getElementById('popupCloser');
+      const select = map
+         ?.getInteractions()
+         .getArray()
+         .filter((interaction) => interaction.getProperties().id)[0] as Select;
+
+      // Limpa as seleções, apaga o overlay e o X.
+      select.getFeatures().clear();
+      overlay?.setPosition(undefined);
+      popupCloser?.blur();
+   }, [map]);
+
    /*----------------------- Estados e funções relativos à funcionalidade de drag das camadas na legenda (referência: https://dev.to/florantara/creating-a-drag-and-drop-list-with-react-hooks-4c0i) -----------------------*/
 
    const initialDnDState: DnDProps = {
@@ -190,6 +206,9 @@ export default function WorldMap() {
 
    const handlePolygonMenuVisibility = useCallback(
       (index) => {
+         // Fecha possíveis popups abertas (caso haja uma aberta, o app crasha ao tentar modificar uma camada).
+         handleClosePopup();
+
          // Alterna a visibilidade apenas do menu referente à camada selecionada visível.
          let polygonMenus = [...isPolygonMenuVisible];
          polygonMenus.fill(false);
@@ -201,11 +220,14 @@ export default function WorldMap() {
          setIsStrokeMenuVisible(isStrokeMenuVisible.fill(false));
          setIsLabelMenuVisible(isLabelMenuVisible.fill(false));
       },
-      [isLabelMenuVisible, isPolygonMenuVisible, isStrokeMenuVisible]
+      [handleClosePopup, isLabelMenuVisible, isPolygonMenuVisible, isStrokeMenuVisible]
    );
 
    const handleStrokeMenuVisibility = useCallback(
       (index) => {
+         // Fecha possíveis popups abertas (caso haja uma aberta, o app crasha ao tentar modificar uma camada).
+         handleClosePopup();
+
          let strokeMenus = [...isStrokeMenuVisible];
          strokeMenus.fill(false);
 
@@ -215,11 +237,14 @@ export default function WorldMap() {
          setIsPolygonMenuVisible(isPolygonMenuVisible.fill(false));
          setIsLabelMenuVisible(isLabelMenuVisible.fill(false));
       },
-      [isLabelMenuVisible, isPolygonMenuVisible, isStrokeMenuVisible]
+      [handleClosePopup, isLabelMenuVisible, isPolygonMenuVisible, isStrokeMenuVisible]
    );
 
    const handleLabelMenuVisibility = useCallback(
       (index) => {
+         // Fecha possíveis popups abertas (caso haja uma aberta, o app crasha ao tentar modificar uma camada).
+         handleClosePopup();
+
          let labelMenus = [...isLabelMenuVisible];
          labelMenus.fill(false);
 
@@ -229,13 +254,16 @@ export default function WorldMap() {
          setIsPolygonMenuVisible(isPolygonMenuVisible.fill(false));
          setIsStrokeMenuVisible(isStrokeMenuVisible.fill(false));
       },
-      [isLabelMenuVisible, isPolygonMenuVisible, isStrokeMenuVisible]
+      [handleClosePopup, isLabelMenuVisible, isPolygonMenuVisible, isStrokeMenuVisible]
    );
 
    /*----------------------------------------- Funções referentes às outras funcionalidades da legenda --------------------------------------------------*/
 
    const handleLayerVisibility = useCallback(
       (index, layer: VectorLayer) => {
+         // Fecha possíveis popups abertas (caso haja uma aberta, o app crasha ao tentar modificar uma camada).
+         handleClosePopup();
+
          // Alterna a visibilidade apenas da camada selecionada.
          let layerVisibility = [...isLayerVisible];
 
@@ -255,23 +283,34 @@ export default function WorldMap() {
          // Alterna a visibilidade da camada em mapa.
          layer.setVisible(layerVisibility[index]);
       },
-      [isLayerVisible, map]
+      [handleClosePopup, isLayerVisible, map]
    );
 
-   const handleLayerDownload = useCallback((layer: VectorLayer) => {
-      const geoJson = JSON.stringify(layer.get('geoJson'));
+   const handleLayerDownload = useCallback(
+      (layer: VectorLayer) => {
+         // Fecha possíveis popups abertas (caso haja uma aberta, o app crasha ao tentar modificar uma camada).
+         handleClosePopup();
 
-      const file = new Blob([geoJson], { type: 'application/json' });
-      const downloadUrl = URL.createObjectURL(file);
+         const geoJson = JSON.stringify(layer.get('geoJson'));
 
-      const downloadLink = document.createElement('a');
-      downloadLink.download = `Layer ${layer.get('id')} - GeoJson.json`;
-      downloadLink.href = downloadUrl;
-      downloadLink.click();
-   }, []);
+         // Cria um arquivo com as informações geoJson da camada.
+         const file = new Blob([geoJson], { type: 'application/json' });
+         const downloadUrl = URL.createObjectURL(file);
+
+         // Cria um link de download na DOM e clica para realizar o download.
+         const downloadLink = document.createElement('a');
+         downloadLink.download = `Layer ${layer.get('id')} - GeoJson.json`;
+         downloadLink.href = downloadUrl;
+         downloadLink.click();
+      },
+      [handleClosePopup]
+   );
 
    const handleLayerDelete = useCallback(
       (layer: VectorLayer) => {
+         // Fecha possíveis popups abertas (caso haja uma aberta, o app crasha ao tentar modificar uma camada).
+         handleClosePopup();
+
          // Caso seja a camada referente ao mapa.
          if (layer.get('id') === 0) {
             map?.setTarget('');
@@ -292,25 +331,8 @@ export default function WorldMap() {
          // Remove todas as layers para que possam ser renderizadas novamente, para evitar duplicação de adição de camadas.
          for (let layer of layers) map?.removeLayer(layer);
       },
-      [layers, list, map, setLayers]
+      [handleClosePopup, layers, list, map, setLayers]
    );
-
-   /*----------------------------------------- Função que fecha o popup --------------------------------------------------*/
-
-   const handleClosePopup = useCallback(() => {
-      // Seleciona a overlay e o select do mapa, além do X que fecha o popup.
-      const overlay = map?.getOverlayById('overlay');
-      const popupCloser = document.getElementById('popupCloser');
-      const select = map
-         ?.getInteractions()
-         .getArray()
-         .filter((interaction) => interaction.getProperties().id)[0] as Select;
-
-      // Limpa as seleções, apaga o overlay e o X.
-      select.getFeatures().clear();
-      overlay?.setPosition(undefined);
-      popupCloser?.blur();
-   }, [map]);
 
    /*----------------------------------------- Função que realiza o update visual da legenda após o drag --------------------------------------------------*/
 

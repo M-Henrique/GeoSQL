@@ -93,7 +93,6 @@ export default function Query() {
             <div id="inputsContainer" className="container">
                <div id="historyContainer" className="container">
                   <ul>
-                     {console.log(queryHistory)}
                      {queryHistory?.map((pastQuery: string, index) => (
                         <li key={index} title={pastQuery} onClick={() => setQuery(pastQuery)}>
                            {pastQuery}
@@ -146,7 +145,6 @@ export default function Query() {
                      value={database}
                      onChange={handleChangeDatabase}
                   >
-                     <option value=""></option>
                      <option value="brasil">Brasil</option>
                      <option value="minasgerais">Minas Gerais</option>
                      <option value="belohorizonte">Belo Horizonte</option>
