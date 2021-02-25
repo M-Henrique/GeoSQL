@@ -3,6 +3,8 @@ services:
    backend:
       build: './backend'
       image: geosql/backend:${VERSION}
+      args:
+         - NODE_OPTIONS="--max-old-space-size=8192"
    frontend:
       build:
          context: './frontend'
