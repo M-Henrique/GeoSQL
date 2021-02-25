@@ -12,6 +12,8 @@ export default function createPool(database: string): void {
 
       user: 'geosql',
       password: 'ge0sq1',
+
+      max: 50,
    });
 
    global.pool.on('error', (err: Error, client: PoolClient) => {
