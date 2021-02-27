@@ -1,17 +1,18 @@
 import request from 'supertest';
 
-import createPool from '../../database';
+import { pool, changePool, changeGeomColumns } from '../../database';
 import app from './TestApp';
 
 describe('QueryController', () => {
    beforeAll(() => {
-      createPool('brasil');
+      changePool('brasil');
 
-      global.geomColumns = ['geom'];
+      changeGeomColumns(['geom']);
    });
 
    afterAll(async (done) => {
-      global.pool.end();
+      pool.end();
+      changeGeomColumns([]);
       done();
    });
 

@@ -1,12 +1,13 @@
 import { Request, Response } from 'express';
 import { Pool, PoolClient } from 'pg';
 
+import { pool, geomColumns } from '../database';
+
 export default class QueryController {
    public async show(request: Request, response: Response) {
-      const pool = global.pool as Pool;
-      let client: PoolClient | undefined;
+      const { query }: { query: string } = request.body;
 
-      const query = request.body.query as string;
+      let client: PoolClient | undefined;
 
       try {
          client = await pool.connect();
@@ -20,10 +21,7 @@ export default class QueryController {
 
          // Caso a consulta englobe uma coluna geométrica, é necessário um tratamento extra para evitar quebra de interface (em caso de coordenadas muito grandes (mostramos apenas a geometria ao invés da coordenada inteira, através da função ST_GeometryType)) e permitir ao Openlayers acesso ao geojson (ST_AsGeoJson) respectivo da consulta (para criação das camadas).
          for (let i in results.fields) {
-            if (
-               global.geomColumns.includes(results.fields[i].name) ||
-               results.fields[i].name === 'geom'
-            ) {
+            if (geomColumns.includes(results.fields[i].name) || results.fields[i].name === 'geom') {
                const geomColumn = results.fields[i].name;
 
                results = await client.query(

@@ -1,26 +1,26 @@
 import { Request, Response } from 'express';
-import { Pool, PoolClient } from 'pg';
+import { PoolClient } from 'pg';
 
-import createPool from '../database';
+import { pool, changePool, changeGeomColumns } from '../database';
 
 export default class TablesController {
    public async index(request: Request, response: Response) {
-      const database = request.query.database as string;
+      const { database } = request.query;
 
-      createPool(database);
-
-      const pool = global.pool as Pool;
+      // Encerra a pool atual, e cria uma nova com a configuração adequada.
+      changePool(database as string);
       let client: PoolClient | undefined;
 
       try {
          client = await pool.connect();
 
-         // Armazena os nomes das colunas geométricas em uma variável global, para posterior uso na realização das queries.
-         const geomColumns = await client.query(`SELECT f_geometry_column FROM geometry_columns`);
+         // Armazena os nomes das colunas geométricas em uma variável, para posterior uso na realização das queries.
+         const dbGeomColumns = await client.query(`SELECT f_geometry_column FROM geometry_columns`);
 
-         global.geomColumns = [
-            ...new Set(geomColumns.rows.map((column) => Object.values(column)[0])),
-         ] as string[];
+         // Passa um set contendo todos os nomes de colunas geométricas do banco.
+         changeGeomColumns([
+            ...new Set(dbGeomColumns.rows.map((column) => Object.values(column)[0])),
+         ] as string[]);
 
          // Retorna as tabelas junto de suas respectivas colunas (para saber qual coluna pertence a qual tabela).
          const { rows: tablesColumns } = await client.query(
