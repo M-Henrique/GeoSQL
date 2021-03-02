@@ -1,16 +1,23 @@
 import { Request, Response } from 'express';
-import { Pool, PoolClient } from 'pg';
+import { Client } from 'pg';
 
-import { pool, geomColumns } from '../database';
+import { geomColumns } from '../database';
 
 export default class QueryController {
    public async show(request: Request, response: Response) {
-      const { query }: { query: string } = request.body;
+      const { query, database }: { query: string; database: string } = request.body;
 
-      let client: PoolClient | undefined;
+      const client = new Client({
+         host: 'greenwich.lbd.dcc.ufmg.br',
+         database,
+         port: 5432,
+
+         user: 'geosql',
+         password: 'ge0sq1',
+      });
 
       try {
-         client = await pool.connect();
+         await client.connect();
 
          // Cria uma tabela temporária para armazenar os resultados da consulta realizada, e recupera o conteúdo da mesma.
          await client.query(`DROP TABLE IF EXISTS resultados;`);
@@ -37,12 +44,12 @@ export default class QueryController {
             }
          }
 
-         client.release();
+         client.end();
 
          return response.json(results.rows);
       } catch (error) {
          if (client) {
-            client.release();
+            client.end();
          }
 
          return response.json(error.message);

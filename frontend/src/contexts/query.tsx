@@ -1,10 +1,19 @@
 /* Contexto que armazena informações referentes à consulta realizada e aos resultados da mesma, para evitar chamadas repetitivas à api, e permitir que o contexto de layers tenha acesso. */
 
-import React, { createContext, useCallback, useState, Dispatch, SetStateAction } from 'react';
+import React, {
+   createContext,
+   useCallback,
+   useState,
+   Dispatch,
+   SetStateAction,
+   useContext,
+} from 'react';
 
 import { AxiosRequestConfig } from 'axios';
 
 import api from '../services/api';
+
+import TablesContext from './tables';
 
 interface ContextData {
    firstTime: boolean;
@@ -27,6 +36,8 @@ interface Query extends AxiosRequestConfig {
 const QueryContext = createContext<ContextData>({} as ContextData);
 
 export const QueryProvider: React.FC = ({ children }) => {
+   const { database } = useContext(TablesContext);
+
    // Flag para identificar se o usuário ainda não fez nenhuma consulta.
    const [firstTime, setFirstTime] = useState(true);
    // Consulta realizada pelo usuário.
@@ -67,6 +78,7 @@ export const QueryProvider: React.FC = ({ children }) => {
 
             const { data } = await api.post('/results', {
                query,
+               database,
             } as Query);
 
             // Checa se os objetos recebidos em resposta possuem a propriedade geométrica, e marca a flag.

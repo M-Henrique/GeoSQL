@@ -1,26 +1,32 @@
 import { Request, Response } from 'express';
-import { PoolClient } from 'pg';
+import { Client } from 'pg';
 
-import { pool, changePool, changeGeomColumns } from '../database';
+import { geomColumns, changeGeomColumns } from '../database';
 
 export default class TablesController {
    public async index(request: Request, response: Response) {
       const { database } = request.query;
 
-      // Encerra a pool atual, e cria uma nova com a configuração adequada.
-      changePool(database as string);
-      let client: PoolClient | undefined;
+      const client = new Client({
+         host: 'greenwich.lbd.dcc.ufmg.br',
+         database: database as string,
+         port: 5432,
+
+         user: 'geosql',
+         password: 'ge0sq1',
+      });
 
       try {
-         client = await pool.connect();
+         await client.connect();
 
          // Armazena os nomes das colunas geométricas em uma variável, para posterior uso na realização das queries.
-         const dbGeomColumns = await client.query(`SELECT f_geometry_column FROM geometry_columns`);
+         // const dbGeomColumns = await client.query(`SELECT f_geometry_column FROM geometry_columns`);
 
-         // Passa um set contendo todos os nomes de colunas geométricas do banco.
-         changeGeomColumns([
-            ...new Set(dbGeomColumns.rows.map((column) => Object.values(column)[0])),
-         ] as string[]);
+         // // Passa um set contendo todos os nomes de colunas geométricas do banco.
+         // changeGeomColumns([
+         //    ...geomColumns,
+         //    ...new Set(dbGeomColumns.rows.map((column) => Object.values(column)[0])),
+         // ] as string[]);
 
          // Retorna as tabelas junto de suas respectivas colunas (para saber qual coluna pertence a qual tabela).
          const { rows: tablesColumns } = await client.query(
@@ -32,12 +38,12 @@ export default class TablesController {
             `SELECT DISTINCT table_name as name FROM information_schema.columns WHERE table_schema = 'geodata' ORDER BY table_name;`
          );
 
-         client.release();
+         client.end();
 
          return response.json({ tablesColumns, tables });
       } catch (error) {
          if (client) {
-            client.release();
+            client.end();
          }
 
          return response.status(400).json(error.message);
