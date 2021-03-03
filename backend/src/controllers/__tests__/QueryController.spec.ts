@@ -1,24 +1,19 @@
 import request from 'supertest';
 
-import { pool, changePool, changeGeomColumns } from '../../database';
+import { Client } from 'pg';
+
 import app from './TestApp';
 
+import { changeGeomColumns } from '../../database';
+
 describe('QueryController', () => {
-   beforeAll(() => {
-      changePool('brasil');
-
-      changeGeomColumns(['geom']);
-   });
-
    afterAll(async (done) => {
-      pool.end();
-      changeGeomColumns([]);
-      done();
+      // changeGeomColumns([]);
    });
 
    it('should execute a non geometric query', async () => {
       const query = `select sigla from estado where sigla='MG'`;
-      const { body } = await request(app).post('/results').send({ query });
+      const { body } = await request(app).post('/results').send({ query, database: 'brasil' });
 
       expect(body[0].sigla).toBe('MG');
       expect(body[0]).not.toHaveProperty('geojson');
@@ -26,7 +21,7 @@ describe('QueryController', () => {
 
    it('should execute a geometric query', async () => {
       const query = `select geom from estado where sigla='MG'`;
-      const { body } = await request(app).post('/results').send({ query });
+      const { body } = await request(app).post('/results').send({ query, database: 'brasil' });
 
       expect(body[0]).toHaveProperty('geojson');
       expect(body[0]).not.toHaveProperty('sigla');
