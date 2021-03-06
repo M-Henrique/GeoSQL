@@ -99,7 +99,7 @@ export const QueryProvider: React.FC = ({ children }) => {
             return;
          }
       },
-      [firstTime, handleQueryHistory]
+      [firstTime, handleQueryHistory, database]
    );
 
    return (

@@ -49,17 +49,25 @@
    margin-right: 0.5rem;
 }
 
+#landingContainer #introContainer #logosContainer img {
+   width: 20rem;
+
+   margin: 0 4rem;
+}
+
 #landingContainer footer {
    margin-bottom: 2rem;
-
-   color: var(--color-text-in-primary);
 }
 
-#landingContainer footer a {
-   color: var(--color-generic-link);
-   text-decoration: none;
+#landingContainer footer a img {
+   width: 20rem;
 }
 
-#landingContainer footer a:hover {
-   text-decoration: underline;
+#landingContainer footer a:nth-child(2) {
+   margin: 0 4rem;
+   padding: 0 4rem;
+}
+
+#landingContainer footer a:nth-child(2) {
+   margin-right: 2rem;
 }

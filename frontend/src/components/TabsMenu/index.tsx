@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 
 import { FiDatabase, FiList, FiMap } from 'react-icons/fi';
 
-import Logo from '../../assets/images/logoGeosqlplus210x56.png';
+import Logo from '../../assets/images/Logo_GeoSQL_small.png';
 
 import './styles.css';
 

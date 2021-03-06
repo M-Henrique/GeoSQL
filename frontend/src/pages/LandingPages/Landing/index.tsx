@@ -5,7 +5,10 @@ import { FiPlayCircle } from 'react-icons/fi';
 
 import LandingHeader from '../../../components/LandingHeader';
 
-import Logo from '../../../assets/images/logGeosqlplus743x232.png';
+import LogoGeoSQL from '../../../assets/images/Logo_GeoSQL.png';
+import LogoUFMG from '../../../assets/images/Logo_UFMG.png';
+import LogoDCC from '../../../assets/images/Logo_DCC.png';
+import LogoCSX from '../../../assets/images/Logo_CSX.png';
 
 import './styles.css';
 
@@ -17,7 +20,7 @@ export default function Landing() {
          </header>
 
          <section id="introContainer" className="container">
-            <img src={Logo} alt="Logo GeoSQL" />
+            <img src={LogoGeoSQL} alt="Logo GeoSQL" />
             <h1>
                Esse é o GeoSQL+, um ambiente online para aprendizado de SQL espacialmente estendido.
                <br />
@@ -31,11 +34,17 @@ export default function Landing() {
 
          <footer>
             <a href="https://www.dcc.ufmg.br/dcc/" target="_blank" rel="noopener noreferrer">
-               Departamento de Ciência da Computação
-            </a>{' '}
-            -{' '}
+               <img src={LogoDCC} alt="Logo DCC" />
+            </a>
+            <a
+               href="https://www.dcc.ufmg.br/dcc/?q=pt-br/LabCS%2BX"
+               target="_blank"
+               rel="noopener noreferrer"
+            >
+               <img src={LogoCSX} alt="Logo CSX" />
+            </a>
             <a href="https://ufmg.br/" target="_blank" rel="noopener noreferrer">
-               UFMG
+               <img src={LogoUFMG} alt="Logo UFMG" />
             </a>
          </footer>
       </div>
