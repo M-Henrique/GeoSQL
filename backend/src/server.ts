@@ -9,7 +9,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-morgan.token('body', (req, res) => JSON.stringify(req.body));
+morgan.token('body', (req, res) => JSON.stringify((req as any).body));
 app.use(
    morgan(
       ':method :url :status :response-time ms - :res[content-length] :body - :req[content-length]'
