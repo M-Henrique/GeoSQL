@@ -242,7 +242,7 @@ const PolygonMenu: React.FC<PolygonMenuProps> = ({ layer }) => {
             value={layer
                .getSource()
                .getFeatures()[0]
-               .getStyle()
+               .getStyle()!
                //@ts-ignore
                .getFill()
                .getColor()}

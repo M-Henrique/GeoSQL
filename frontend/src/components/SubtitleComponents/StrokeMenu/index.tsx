@@ -132,7 +132,7 @@ const StrokeMenu: React.FC<StrokeMenuProps> = ({ layer }) => {
             value={layer
                .getSource()
                .getFeatures()[0]
-               .getStyle()
+               .getStyle()!
                //@ts-ignore
                .getStroke()
                .getColor()}

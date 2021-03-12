@@ -33,7 +33,7 @@ const LabelMenu: React.FC<LabelMenuProps> = ({ layer }) => {
          // Atualiza o texto de cada feature baseado na label que foi passada.
          features.forEach((feature) => {
             feature
-               .getStyle()
+               .getStyle()!
                //@ts-ignore
                .getText()
                .setText(
