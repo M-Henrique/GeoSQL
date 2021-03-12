@@ -3,7 +3,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 
 import '@testing-library/jest-dom/extend-expect';
 
-import { MemoryRouter } from 'react-router-dom';
+import { StaticRouter } from 'react-router-dom';
 
 import TablesContext from '../contexts/tables';
 import QueryContext from '../contexts/query';
@@ -98,7 +98,7 @@ describe('Testing query component', () => {
                <Query />
             </QueryContext.Provider>
          </TablesContext.Provider>,
-         { wrapper: MemoryRouter }
+         { wrapper: StaticRouter }
       );
    });
 
