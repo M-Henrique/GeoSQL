@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 
 import 'jest-canvas-mock';
 import '@testing-library/jest-dom/extend-expect';
@@ -71,6 +71,118 @@ describe('Testing Results component', () => {
       );
    });
 
+   it('should display the loading icon while loading', () => {
+      cleanup();
+
+      const queryContextProps = {
+         firstTime: false,
+         query: '',
+         setQuery: jest.fn((query) => {}),
+         submitQuery: jest.fn((query: string) => {
+            return new Promise<void>((resolve, reject) => {});
+         }),
+         results: [],
+         hasGeomValue: false,
+         loading: true,
+      };
+
+      render(
+         <QueryContext.Provider value={queryContextProps}>
+            <Results />
+         </QueryContext.Provider>,
+         { wrapper: StaticRouter }
+      );
+
+      expect(document.getElementById('loadingContainer')).toBeInTheDocument();
+      expect(document.getElementById('firstTimeContainer')).not.toBeInTheDocument();
+      expect(document.getElementById('errorContainer')).not.toBeInTheDocument();
+      expect(screen.queryByRole('table')).not.toBeInTheDocument();
+   });
+
+   it('should display a message when seeing for the first time', () => {
+      cleanup();
+
+      const queryContextProps = {
+         firstTime: true,
+         query: '',
+         setQuery: jest.fn((query) => {}),
+         submitQuery: jest.fn((query: string) => {
+            return new Promise<void>((resolve, reject) => {});
+         }),
+         results: [],
+         hasGeomValue: false,
+         loading: false,
+      };
+
+      render(
+         <QueryContext.Provider value={queryContextProps}>
+            <Results />
+         </QueryContext.Provider>,
+         { wrapper: StaticRouter }
+      );
+
+      expect(document.getElementById('loadingContainer')).not.toBeInTheDocument();
+      expect(document.getElementById('firstTimeContainer')).toBeInTheDocument();
+      expect(document.getElementById('errorContainer')).not.toBeInTheDocument();
+      expect(screen.queryByRole('table')).not.toBeInTheDocument();
+   });
+
+   it('should display a message when there are no results', () => {
+      cleanup();
+
+      const queryContextProps = {
+         firstTime: false,
+         query: '',
+         setQuery: jest.fn((query) => {}),
+         submitQuery: jest.fn((query: string) => {
+            return new Promise<void>((resolve, reject) => {});
+         }),
+         results: [],
+         hasGeomValue: false,
+         loading: false,
+      };
+
+      render(
+         <QueryContext.Provider value={queryContextProps}>
+            <Results />
+         </QueryContext.Provider>,
+         { wrapper: StaticRouter }
+      );
+
+      expect(document.getElementById('loadingContainer')).not.toBeInTheDocument();
+      expect(document.getElementById('firstTimeContainer')).toBeInTheDocument();
+      expect(document.getElementById('errorContainer')).not.toBeInTheDocument();
+      expect(screen.queryByRole('table')).not.toBeInTheDocument();
+   });
+
+   it('should display the error when the query resulted in an error', () => {
+      cleanup();
+
+      const queryContextProps = {
+         firstTime: false,
+         query: '',
+         setQuery: jest.fn((query) => {}),
+         submitQuery: jest.fn((query: string) => {
+            return new Promise<void>((resolve, reject) => {});
+         }),
+         results: 'ERRO' as any,
+         hasGeomValue: false,
+         loading: false,
+      };
+
+      render(
+         <QueryContext.Provider value={queryContextProps}>
+            <Results />
+         </QueryContext.Provider>,
+         { wrapper: StaticRouter }
+      );
+
+      expect(document.getElementById('loadingContainer')).not.toBeInTheDocument();
+      expect(document.getElementById('firstTimeContainer')).not.toBeInTheDocument();
+      expect(document.getElementById('errorContainer')).toBeInTheDocument();
+      expect(screen.queryByRole('table')).not.toBeInTheDocument();
+   });
+
    it('should display the correct resulting rows', () => {
       expect(
          screen.getByRole('row', {
@@ -93,6 +205,10 @@ describe('Testing Results component', () => {
             name: /3 SP Cubatão Refinaria Presidente Bernardes RPB001 RPBC 3513504 ST_Point/i,
          })
       ).toBeInTheDocument();
+
+      expect(document.getElementById('loadingContainer')).not.toBeInTheDocument();
+      expect(document.getElementById('firstTimeContainer')).not.toBeInTheDocument();
+      expect(document.getElementById('errorContainer')).not.toBeInTheDocument();
    });
 
    it('should be able to download results in JSON format', () => {

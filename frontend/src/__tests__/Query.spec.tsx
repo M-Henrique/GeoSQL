@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 
 import '@testing-library/jest-dom/extend-expect';
 
@@ -102,16 +102,75 @@ describe('Testing query component', () => {
       );
    });
 
-   it('should display the correct tables (rows)', () => {
+   it('should display the loading icon while loading', () => {
+      cleanup();
+
+      const tablesContextProps = {
+         database: '',
+         tables: [],
+         tablesColumns: [],
+         getTables: jest.fn((database: string) => {
+            return new Promise<void>((resolve, reject) => {});
+         }),
+         loading: true,
+      };
+
+      render(
+         <TablesContext.Provider value={tablesContextProps}>
+            <QueryContext.Provider value={queryContextProps}>
+               <Query />
+            </QueryContext.Provider>
+         </TablesContext.Provider>,
+         { wrapper: StaticRouter }
+      );
+
+      expect(document.getElementById('loadingContainer')).toBeInTheDocument();
+      expect(document.getElementById('firstTimeContainer')).not.toBeInTheDocument();
+      expect(screen.queryByRole('table')).not.toBeInTheDocument();
+   });
+
+   it('should display a message when no tables are set', () => {
+      cleanup();
+
+      const tablesContextProps = {
+         database: '',
+         tables: [],
+         tablesColumns: [],
+         getTables: jest.fn((database: string) => {
+            return new Promise<void>((resolve, reject) => {});
+         }),
+         loading: false,
+      };
+
+      render(
+         <TablesContext.Provider value={tablesContextProps}>
+            <QueryContext.Provider value={queryContextProps}>
+               <Query />
+            </QueryContext.Provider>
+         </TablesContext.Provider>,
+         { wrapper: StaticRouter }
+      );
+
+      expect(document.getElementById('firstTimeContainer')).toBeInTheDocument();
+      expect(document.getElementById('loadingContainer')).not.toBeInTheDocument();
+      expect(screen.queryByRole('table')).not.toBeInTheDocument();
+   });
+
+   it('should display the correct tables (rows) when they are set', () => {
       expect(
          screen.getByRole('row', { name: /altitude num_pista pais pavimento uf/i })
       ).toBeInTheDocument();
       expect(screen.getByRole('row', { name: /areakm2 geom/i })).toBeInTheDocument();
       expect(screen.getByRole('row', { name: /cod_dest cod_duto/i })).toBeInTheDocument();
+
+      expect(document.getElementById('loadingContainer')).not.toBeInTheDocument();
+      expect(document.getElementById('firstTimeContainer')).not.toBeInTheDocument();
    });
 
    it('should insert query history queries inside the textarea', () => {
       const queries = screen.getAllByRole('listitem');
+
+      expect(queries).toHaveLength(2);
 
       queries.forEach((query) => {
          fireEvent.click(query);
