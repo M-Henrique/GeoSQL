@@ -168,6 +168,8 @@ export const LayersProvider: React.FC = ({ children }) => {
             // Tipagem desnecessária nesse caso (openlayers reconhece atributos personalizados automaticamente).
             //@ts-ignore
             id,
+            // Classname necessário para evitar que labels 'declutteradas' sobreponham outras layers (https://github.com/openlayers/openlayers/issues/10096)
+            className: `Layer ${id}`,
             // Query realizada pelo usuário (para exibição ao manter o mouse em cima da camada, na legenda).
             query,
             labels: layerLabels,
@@ -177,6 +179,7 @@ export const LayersProvider: React.FC = ({ children }) => {
             // Armazenamento do tamanho das features da camada (caso aplicável).
             size: radius,
             source: vectorSource,
+            declutter: true,
          });
 
          // Atualização do vetor de layers e do contador de ID das layers.

@@ -10,7 +10,7 @@ import QueryContext from '../contexts/query';
 
 import Results from '../pages/MainPages/Results';
 
-describe('Testing Results component', () => {
+describe('Testing results component', () => {
    const queryContextProps = {
       firstTime: false,
       query: '',
