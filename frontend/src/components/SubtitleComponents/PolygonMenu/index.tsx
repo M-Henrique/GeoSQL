@@ -248,6 +248,7 @@ const PolygonMenu: React.FC<PolygonMenuProps> = ({ layer }) => {
                .getColor()}
             onChange={handlePolygonColor}
          />
+
          <input
             id={`polygonSizePicker${layer.get('id')}`}
             type="range"
@@ -260,6 +261,7 @@ const PolygonMenu: React.FC<PolygonMenuProps> = ({ layer }) => {
             draggable="true"
             onDragStart={handleInputDrag}
          />
+
          <div className="polygonShapesPicker container">
             <button
                className={layer.get('shape') === 'square' ? 'selectedShape shape' : 'shape'}

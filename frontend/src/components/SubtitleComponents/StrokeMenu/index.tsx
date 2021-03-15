@@ -23,11 +23,8 @@ interface StrokeMenuProps {
 const StrokeMenu: React.FC<StrokeMenuProps> = ({ layer }) => {
    // Estados de utilidade. São estados utilizados para indicar ao react que o valor dos inputs foi atualizado (utilizando o set), o que  faz com que o react renderize novamente o componente em questão.
    // Ex: ao alterar o input de cor (do polígono ou da linha), usamos o setColor para dizer ao react que o input mudou, fazendo com que ele altere o input visualmente e renderize-o novamente.
-   // eslint desativado para evitar os avisos das variáveis inutilizadas
-   // eslint-disable-next-line
-   const [color, setColor] = useState<string>();
-   // eslint-disable-next-line
-   const [size, setSize] = useState<number>();
+   const [, setColor] = useState<string>();
+   const [, setSize] = useState<number>();
 
    // Função de utilidade para pegar o formato atual da camada (caso aplicável).
    const getShape = useCallback((shape: string, size: number) => {
@@ -138,6 +135,7 @@ const StrokeMenu: React.FC<StrokeMenuProps> = ({ layer }) => {
                .getColor()}
             onChange={handleStrokeColor}
          />
+
          <input
             id={`strokeSizePicker${layer.get('id')}`}
             type="range"

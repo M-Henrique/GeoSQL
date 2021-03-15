@@ -1,6 +1,6 @@
 /*------------------------------------------------------------------------------------------------------------------------
 |  A tipagem do Openlayers sofre um bug so utilizar a função getStyle,                                                   |
-|     da VectorLayer. Apesar de, no arquivo "C:\Apache24\htdocs\TCC\frontend\node_modules\@types\ol\style\Style.d.ts"    |
+|     da VectorLayer. Apesar de, no arquivo "__dirname\node_modules\@types\ol\style\Style.d.ts"    |
 |        o retorno ser especificado como "Style", por algum motivo esse retorno não é reconhecido, forçando a utilização |
 |           de @ts-ignore por diversas vezes ao longo do arquivo.                                                        |
 |                                                                                                                        |
@@ -8,7 +8,7 @@
 |                                                                                                                        |
 ------------------------------------------------------------------------------------------------------------------------*/
 
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 
 import VectorLayer from 'ol/layer/Vector';
 
@@ -19,13 +19,17 @@ interface LabelMenuProps {
 }
 
 const LabelMenu: React.FC<LabelMenuProps> = ({ layer }) => {
+   // Estado de utilidade. Estado utilizado para indicar ao react que o valor dos inputs foi atualizado (utilizando o set), o que faz com que o react renderize novamente o componente em questão.
+   // Ex: ao alterar o input de cor, usamos o setColor para dizer ao react que o input mudou, fazendo com que ele altere o input visualmente e renderize-o novamente.
+   const [, setColor] = useState<string>();
+
    const source = layer.getSource();
    const features = source.getFeatures();
 
-   const handleLabel = useCallback(
+   const handleLabelText = useCallback(
       (labelIdentifier: number) => {
          const newLabel = (document.getElementById(
-            `labelPicker${labelIdentifier}`
+            `labelTextPicker${labelIdentifier}`
          ) as HTMLLIElement)
             .getAttribute('value')!
             .toString();
@@ -48,30 +52,66 @@ const LabelMenu: React.FC<LabelMenuProps> = ({ layer }) => {
       [features, source]
    );
 
+   const handleLabelColor = useCallback(() => {
+      const newColor = (document.getElementById(
+         `labelColorPicker${layer.get('id')}`
+      )! as HTMLInputElement).value;
+
+      // Atualiza o texto de cada feature baseado na label que foi passada.
+      features.forEach((feature) => {
+         feature
+            .getStyle()!
+            //@ts-ignore
+            .getText()
+            .getFill()
+            .setColor(newColor);
+      });
+
+      source.changed();
+      setColor(newColor);
+   }, [features, layer, source]);
+
    return (
-      <ul className="labelMenu menu container">
-         <li
-            id={`labelPicker-1`}
-            className="label"
-            value={''}
-            style={{ color: '#A83232' }}
-            onClick={() => handleLabel(-1)}
-         >
-            {' '}
-            VAZIO{' '}
-         </li>
-         {layer.get('labels').map((label: string, index: number) => (
+      <div className="labelMenu menu container">
+         <input
+            type="color"
+            id={`labelColorPicker${layer.get('id')}`}
+            className="colorPicker"
+            value={layer
+               .getSource()
+               .getFeatures()[0]
+               .getStyle()!
+               //@ts-ignore
+               .getText()
+               .getFill()
+               .getColor()}
+            onChange={handleLabelColor}
+         />
+
+         <ul>
             <li
-               key={index}
-               id={`labelPicker${index}`}
+               id={`labelTextPicker-1`}
                className="label"
-               value={label}
-               onClick={() => handleLabel(index)}
+               value={''}
+               style={{ color: '#A83232' }}
+               onClick={() => handleLabelText(-1)}
             >
-               {label}
+               {' '}
+               VAZIO{' '}
             </li>
-         ))}
-      </ul>
+            {layer.get('labels').map((label: string, index: number) => (
+               <li
+                  key={index}
+                  id={`labelTextPicker${index}`}
+                  className="label"
+                  value={label}
+                  onClick={() => handleLabelText(index)}
+               >
+                  {label}
+               </li>
+            ))}
+         </ul>
+      </div>
    );
 };
 
