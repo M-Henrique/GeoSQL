@@ -95,9 +95,18 @@
 
 #queryContainer #inputsContainer #historyContainer {
    height: 20vh;
-   max-width: 20rem;
+   width: 20rem;
    margin-right: 1.5rem;
    padding: 0.2rem;
+
+   flex-direction: column;
+}
+
+#queryContainer #inputsContainer #historyContainer #history {
+   height: 20vh;
+   max-width: 20rem;
+
+   margin-bottom: 0.8rem;
 
    flex: 1;
 
@@ -111,13 +120,13 @@
    background: white;
 }
 
-#queryContainer #inputsContainer #historyContainer ul {
+#queryContainer #inputsContainer #historyContainer #history ul {
    width: 100%;
 
    list-style: none;
 }
 
-#queryContainer #inputsContainer #historyContainer ul li {
+#queryContainer #inputsContainer #historyContainer #history ul li {
    padding: 0 0.2rem;
 
    overflow: hidden;
@@ -125,49 +134,79 @@
    text-overflow: ellipsis;
 }
 
-#queryContainer #inputsContainer #historyContainer ul li:first-child {
+#queryContainer #inputsContainer #historyContainer #history ul li:first-child {
    border-top-left-radius: 1rem;
    border-top-right-radius: 1rem;
 }
 
-#queryContainer #inputsContainer #historyContainer ul li:last-child {
+#queryContainer #inputsContainer #historyContainer #history ul li:last-child {
    border-bottom-left-radius: 1rem;
    border-bottom-right-radius: 1rem;
 }
 
-#queryContainer #inputsContainer #historyContainer ul li:hover {
+#queryContainer #inputsContainer #historyContainer #history ul li:hover {
    background: #ddd;
 
    cursor: pointer;
 }
 
-#queryContainer #inputsContainer #historyContainer ul li:not(:last-child) {
+#queryContainer #inputsContainer #historyContainer #history ul li:not(:last-child) {
    border-bottom: 0.1rem solid var(--color-secondary-light);
 }
 
-#queryContainer #inputsContainer #historyContainer::-webkit-scrollbar {
+#queryContainer #inputsContainer #historyContainer #history::-webkit-scrollbar {
    width: 0.5rem;
    height: 0.5rem;
 }
 
-#queryContainer #inputsContainer #historyContainer::-webkit-scrollbar-thumb {
+#queryContainer #inputsContainer #historyContainer #history::-webkit-scrollbar-thumb {
    border-radius: 5rem;
 
    background: var(--color-secondary-lighter);
 }
 
-#queryContainer #inputsContainer #historyContainer::-webkit-scrollbar-track {
+#queryContainer #inputsContainer #historyContainer #history::-webkit-scrollbar-track {
    margin: 0.8rem;
 
    background: transparent;
 }
 
-#queryContainer #inputsContainer #historyContainer::-webkit-scrollbar-thumb:hover {
+#queryContainer #inputsContainer #historyContainer #history::-webkit-scrollbar-thumb:hover {
    background: var(--color-secondary-light);
 }
 
-#queryContainer #inputsContainer #historyContainer::-webkit-scrollbar-corner {
+#queryContainer #inputsContainer #historyContainer #history::-webkit-scrollbar-corner {
    opacity: 0;
+}
+
+#queryContainer #inputsContainer #historyContainer button {
+   height: 3rem;
+   padding: 0.5rem;
+
+   display: flex;
+   justify-content: center;
+   align-items: center;
+
+   border: none;
+   border-radius: 0.5rem;
+
+   font: 400 1.2rem var(--font-family-title);
+
+   color: var(--color-text-in-success-button);
+   background: var(--color-primary-dark);
+
+   transition: all 0.2s ease;
+}
+
+#queryContainer #inputsContainer #historyContainer button:hover {
+   /* filter: brightness(85%); */
+   background: var(--color-primary-darker);
+
+   cursor: pointer;
+}
+
+#queryContainer #inputsContainer #historyContainer button svg {
+   margin-right: 0.5rem;
 }
 
 #queryContainer #inputsContainer #textAreaContainer {

@@ -1,7 +1,7 @@
 import React, { useContext, useCallback, useState } from 'react';
 import { Link } from 'react-router-dom';
 
-import { FiSearch, FiSave, FiHelpCircle } from 'react-icons/fi';
+import { FiDownload, FiSearch, FiSave, FiHelpCircle } from 'react-icons/fi';
 import ClipLoader from 'react-spinners/ClipLoader';
 
 import QueryContext from '../../../contexts/query';
@@ -23,6 +23,31 @@ export default function Query() {
          .filter((nonEmpty) => nonEmpty)
          .reverse()
    );
+
+   // Função que salva o histórico de queries em um arquivo txt.
+   const handleSaveHistory = useCallback(() => {
+      const history = sessionStorage
+         .getItem('@geosql/query-history')
+         ?.split('@geosqlidentifier@')
+         .filter((nonEmpty) => nonEmpty);
+
+      if (!history) return;
+
+      let queryList = '';
+      history.forEach((pastQuery, index) => {
+         queryList += `${index + 1} - ${pastQuery}\n`;
+      });
+
+      const file = new Blob([queryList], { type: 'text/plain' });
+      const fileName = `History.txt`;
+
+      const downloadUrl = URL.createObjectURL(file);
+
+      const downloadLink = document.createElement('a');
+      downloadLink.download = fileName;
+      downloadLink.href = downloadUrl;
+      downloadLink.click();
+   }, []);
 
    // Função que submete a consulta do usuário.
    const handleSubmitQuery = useCallback(async () => {
@@ -92,13 +117,21 @@ export default function Query() {
 
             <div id="inputsContainer" className="container">
                <div id="historyContainer" className="container">
-                  <ul>
-                     {queryHistory?.map((pastQuery: string, index) => (
-                        <li key={index} title={pastQuery} onClick={() => setQuery(pastQuery)}>
-                           {pastQuery}
-                        </li>
-                     ))}
-                  </ul>
+                  <div id="history" className="container">
+                     <ul>
+                        {queryHistory?.map((pastQuery: string, index) => (
+                           <li key={index} title={pastQuery} onClick={() => setQuery(pastQuery)}>
+                              {pastQuery}
+                           </li>
+                        ))}
+                     </ul>
+                  </div>
+
+                  <button onClick={handleSaveHistory}>
+                     {' '}
+                     <FiDownload size={20} />
+                     Baixar histórico
+                  </button>
                </div>
 
                <div id="textAreaContainer" className="container">
