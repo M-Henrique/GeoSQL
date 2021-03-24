@@ -33,9 +33,10 @@ export default function Query() {
 
       if (!history) return;
 
+      // Formato semelhante a uma lista de exercícios.
       let queryList = '';
       history.forEach((pastQuery, index) => {
-         queryList += `${index + 1} - ${pastQuery}\n`;
+         queryList += `${index + 1} - ${pastQuery}\n\n`;
       });
 
       const file = new Blob([queryList], { type: 'text/plain' });

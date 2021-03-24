@@ -66,6 +66,19 @@ export const LayersProvider: React.FC = ({ children }) => {
       return shapes[Math.floor(Math.random() * shapes.length)];
    }, []);
 
+   // Função auxiliar para verificar a necessidade de "declutter" na camada
+   const checkLayerDeclutter = useCallback((features) => {
+      for (let i in features) {
+         if (
+            JSON.parse(features[i]).type === 'LineString' ||
+            JSON.parse(features[i]).type === 'MultiLineString'
+         )
+            return true;
+      }
+
+      return false;
+   }, []);
+
    // Flag utilizada para demarcar a primeira renderização.
    const isInitialMount = useRef(true);
    useEffect(() => {
@@ -179,7 +192,7 @@ export const LayersProvider: React.FC = ({ children }) => {
             // Armazenamento do tamanho das features da camada (caso aplicável).
             size: radius,
             source: vectorSource,
-            declutter: true,
+            declutter: checkLayerDeclutter(geoJSONObject.features),
          });
 
          // Atualização do vetor de layers e do contador de ID das layers.
