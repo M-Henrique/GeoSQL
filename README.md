@@ -1,4 +1,4 @@
-<h1 align="center"><img alt="Logo" src="./frontend/src/assets/images/logGeosqlplus743x232.png" /></h1>
+<h1 align="center"><img alt="Logo" src="./frontend/src/assets/images/Logo_GeoSQL.png" /></h1>
 
 <p align="center">
   <a href="#clipboard-about-the-project">About the Project</a> •
