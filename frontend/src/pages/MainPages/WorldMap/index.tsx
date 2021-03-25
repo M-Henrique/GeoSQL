@@ -79,8 +79,11 @@ export default function WorldMap() {
 
    /*----------------------------- Funções responsáveis por aplicar o zoom e o centro ao mapa baseados no banco selecionado -------------------------------------------*/
    const handleMapCenter = useCallback((): Coordinate => {
-      switch (database) {
+      const databaseName = database.replace('geosql_', '');
+
+      switch (databaseName) {
          case 'brasil':
+         case 'br_rodovias':
             return fromLonLat([-50.809373, -18.022386]);
          case 'minasgerais':
             return fromLonLat([-45.00894, -19.264079]);
@@ -92,8 +95,11 @@ export default function WorldMap() {
    }, [database]);
 
    const handleMapZoom = useCallback((): number => {
-      switch (database) {
+      const databaseName = database.replace('geosql_', '');
+
+      switch (databaseName) {
          case 'brasil':
+         case 'br_rodovias':
             return 4.9;
          case 'minasgerais':
             return 7;

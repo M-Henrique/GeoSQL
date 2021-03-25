@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { Client } from 'pg';
 
-export default class TablesController {
+export default class DatabasesController {
    public async index(request: Request, response: Response) {
       const { database } = request.query;
 
@@ -18,18 +18,13 @@ export default class TablesController {
          await client.connect();
 
          // Retorna as tabelas junto de suas respectivas colunas (para saber qual coluna pertence a qual tabela).
-         const { rows: tablesColumns } = await client.query(
-            `SELECT DISTINCT table_name as table, column_name as name FROM information_schema.columns WHERE table_schema = 'geodata' ORDER BY table_name;`
-         );
-
-         // Retorna apenas as tabelas (para facilitar a indexação).
-         const { rows: tables } = await client.query(
-            `SELECT DISTINCT table_name as name FROM information_schema.columns WHERE table_schema = 'geodata' ORDER BY table_name;`
+         const { rows: databases } = await client.query(
+            `SELECT datname FROM pg_database WHERE datname like 'geosql_%';`
          );
 
          client.end();
 
-         return response.json({ tablesColumns, tables });
+         return response.json({ databases });
       } catch (error) {
          if (client) {
             client.end();

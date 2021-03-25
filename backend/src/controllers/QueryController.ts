@@ -1,8 +1,6 @@
 import { Request, Response } from 'express';
 import { Client } from 'pg';
 
-import { geomColumns } from '../database';
-
 export default class QueryController {
    public async show(request: Request, response: Response) {
       const { query, database }: { query: string; database: string } = request.body;
@@ -19,6 +17,12 @@ export default class QueryController {
       try {
          await client.connect();
 
+         // Armazena os nomes das colunas geométricas para diferente tratamento.
+         const geomColumnsObj = await client.query(
+            `SELECT f_geometry_column FROM geometry_columns;`
+         );
+         const geomColumns = [...new Set(geomColumnsObj.rows.map((row) => Object.values(row)[0]))];
+
          // Cria uma tabela temporária para armazenar os resultados da consulta realizada, e recupera o conteúdo da mesma.
          await client.query(`DROP TABLE IF EXISTS resultados;`);
 
@@ -32,7 +36,7 @@ export default class QueryController {
                const geomColumn = results.fields[i].name;
 
                results = await client.query(
-                  `SELECT *, ST_GeometryType(ST_Transform(${geomColumn},4678)::geometry) AS geometria, ST_AsGeoJSON (ST_Transform(${geomColumn},4678)::geometry) AS geojson FROM resultados;`
+                  `SELECT *, ST_GeometryType(ST_Transform(${geomColumn},4678)::geometry) AS geometria, ST_AsGeoJSON(ST_Transform(ST_CurveToLine(${geomColumn},0,0,0),4678)::geometry) AS geojson FROM resultados;`
                );
 
                // Coordenadas não serão mais necessárias

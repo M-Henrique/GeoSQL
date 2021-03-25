@@ -7,6 +7,7 @@ import api from '../services/api';
 interface ContextData {
    database: string;
 
+   databases: Array<string>;
    tables: Array<any>;
    tablesColumns: Array<any>;
    getTables(database: string): Promise<void>;
@@ -21,8 +22,10 @@ export const TablesProvider: React.FC = ({ children }) => {
    const [database, setDatabase] = useState(
       sessionStorage.getItem('@geosql/selected-database')
          ? sessionStorage.getItem('@geosql/selected-database')!
-         : 'brasil'
+         : 'geosql_brasil'
    );
+   // Bancos de dados.
+   const [databases, setDatabases] = useState<string[]>([]);
    // Tabelas (para facilitar indexação).
    const [tables, setTables] = useState([]);
    // Tabelas com suas respectivas colunas.
@@ -51,13 +54,29 @@ export const TablesProvider: React.FC = ({ children }) => {
       }
    }, []);
 
+   // Função que realiza a chamada à api, para recuperar os bancos de dados disponíveis para a aplicação.
+   const getDatabases = useCallback(async () => {
+      const {
+         data: { databases },
+      } = await api.get('/databases', { params: { database } });
+
+      const allDatabases: string[] = databases.map(
+         (database: { datname: string }) => database.datname
+      );
+
+      setDatabases([...allDatabases]);
+   }, [database]);
+
    useEffect(() => {
       getTables(database);
+      getDatabases();
       // eslint-disable-next-line
-   }, [getTables]);
+   }, [getTables, getDatabases]);
 
    return (
-      <TablesContext.Provider value={{ database, tables, tablesColumns, getTables, loading }}>
+      <TablesContext.Provider
+         value={{ database, databases, tables, tablesColumns, getTables, loading }}
+      >
          {children}
       </TablesContext.Provider>
    );

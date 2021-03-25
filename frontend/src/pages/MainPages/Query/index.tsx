@@ -13,7 +13,9 @@ import './styles.css';
 
 export default function Query() {
    const { query, setQuery, submitQuery } = useContext(QueryContext);
-   const { database, tables, tablesColumns, getTables, loading } = useContext(TablesContext);
+   const { database, databases, tables, tablesColumns, getTables, loading } = useContext(
+      TablesContext
+   );
 
    // Estado que armazena o histórico de queries, filtrado para não incluir os resultados vazios do método split, e revertido para ser visualizado corretamente.
    const [queryHistory] = useState(
@@ -179,9 +181,15 @@ export default function Query() {
                      value={database}
                      onChange={handleChangeDatabase}
                   >
-                     <option value="brasil">Brasil</option>
-                     <option value="minasgerais">Minas Gerais</option>
-                     <option value="belohorizonte">Belo Horizonte</option>
+                     {databases.map((database, index) => {
+                        const databaseName = database.replace('geosql_', '');
+
+                        return (
+                           <option key={index} value={database}>
+                              {databaseName}
+                           </option>
+                        );
+                     })}
                   </select>
                </div>
             </div>
