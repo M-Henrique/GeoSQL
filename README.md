@@ -50,7 +50,7 @@ Some information regarding the development environment of the application:
 
 ## :computer: Usage
 
-The platform is available for use at [http://greenwich.lbd.dcc.ufmg.br/](http://greenwich.lbd.dcc.ufmg.br/). The help page offers an extensive tutorial on the features and tools of the system.
+The platform is available for use at [http://aqui.io/geosql/](http://aqui.io/geosql/). The help page offers an extensive tutorial on the features and tools of the system.
 
 ## :information_source: License
 
