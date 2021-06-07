@@ -3,6 +3,7 @@ import React from 'react';
 import { TablesProvider } from './contexts/tables';
 import { QueryProvider } from './contexts/query';
 import { LayersProvider } from './contexts/layers';
+import { FiltersProvider } from './contexts/filters';
 
 import Routes from './routes';
 
@@ -13,7 +14,9 @@ function App() {
       <TablesProvider>
          <QueryProvider>
             <LayersProvider>
-               <Routes />
+               <FiltersProvider>
+                  <Routes />
+               </FiltersProvider>
             </LayersProvider>
          </QueryProvider>
       </TablesProvider>

@@ -19,9 +19,13 @@ import {
    FaTrash,
    FaCaretDown,
    FaEye,
+   FaPlus,
+   FaTimes,
 } from 'react-icons/fa';
 
 import { SlideDown } from 'react-slidedown';
+
+import ReactTooltip from 'react-tooltip';
 
 import Map from 'ol/Map';
 import View from 'ol/View';
@@ -35,6 +39,7 @@ import Select from 'ol/interaction/Select';
 
 import TablesContext from '../../../contexts/tables';
 import LayersContext from '../../../contexts/layers';
+import FiltersContext from '../../../contexts/filters';
 
 import TabsMenu from '../../../components/TabsMenu';
 
@@ -61,6 +66,16 @@ interface DnDProps {
 export default function WorldMap() {
    const { database } = useContext(TablesContext);
    const { layers, setLayers } = useContext(LayersContext);
+   const {
+      filters,
+      incrementalID,
+      handleAddFilter,
+      handleChangeFilterLabel,
+      handleChangeFilterOperator,
+      handleChangeFilterValue,
+      handleChangeFilterColor,
+      handleDeleteFilter,
+   } = useContext(FiltersContext);
 
    const [map, setMap] = useState<Map>();
 
@@ -340,6 +355,12 @@ export default function WorldMap() {
       [handleClosePopup, layers, list, map, setLayers]
    );
 
+   // Função de utilidade para impedir que o arrasto do mouse ao selecionar o conteúdo do input de texto inicie um drag da camada.
+   const handleInputDrag = useCallback((event) => {
+      event.preventDefault();
+      event.stopPropagation();
+   }, []);
+
    /*----------------------------------------- Função que realiza o update visual da legenda após o drag --------------------------------------------------*/
 
    const isInitialMount = useRef(true);
@@ -444,12 +465,14 @@ export default function WorldMap() {
 
          <section id="mainContainer" className="container">
             <div id="map"></div>
+
             <div id="popup">
                <button id="popupCloser" onClick={handleClosePopup}>
                   X
                </button>
                <div id="popupContent"></div>
             </div>
+
             <div id="subtitleContainer" className="container">
                <button
                   id="toggleSubtitle"
@@ -458,6 +481,7 @@ export default function WorldMap() {
                >
                   <FaList id="toggleSubtitleIcon" />
                </button>
+
                <SlideDown>
                   {showSubtitle && (
                      <ul id="layersContainer" className="container">
@@ -486,27 +510,40 @@ export default function WorldMap() {
                                  <div className="buttons container">
                                     {isLayerVisible[index] ||
                                     isLayerVisible[index] === undefined ? (
-                                       <button
-                                          className="toggleVisibility layerVisible"
-                                          onClick={() => handleLayerVisibility(index, layer)}
-                                       >
-                                          <FaEyeSlash />
-                                       </button>
+                                       <>
+                                          <button
+                                             data-tip="Alternar visibilidade"
+                                             data-background-color="rgb(59, 59, 59)"
+                                             className="toggleVisibility layerVisible"
+                                             onClick={() => handleLayerVisibility(index, layer)}
+                                          >
+                                             <FaEyeSlash />
+                                          </button>
+                                          <ReactTooltip place="left" type="dark" effect="solid" />
+                                       </>
                                     ) : (
-                                       <button
-                                          className="toggleVisibility"
-                                          onClick={() => handleLayerVisibility(index, layer)}
-                                       >
-                                          <FaEye />
-                                       </button>
+                                       <>
+                                          <button
+                                             data-tip="Alternar visibilidade"
+                                             data-background-color="rgb(59, 59, 59)"
+                                             className="toggleVisibility"
+                                             onClick={() => handleLayerVisibility(index, layer)}
+                                          >
+                                             <FaEye />
+                                          </button>
+                                          <ReactTooltip place="left" type="dark" effect="solid" />
+                                       </>
                                     )}
 
                                     <button
+                                       data-tip="Excluir camada"
+                                       data-background-color="rgb(59, 59, 59)"
                                        className="delete"
                                        onClick={() => handleLayerDelete(layer)}
                                     >
                                        <FaTrash />
                                     </button>
+                                    <ReactTooltip place="left" type="dark" effect="solid" />
                                  </div>
                                  <p className="text">Camada: {layer.get('id')}</p>
                               </li>
@@ -524,12 +561,16 @@ export default function WorldMap() {
                                  <div className="buttons container">
                                     <div className="customizePolygon customization">
                                        <button
+                                          data-tip="Alterar cor, forma ou tamanho"
+                                          data-background-color="rgb(59, 59, 59)"
                                           className="togglePolygonMenu"
                                           onClick={() => handlePolygonMenuVisibility(index)}
                                        >
                                           <FaShapes />
                                           <FaCaretDown />
                                        </button>
+                                       <ReactTooltip place="left" type="dark" effect="solid" />
+
                                        {isPolygonMenuVisible[index] && (
                                           <PolygonMenu layer={layer} />
                                        )}
@@ -537,57 +578,164 @@ export default function WorldMap() {
 
                                     <div className="customizeStroke customization">
                                        <button
+                                          data-tip="Alterar cor ou grossura do contorno"
+                                          data-background-color="rgb(59, 59, 59)"
                                           className="toggleStrokeMenu"
                                           onClick={() => handleStrokeMenuVisibility(index)}
                                        >
                                           <FaGripLines />
                                           <FaCaretDown />
                                        </button>
+                                       <ReactTooltip place="left" type="dark" effect="solid" />
+
                                        {isStrokeMenuVisible[index] && <StrokeMenu layer={layer} />}
                                     </div>
 
                                     <div className="customizeLabel customization">
                                        <button
+                                          data-tip="Alterar rótulo exibido"
+                                          data-background-color="rgb(59, 59, 59)"
                                           className="toggleLabelMenu"
                                           onClick={() => handleLabelMenuVisibility(index)}
                                        >
                                           Rótulo <FaCaretDown />
                                        </button>
+                                       <ReactTooltip place="left" type="dark" effect="solid" />
+
                                        {isLabelMenuVisible[index] && <LabelMenu layer={layer} />}
                                     </div>
 
                                     {isLayerVisible[index] ||
                                     isLayerVisible[index] === undefined ? (
-                                       <button
-                                          className="toggleVisibility layerVisible"
-                                          onClick={() => handleLayerVisibility(index, layer)}
-                                       >
-                                          <FaEyeSlash />
-                                       </button>
+                                       <>
+                                          <button
+                                             data-tip="Alternar visibilidade"
+                                             data-background-color="rgb(59, 59, 59)"
+                                             className="toggleVisibility layerVisible"
+                                             onClick={() => handleLayerVisibility(index, layer)}
+                                          >
+                                             <FaEyeSlash />
+                                          </button>
+                                          <ReactTooltip place="left" type="dark" effect="solid" />
+                                       </>
                                     ) : (
-                                       <button
-                                          className="toggleVisibility"
-                                          onClick={() => handleLayerVisibility(index, layer)}
-                                       >
-                                          <FaEye />
-                                       </button>
+                                       <>
+                                          <button
+                                             data-tip="Alternar visibilidade"
+                                             data-background-color="rgb(59, 59, 59)"
+                                             className="toggleVisibility"
+                                             onClick={() => handleLayerVisibility(index, layer)}
+                                          >
+                                             <FaEye />
+                                          </button>
+                                          <ReactTooltip place="left" type="dark" effect="solid" />
+                                       </>
                                     )}
 
                                     <button
+                                       data-tip="Baixar camada (geoJSON)"
+                                       data-background-color="rgb(59, 59, 59)"
                                        className="download"
                                        onClick={() => handleLayerDownload(layer)}
                                     >
                                        <FaDownload />
                                     </button>
+                                    <ReactTooltip place="left" type="dark" effect="solid" />
 
                                     <button
+                                       data-tip="Excluir camada"
+                                       data-background-color="rgb(59, 59, 59)"
+                                       data-event-off="mouseleave"
                                        className="delete"
                                        onClick={() => handleLayerDelete(layer)}
                                     >
                                        <FaTrash />
+                                       <ReactTooltip place="left" type="dark" effect="solid" />
                                     </button>
                                  </div>
+
                                  <p className="text">Camada: {layer.get('id')}</p>
+
+                                 {filters
+                                    .filter(({ layerID }) => layerID === layer.get('id'))
+                                    .map((filter, index) => (
+                                       <div key={index} className="filterContainer container">
+                                          <select
+                                             name="filterSelect"
+                                             id={`filterSelect${index}`}
+                                             value={filter.label}
+                                             onChange={({ target: { value } }) => {
+                                                handleChangeFilterLabel(layer, filter, value);
+                                             }}
+                                          >
+                                             <option value=""></option>
+                                             {layer.get('labels').map((label: string) => (
+                                                <option key={label}>{label}</option>
+                                             ))}
+                                          </select>
+
+                                          <select
+                                             name="operatorInput"
+                                             id={`operatorInput${index}`}
+                                             value={filter.operator}
+                                             onChange={({ target: { value } }) => {
+                                                handleChangeFilterOperator(
+                                                   layer,
+                                                   filter,
+                                                   value as '<' | '=' | '>'
+                                                );
+                                             }}
+                                          >
+                                             {filter.type === 'number' ? (
+                                                <>
+                                                   <option value="=">=</option>
+                                                   <option value="<">{'<'}</option>
+                                                   <option value=">">{'>'}</option>
+                                                </>
+                                             ) : (
+                                                <option value="equal">=</option>
+                                             )}
+                                          </select>
+
+                                          <input
+                                             type="text"
+                                             style={{ paddingLeft: '0.2rem' }}
+                                             value={filter.value ? filter.value : ''}
+                                             onChange={({ target: { value } }) => {
+                                                handleChangeFilterValue(layer, filter, value);
+                                             }}
+                                             draggable="true"
+                                             onDragStart={handleInputDrag}
+                                          />
+
+                                          <input
+                                             type="color"
+                                             className="filterColorPicker"
+                                             value={
+                                                filter.color ? filter.color : layer.get('color')
+                                             }
+                                             onChange={({ target: { value } }) => {
+                                                handleChangeFilterColor(layer, filter, value);
+                                             }}
+                                          />
+
+                                          <FaTimes
+                                             className="deleteFilter"
+                                             color={'#A83232'}
+                                             onClick={() => handleDeleteFilter(filter.filterID)}
+                                          />
+                                       </div>
+                                    ))}
+
+                                 <button
+                                    data-tip="Adicionar filtro"
+                                    data-background-color="rgb(59, 59, 59)"
+                                    className="addFilter"
+                                    onClick={() => handleAddFilter(layer, incrementalID)}
+                                 >
+                                    <FaPlus />
+                                 </button>
+                                 <ReactTooltip place="left" type="info" effect="solid" />
                               </li>
                            );
                         })}

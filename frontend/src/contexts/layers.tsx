@@ -114,6 +114,8 @@ export const LayersProvider: React.FC = ({ children }) => {
 
             // Armazenamento das informações de cada feature.
             features[index].set('info', result);
+            // Flag de controle para saber qual filtro aplicar a cada features.
+            features[index].set('filterID', -1);
          });
 
          // A fonte (source) das informações para geração da camada.
@@ -183,6 +185,8 @@ export const LayersProvider: React.FC = ({ children }) => {
             id,
             // Classname necessário para evitar que labels 'declutteradas' sobreponham outras layers (https://github.com/openlayers/openlayers/issues/10096)
             className: `Layer ${id}`,
+            // Armazenamento da cor base utilizada nas features (para utilização nos filtros).
+            color: colorFill,
             // Query realizada pelo usuário (para exibição ao manter o mouse em cima da camada, na legenda).
             query,
             labels: layerLabels,

@@ -157,9 +157,8 @@
 
 #mapContainer #mainContainer #subtitleContainer #layersContainer .layer {
    width: 28rem;
-   height: 6rem;
    margin-bottom: 0.5rem;
-   padding: 0.2rem 0.5rem;
+   padding: 0.2rem 0.5rem 0.3rem 0.5rem;
 
    border: 0.2rem solid var(--color-primary-darker);
    border-radius: 1rem;
@@ -170,18 +169,20 @@
 }
 
 #mapContainer #mainContainer #subtitleContainer #layersContainer .dropArea {
+   height: 8.5rem;
+
    border: none;
    background: transparent;
 }
 
-/*------------------------ Estilo dos botões dos itens da legenda ---------------------------------------*/
+/*------------------------ Estilo dos itens da legenda ---------------------------------------*/
 
 #mapContainer #mainContainer #subtitleContainer #layersContainer .layer:not(.mapLayer) .buttons {
    justify-content: center;
    align-items: center;
 }
 
-#mapContainer #mainContainer #subtitleContainer #layersContainer .layer .buttons button {
+#mapContainer #mainContainer #subtitleContainer #layersContainer .layer button {
    min-width: 3rem;
    height: 3rem;
    margin: 0 0.2rem;
@@ -204,7 +205,7 @@
    cursor: pointer;
 }
 
-#mapContainer #mainContainer #subtitleContainer #layersContainer .layer .buttons button:hover {
+#mapContainer #mainContainer #subtitleContainer #layersContainer .layer button:hover {
    background: var(--color-secondary-dark);
 }
 
@@ -222,7 +223,7 @@
    background: var(--color-primary-darker);
 }
 
-#mapContainer #mainContainer #subtitleContainer #layersContainer .layer .buttons button svg {
+#mapContainer #mainContainer #subtitleContainer #layersContainer .layer button svg {
    margin: 0 0.1rem;
 }
 
@@ -236,6 +237,50 @@
    svg {
    position: relative;
    bottom: 0.1rem;
+}
+
+#mapContainer #mainContainer #subtitleContainer #layersContainer .layer .addFilter {
+   width: 4.2rem;
+   height: 2.8rem;
+}
+
+#mapContainer #mainContainer #subtitleContainer #layersContainer .layer .filterContainer {
+   width: 100%;
+
+   margin-bottom: 0.3rem;
+
+   justify-content: center;
+}
+
+#mapContainer #mainContainer #subtitleContainer #layersContainer .layer .filterContainer select,
+#mapContainer #mainContainer #subtitleContainer #layersContainer .layer .filterContainer input {
+   max-width: 11rem;
+
+   margin-right: 0.1rem;
+
+   font: 400 1.4rem var(--font-family-text);
+   color: var(--color-text-in-primary);
+}
+
+#mapContainer
+   #mainContainer
+   #subtitleContainer
+   #layersContainer
+   .layer
+   .filterContainer
+   .filterColorPicker {
+   width: 4rem;
+   height: 3rem;
+}
+
+#mapContainer
+   #mainContainer
+   #subtitleContainer
+   #layersContainer
+   .layer
+   .filterContainer
+   .deleteFilter:hover {
+   cursor: pointer;
 }
 
 /*------------------------ Estilo dos menus ---------------------------------------*/
