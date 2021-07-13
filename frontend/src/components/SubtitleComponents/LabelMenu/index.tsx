@@ -10,12 +10,13 @@
 
 import React, { useCallback, useState } from 'react';
 
+import VectorSource from 'ol/source/Vector';
 import VectorLayer from 'ol/layer/Vector';
 
 import './styles.css';
 
 interface LabelMenuProps {
-   layer: VectorLayer;
+   layer: VectorLayer<VectorSource<any>>;
 }
 
 const LabelMenu: React.FC<LabelMenuProps> = ({ layer }) => {
@@ -28,9 +29,9 @@ const LabelMenu: React.FC<LabelMenuProps> = ({ layer }) => {
 
    const handleLabelText = useCallback(
       (labelIdentifier: number) => {
-         const newLabel = (document.getElementById(
-            `labelTextPicker${labelIdentifier}`
-         ) as HTMLLIElement)
+         const newLabel = (
+            document.getElementById(`labelTextPicker${labelIdentifier}`) as HTMLLIElement
+         )
             .getAttribute('value')!
             .toString();
 
@@ -53,9 +54,9 @@ const LabelMenu: React.FC<LabelMenuProps> = ({ layer }) => {
    );
 
    const handleLabelColor = useCallback(() => {
-      const newColor = (document.getElementById(
-         `labelColorPicker${layer.get('id')}`
-      )! as HTMLInputElement).value;
+      const newColor = (
+         document.getElementById(`labelColorPicker${layer.get('id')}`)! as HTMLInputElement
+      ).value;
 
       // Atualiza o texto de cada feature baseado na label que foi passada.
       features.forEach((feature) => {

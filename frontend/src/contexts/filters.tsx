@@ -3,6 +3,7 @@
 import React, { createContext, useCallback, useContext, useState } from 'react';
 
 import { Feature } from 'ol';
+import VectorSource from 'ol/source/Vector';
 import VectorLayer from 'ol/layer/Vector';
 
 import Fill from 'ol/style/Fill';
@@ -23,7 +24,7 @@ interface IFilter {
 
    color?: string;
 
-   filteredFeatures?: Feature[];
+   filteredFeatures?: Feature<any>[];
 }
 
 interface ContextData {
@@ -31,15 +32,27 @@ interface ContextData {
 
    incrementalID: number;
 
-   handleAddFilter: (layer: VectorLayer, filterID: number) => void;
-   handleChangeFilterLabel: (layer: VectorLayer, filter: IFilter, value: string) => void;
+   handleAddFilter: (layer: VectorLayer<VectorSource<any>>, filterID: number) => void;
+   handleChangeFilterLabel: (
+      layer: VectorLayer<VectorSource<any>>,
+      filter: IFilter,
+      value: string
+   ) => void;
    handleChangeFilterOperator: (
-      layer: VectorLayer,
+      layer: VectorLayer<VectorSource<any>>,
       filter: IFilter,
       value: '<' | '=' | '>'
    ) => void;
-   handleChangeFilterValue: (layer: VectorLayer, filter: IFilter, value: string) => void;
-   handleChangeFilterColor: (layer: VectorLayer, filter: IFilter, value: string) => void;
+   handleChangeFilterValue: (
+      layer: VectorLayer<VectorSource<any>>,
+      filter: IFilter,
+      value: string
+   ) => void;
+   handleChangeFilterColor: (
+      layer: VectorLayer<VectorSource<any>>,
+      filter: IFilter,
+      value: string
+   ) => void;
    handleDeleteFilter: (filterID: number) => void;
 }
 
@@ -52,16 +65,19 @@ export const FiltersProvider: React.FC = ({ children }) => {
    // Estado incremental para gerar a ID de cada filtro.
    const [incrementalID, setIncrementalID] = useState(0);
 
-   const handleAddFilter = useCallback((layer: VectorLayer, filterID: number) => {
-      setFilters((prevArray) => [
-         ...prevArray,
-         { layerID: layer.get('id'), filterID, operator: '=', color: layer.get('color') },
-      ]);
-      setIncrementalID((prevValue) => prevValue + 1);
-   }, []);
+   const handleAddFilter = useCallback(
+      (layer: VectorLayer<VectorSource<any>>, filterID: number) => {
+         setFilters((prevArray) => [
+            ...prevArray,
+            { layerID: layer.get('id'), filterID, operator: '=', color: layer.get('color') },
+         ]);
+         setIncrementalID((prevValue) => prevValue + 1);
+      },
+      []
+   );
 
    // Função de utilidade para pegar o formato atual da camada (caso aplicável).
-   const getShape = useCallback((layer: VectorLayer) => {
+   const getShape = useCallback((layer: VectorLayer<VectorSource<any>>) => {
       const shapes = [
          { name: 'square', points: 4, radius: layer.get('size'), angle: Math.PI / 4 },
          {
@@ -86,7 +102,7 @@ export const FiltersProvider: React.FC = ({ children }) => {
    }, []);
 
    const handleFilter = useCallback(
-      (layer: VectorLayer, filter: IFilter) => {
+      (layer: VectorLayer<VectorSource<any>>, filter: IFilter) => {
          const source = layer.getSource();
          const features = source.getFeatures();
 
@@ -167,7 +183,7 @@ export const FiltersProvider: React.FC = ({ children }) => {
    );
 
    const handleChangeFilterLabel = useCallback(
-      (layer: VectorLayer, filter: IFilter, value: string) => {
+      (layer: VectorLayer<VectorSource<any>>, filter: IFilter, value: string) => {
          const newFilters = [...filters];
 
          newFilters.filter((newFilter) => newFilter.filterID === filter.filterID)[0].label = value;
@@ -186,7 +202,7 @@ export const FiltersProvider: React.FC = ({ children }) => {
    );
 
    const handleChangeFilterOperator = useCallback(
-      (layer: VectorLayer, filter: IFilter, value: '<' | '=' | '>') => {
+      (layer: VectorLayer<VectorSource<any>>, filter: IFilter, value: '<' | '=' | '>') => {
          const newFilters = [...filters];
 
          newFilters.filter((newFilter) => newFilter.filterID === filter.filterID)[0].operator =
@@ -200,7 +216,7 @@ export const FiltersProvider: React.FC = ({ children }) => {
    );
 
    const handleChangeFilterValue = useCallback(
-      (layer: VectorLayer, filter: IFilter, value: string) => {
+      (layer: VectorLayer<VectorSource<any>>, filter: IFilter, value: string) => {
          const newFilters = [...filters];
 
          isNaN(Number(value))
@@ -217,7 +233,7 @@ export const FiltersProvider: React.FC = ({ children }) => {
    );
 
    const handleChangeFilterColor = useCallback(
-      (layer: VectorLayer, filter: IFilter, value: string) => {
+      (layer: VectorLayer<VectorSource<any>>, filter: IFilter, value: string) => {
          const newFilters = [...filters];
 
          newFilters.filter((newFilter) => newFilter.filterID === filter.filterID)[0].color = value;

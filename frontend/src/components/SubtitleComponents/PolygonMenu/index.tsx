@@ -10,6 +10,7 @@
 
 import React, { useCallback, useState } from 'react';
 
+import VectorSource from 'ol/source/Vector';
 import VectorLayer from 'ol/layer/Vector';
 import RegularShape from 'ol/style/RegularShape';
 import Fill from 'ol/style/Fill';
@@ -19,7 +20,7 @@ import { FaSquare, FaPlay, FaStar, FaCircle } from 'react-icons/fa';
 import './styles.css';
 
 interface PolygonMenuProps {
-   layer: VectorLayer;
+   layer: VectorLayer<VectorSource<any>>;
 }
 
 const PolygonMenu: React.FC<PolygonMenuProps> = ({ layer }) => {
@@ -52,9 +53,9 @@ const PolygonMenu: React.FC<PolygonMenuProps> = ({ layer }) => {
    );
 
    const handlePolygonColor = useCallback(() => {
-      const newColor = (document.getElementById(
-         `polygonColorPicker${layer.get('id')}`
-      )! as HTMLInputElement).value;
+      const newColor = (
+         document.getElementById(`polygonColorPicker${layer.get('id')}`)! as HTMLInputElement
+      ).value;
 
       // Atualiza a cor de preenchimento para cada feature.
       features.forEach((feature) => {

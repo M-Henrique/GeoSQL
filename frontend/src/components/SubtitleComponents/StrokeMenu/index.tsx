@@ -10,6 +10,7 @@
 
 import React, { useCallback, useState } from 'react';
 
+import VectorSource from 'ol/source/Vector';
 import VectorLayer from 'ol/layer/Vector';
 import RegularShape from 'ol/style/RegularShape';
 import Stroke from 'ol/style/Stroke';
@@ -17,7 +18,7 @@ import Stroke from 'ol/style/Stroke';
 import './styles.css';
 
 interface StrokeMenuProps {
-   layer: VectorLayer;
+   layer: VectorLayer<VectorSource<any>>;
 }
 
 const StrokeMenu: React.FC<StrokeMenuProps> = ({ layer }) => {
@@ -49,9 +50,9 @@ const StrokeMenu: React.FC<StrokeMenuProps> = ({ layer }) => {
    );
 
    const handleStrokeColor = useCallback(() => {
-      const newColor = (document.getElementById(
-         `strokeColorPicker${layer.get('id')}`
-      )! as HTMLInputElement).value;
+      const newColor = (
+         document.getElementById(`strokeColorPicker${layer.get('id')}`)! as HTMLInputElement
+      ).value;
 
       // Atualiza as linhas (strokes) de cada feature com a nova cor.
       features.forEach((feature) => {

@@ -22,6 +22,9 @@ interface ContextData {
    setQuery: Dispatch<SetStateAction<string>>;
    submitQuery(query: string): Promise<void>;
 
+   queryHistory: string[];
+   handleDeletePastQuery: (pastQuery: string) => void;
+
    results: Array<Object>;
    hasGeomValue: boolean;
 
@@ -48,23 +51,27 @@ export const QueryProvider: React.FC = ({ children }) => {
    const [hasGeomValue, setHasGeomValue] = useState(false);
    // Flag ativada durante a chamada à api.
    const [loading, setLoading] = useState(false);
+   // Estado que armazena o histórico de queries, filtrado para não incluir os resultados vazios do método split, e revertido para ser visualizado corretamente.
+   const [queryHistory, setQueryHistory] = useState<string[]>([]);
+   // Valor que armazena a ordem das consultas (para identificar cada consulta no histórico e evitar a exclusão de consultas duplicadas).
+   const [pastQueryIdentifier, setPastQueryIdentifier] = useState(1);
 
    // Função que realiza o armazenamento da query no histórico.
    const handleQueryHistory = useCallback(() => {
-      let queryHistory = sessionStorage.getItem('@geosql/query-history');
-      if (queryHistory) {
-         let queryHistoryArray = queryHistory.split('@geosqlidentifier@');
+      let queryHistoryCopy = [...queryHistory].reverse();
+      queryHistoryCopy.push(`${pastQueryIdentifier} - ${query}`);
+      setQueryHistory([...queryHistoryCopy].reverse());
 
-         queryHistoryArray.push(query);
-         sessionStorage.setItem(
-            '@geosql/query-history',
-            queryHistoryArray.join('@geosqlidentifier@')
-         );
-      } else {
-         const queryWithIdentifier = query + '@geosqlidentifier@';
-         sessionStorage.setItem('@geosql/query-history', queryWithIdentifier);
-      }
-   }, [query]);
+      setPastQueryIdentifier(pastQueryIdentifier + 1);
+   }, [query, queryHistory, pastQueryIdentifier]);
+
+   // Função que deleta uma query passada.
+   const handleDeletePastQuery = useCallback(
+      (pastQuery: string) => {
+         setQueryHistory([...queryHistory].filter((query) => query !== pastQuery));
+      },
+      [setQueryHistory, queryHistory]
+   );
 
    // Função que realiza a chamda à api, passando a query realizada pelo usuário.
    const submitQuery = useCallback(
@@ -104,7 +111,17 @@ export const QueryProvider: React.FC = ({ children }) => {
 
    return (
       <QueryContext.Provider
-         value={{ firstTime, query, setQuery, submitQuery, results, hasGeomValue, loading }}
+         value={{
+            firstTime,
+            query,
+            setQuery,
+            submitQuery,
+            queryHistory,
+            handleDeletePastQuery,
+            results,
+            hasGeomValue,
+            loading,
+         }}
       >
          {children}
       </QueryContext.Provider>

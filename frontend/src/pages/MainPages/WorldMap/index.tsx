@@ -32,6 +32,7 @@ import View from 'ol/View';
 import TileLayer from 'ol/layer/Tile';
 import OSM from 'ol/source/OSM';
 import { fromLonLat, toLonLat } from 'ol/proj';
+import VectorSource from 'ol/source/Vector';
 import VectorLayer from 'ol/layer/Vector';
 import Overlay from 'ol/Overlay';
 import { Coordinate, toStringHDMS } from 'ol/coordinate';
@@ -59,8 +60,8 @@ interface DnDProps {
 
    isDragging: boolean;
 
-   originalOrder: VectorLayer[];
-   updatedOrder: VectorLayer[];
+   originalOrder: VectorLayer<VectorSource<any>>[];
+   updatedOrder: VectorLayer<VectorSource<any>>[];
 }
 
 export default function WorldMap() {
@@ -137,6 +138,7 @@ export default function WorldMap() {
 
       // Limpa as seleções, apaga o overlay e o X.
       select.getFeatures().clear();
+      //@ts-ignore
       overlay?.setPosition(undefined);
       popupCloser?.blur();
    }, [map]);
@@ -281,7 +283,7 @@ export default function WorldMap() {
    /*----------------------------------------- Funções referentes às outras funcionalidades da legenda --------------------------------------------------*/
 
    const handleLayerVisibility = useCallback(
-      (index, layer: VectorLayer) => {
+      (index, layer: VectorLayer<VectorSource<any>>) => {
          // Fecha possíveis popups abertas (caso haja uma aberta, o app crasha ao tentar modificar uma camada).
          handleClosePopup();
 
@@ -308,7 +310,7 @@ export default function WorldMap() {
    );
 
    const handleLayerDownload = useCallback(
-      (layer: VectorLayer) => {
+      (layer: VectorLayer<VectorSource<any>>) => {
          // Fecha possíveis popups abertas (caso haja uma aberta, o app crasha ao tentar modificar uma camada).
          handleClosePopup();
 
@@ -328,7 +330,7 @@ export default function WorldMap() {
    );
 
    const handleLayerDelete = useCallback(
-      (layer: VectorLayer) => {
+      (layer: VectorLayer<VectorSource<any>>) => {
          // Fecha possíveis popups abertas (caso haja uma aberta, o app crasha ao tentar modificar uma camada).
          handleClosePopup();
 
@@ -373,7 +375,6 @@ export default function WorldMap() {
    }, [dragAndDrop]);
 
    /*------------------------------------- Função que monta o mapa e adiciona as funcionalidades de popup e seleção de features ------------------------------------*/
-
    useEffect(() => {
       // Elementos do popup.
       const container = document.getElementById('popup')!;
@@ -412,6 +413,10 @@ export default function WorldMap() {
 
       // Interação de clique para gerar o popup.
       initialMap.on('singleclick', function (event) {
+         setIsPolygonMenuVisible(isPolygonMenuVisible.fill(false));
+         setIsStrokeMenuVisible(isStrokeMenuVisible.fill(false));
+         setIsLabelMenuVisible(isLabelMenuVisible.fill(false));
+
          const coordinate = event.coordinate;
          const hdms = toStringHDMS(toLonLat(coordinate));
          const feature = initialMap.getFeaturesAtPixel(event.pixel)[0];
@@ -663,37 +668,15 @@ export default function WorldMap() {
                                           <select
                                              name="filterSelect"
                                              id={`filterSelect${index}`}
-                                             value={filter.label}
-                                             onChange={({ target: { value } }) => {
-                                                handleChangeFilterLabel(layer, filter, value);
-                                             }}
+                                             // onChange={({ target: { value } }) => {
+                                             //    handleChangeFilterLabel(layer, filter, value);
+                                             // }}
                                           >
                                              <option value=""></option>
-                                             {layer.get('labels').map((label: string) => (
-                                                <option key={label}>{label}</option>
-                                             ))}
-                                          </select>
-
-                                          <select
-                                             name="operatorInput"
-                                             id={`operatorInput${index}`}
-                                             value={filter.operator}
-                                             onChange={({ target: { value } }) => {
-                                                handleChangeFilterOperator(
-                                                   layer,
-                                                   filter,
-                                                   value as '<' | '=' | '>'
-                                                );
-                                             }}
-                                          >
-                                             {filter.type === 'number' ? (
-                                                <>
-                                                   <option value="=">=</option>
-                                                   <option value="<">{'<'}</option>
-                                                   <option value=">">{'>'}</option>
-                                                </>
-                                             ) : (
-                                                <option value="equal">=</option>
+                                             {['Intervalos', 'Percentil', 'Categoria'].map(
+                                                (type: string) => (
+                                                   <option key={type}>{type}</option>
+                                                )
                                              )}
                                           </select>
 

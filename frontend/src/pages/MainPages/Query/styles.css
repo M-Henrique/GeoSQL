@@ -127,11 +127,27 @@
 }
 
 #queryContainer #inputsContainer #historyContainer #history ul li {
+   width: 100%;
+
    padding: 0 0.2rem;
+
+   display: flex;
+   justify-content: space-between;
+   align-items: center;
 
    overflow: hidden;
 
    text-overflow: ellipsis;
+}
+
+#queryContainer #inputsContainer #historyContainer #history ul li span {
+   width: 90%;
+
+   overflow: hidden;
+}
+
+#queryContainer #inputsContainer #historyContainer #history ul li svg:hover {
+   color: rgb(173, 32, 32);
 }
 
 #queryContainer #inputsContainer #historyContainer #history ul li:first-child {

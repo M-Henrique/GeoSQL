@@ -1,7 +1,7 @@
-import React, { useContext, useCallback, useState } from 'react';
+import React, { useContext, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 
-import { FiDownload, FiSearch, FiSave, FiHelpCircle } from 'react-icons/fi';
+import { FiTrash2, FiDownload, FiSearch, FiSave, FiHelpCircle } from 'react-icons/fi';
 import ClipLoader from 'react-spinners/ClipLoader';
 
 import QueryContext from '../../../contexts/query';
@@ -12,33 +12,17 @@ import TabsMenu from '../../../components/TabsMenu';
 import './styles.css';
 
 export default function Query() {
-   const { query, setQuery, submitQuery } = useContext(QueryContext);
-   const { database, databases, tables, tablesColumns, getTables, loading } = useContext(
-      TablesContext
-   );
-
-   // Estado que armazena o histórico de queries, filtrado para não incluir os resultados vazios do método split, e revertido para ser visualizado corretamente.
-   const [queryHistory] = useState(
-      sessionStorage
-         .getItem('@geosql/query-history')
-         ?.split('@geosqlidentifier@')
-         .filter((nonEmpty) => nonEmpty)
-         .reverse()
-   );
+   const { query, setQuery, submitQuery, queryHistory, handleDeletePastQuery } =
+      useContext(QueryContext);
+   const { database, databases, tables, tablesColumns, getTables, loading } =
+      useContext(TablesContext);
 
    // Função que salva o histórico de queries em um arquivo txt.
    const handleSaveHistory = useCallback(() => {
-      const history = sessionStorage
-         .getItem('@geosql/query-history')
-         ?.split('@geosqlidentifier@')
-         .filter((nonEmpty) => nonEmpty);
-
-      if (!history) return;
-
       // Formato semelhante a uma lista de exercícios.
       let queryList = '';
-      history.forEach((pastQuery, index) => {
-         queryList += `${index + 1} - ${pastQuery}\n\n`;
+      queryHistory.forEach((pastQuery) => {
+         queryList += `${pastQuery}\n\n`;
       });
 
       const file = new Blob([queryList], { type: 'text/plain' });
@@ -50,7 +34,7 @@ export default function Query() {
       downloadLink.download = fileName;
       downloadLink.href = downloadUrl;
       downloadLink.click();
-   }, []);
+   }, [queryHistory]);
 
    // Função que submete a consulta do usuário.
    const handleSubmitQuery = useCallback(async () => {
@@ -123,8 +107,18 @@ export default function Query() {
                   <div id="history" className="container">
                      <ul>
                         {queryHistory?.map((pastQuery: string, index) => (
-                           <li key={index} title={pastQuery} onClick={() => setQuery(pastQuery)}>
-                              {pastQuery}
+                           <li
+                              key={index}
+                              title={pastQuery}
+                              onClick={() =>
+                                 setQuery(pastQuery.substr(pastQuery.indexOf('-') + 1).trim())
+                              }
+                           >
+                              <span>{pastQuery}</span>{' '}
+                              <FiTrash2
+                                 size={14}
+                                 onClick={() => handleDeletePastQuery(pastQuery)}
+                              />
                            </li>
                         ))}
                      </ul>

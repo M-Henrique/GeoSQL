@@ -25,8 +25,8 @@ import Geometry from 'ol/geom/Geometry';
 import QueryContext from './query';
 
 interface ContextData {
-   layers: Array<VectorLayer>;
-   setLayers: Dispatch<SetStateAction<VectorLayer[]>>;
+   layers: Array<VectorLayer<VectorSource<any>>>;
+   setLayers: Dispatch<SetStateAction<VectorLayer<VectorSource<any>>[]>>;
 }
 
 const LayersContext = createContext<ContextData>({} as ContextData);
@@ -37,7 +37,7 @@ export const LayersProvider: React.FC = ({ children }) => {
    // IDs das camadas (para facilitar identificação de cada uma).
    const [id, setId] = useState(0);
    // Vetor de camadas em si.
-   const [layers, setLayers] = useState<VectorLayer[]>([]);
+   const [layers, setLayers] = useState<VectorLayer<VectorSource<any>>[]>([]);
 
    //Função auxiliar para geração randômica da cor inicial
    const getRandomColor = useCallback(() => {
