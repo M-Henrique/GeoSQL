@@ -254,7 +254,7 @@
 
 #mapContainer #mainContainer #subtitleContainer #layersContainer .layer .filterContainer select,
 #mapContainer #mainContainer #subtitleContainer #layersContainer .layer .filterContainer input {
-   max-width: 11rem;
+   max-width: 20%;
 
    margin-right: 0.1rem;
 
@@ -268,9 +268,8 @@
    #layersContainer
    .layer
    .filterContainer
-   .filterColorPicker {
-   width: 4rem;
-   height: 3rem;
+   .filterTypeSelect {
+   max-width: 40% !important;
 }
 
 #mapContainer
@@ -279,7 +278,51 @@
    #layersContainer
    .layer
    .filterContainer
-   .deleteFilter:hover {
+   .filterColorPicker {
+   height: 3rem;
+}
+
+#mapContainer #mainContainer #subtitleContainer #layersContainer .layer .filterContainer button {
+   display: flex;
+   justify-content: center;
+   align-items: center;
+
+   transition: all 0.2s ease;
+}
+
+#mapContainer
+   #mainContainer
+   #subtitleContainer
+   #layersContainer
+   .layer
+   .filterContainer
+   button:hover {
+   cursor: pointer;
+
+   background: var(--color-secondary-dark);
+}
+
+#mapContainer
+   #mainContainer
+   #subtitleContainer
+   #layersContainer
+   .layer
+   .filterContainer
+   #filterErase {
+   color: rgb(216, 32, 32);
+
+   transition: all 0.2 ease;
+}
+
+#mapContainer
+   #mainContainer
+   #subtitleContainer
+   #layersContainer
+   .layer
+   .filterContainer
+   #filterErase:hover {
+   color: brown;
+
    cursor: pointer;
 }
 

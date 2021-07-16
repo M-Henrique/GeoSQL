@@ -8,6 +8,8 @@
       "@types/jest": "^24.9.1",
       "@types/node": "^12.20.5",
       "axios": "^0.20.0",
+      "hex-to-hsl": "^1.0.2",
+      "hsl-to-hex": "^1.0.0",
       "jspdf": "^2.3.1",
       "jspdf-autotable": "^3.5.14",
       "ol": "^6.5.0",

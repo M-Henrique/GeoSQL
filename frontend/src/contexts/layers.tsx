@@ -24,9 +24,26 @@ import Geometry from 'ol/geom/Geometry';
 
 import QueryContext from './query';
 
+const hexToHsl = require('hex-to-hsl');
+const hsl = require('hsl-to-hex');
+
 interface ContextData {
    layers: Array<VectorLayer<VectorSource<any>>>;
    setLayers: Dispatch<SetStateAction<VectorLayer<VectorSource<any>>[]>>;
+
+   handleIntervalFilter: (layerID: number, label: string, value: number, color: string) => void;
+   handlePercentileFilter: (layerID: number, label: string, value: number, color: string) => void;
+   handleCategoryFilter: (layerID: number, label: string, value: number, color: string) => void;
+
+   handleEraseFilter: (layerID: number) => void;
+}
+
+// Interface dos filtros
+interface IFilter {
+   type: string;
+   label: string;
+   value: string;
+   color: string;
 }
 
 const LayersContext = createContext<ContextData>({} as ContextData);
@@ -79,6 +96,131 @@ export const LayersProvider: React.FC = ({ children }) => {
       return false;
    }, []);
 
+   // Função de utilidade para pegar o formato atual da camada (caso aplicável).
+   const getShape = useCallback((shape: string, size: number) => {
+      const shapes = [
+         { name: 'square', points: 4, radius: size, angle: Math.PI / 4 },
+         { name: 'triangle', points: 3, radius: size, rotation: Math.PI / 4, angle: 0 },
+         { name: 'star', points: 5, radius: size, radius2: size / 3, angle: 0 },
+         { name: 'circle', points: 100, radius: size },
+      ];
+
+      const [correctShape] = shapes.filter((format) => format.name === shape);
+      return correctShape;
+   }, []);
+
+   const handleIntervalFilter = useCallback(
+      (layerID: number, label: string, value: number, color: string) => {
+         const filteredLayer = layers.find((layer) => layer.get('id') === layerID)!;
+         const features = filteredLayer?.getSource().getFeatures()!;
+
+         // Ordena as features baseado na label passada
+         features.sort(
+            (feature1, feature2) =>
+               Number(feature1.get('info')[label]) - Number(feature2.get('info')[label])
+         );
+
+         // Openlayers não disponibiliza métodos para capturar a antiga regularShape da camada, tendo de ser feito um processo manual
+         const { points, angle, rotation, radius, radius2 } = getShape(
+            filteredLayer.get('shape'),
+            filteredLayer.get('size')
+         );
+
+         // Tamanho dos intervalos
+         const rangeSize = Math.ceil(
+            Number(features[features.length - 1].get('info')[label]) / value
+         );
+         // Tamanho dos intervalos do alpha (cor)
+         const lightnessRangeSize = Math.floor(50 / value);
+         // Conversão da cor do formato hex para rgb
+         const [hue, sat] = hexToHsl(color);
+
+         // Variável que mantém o índice da última feature iterada a cada loop de value, evitando que features passadas tenham seus estilos sobrepostos
+         let lastFeatureIndex = 0;
+         for (let i = 1; i <= value; i++) {
+            // Alpha da cor
+            const newLig = 30 + lightnessRangeSize * (value + 1 - i);
+            // Numero máximo permitido para esse intervalo
+            const maxRange = rangeSize * i;
+
+            // Modifica a cor das features, alterando o alpha do rgba para diferenciar as features pertencentes a cada intervalo
+            for (let j = lastFeatureIndex; j < features.length; j++) {
+               if (Number(features[j].get('info')[label]) > maxRange) {
+                  lastFeatureIndex = j;
+                  break;
+               }
+
+               const oldStyle = features[j].getStyle();
+
+               //@ts-ignore
+               features[j].getStyle().getFill().setColor(hsl(hue, sat, newLig));
+               //@ts-ignore
+               features[j].getStyle().setImage(
+                  new RegularShape({
+                     fill: new Fill({
+                        color: hsl(hue, sat, newLig),
+                     }),
+                     //@ts-ignore
+                     stroke: oldStyle.getStroke(),
+                     points,
+                     angle,
+                     rotation,
+                     radius,
+                     radius2,
+                  })
+               );
+            }
+         }
+
+         filteredLayer?.getSource().changed();
+      },
+      [layers, getShape]
+   );
+
+   const handlePercentileFilter = useCallback(() => {}, []);
+
+   const handleCategoryFilter = useCallback(() => {}, []);
+
+   const handleEraseFilter = useCallback(
+      (layerID: number) => {
+         const filteredLayer = layers.find((layer) => layer.get('id') === layerID)!;
+
+         const source = filteredLayer.getSource();
+         const features = source.getFeatures();
+         const color = filteredLayer.get('filter').color;
+
+         filteredLayer.get('filter').type = '';
+         filteredLayer.get('filter').label = '';
+         filteredLayer.get('filter').value = '';
+         // Openlayers não disponibiliza métodos para capturar a antiga regularShape da camada, tendo de ser feito um processo manual
+         const { points, angle, rotation, radius, radius2 } = getShape(
+            filteredLayer.get('shape'),
+            filteredLayer.get('size')
+         );
+
+         features.forEach((feature) => {
+            //@ts-ignore
+            feature.getStyle().getFill().setColor(color);
+            //@ts-ignore
+            feature.getStyle().setImage(
+               new RegularShape({
+                  fill: new Fill({
+                     color,
+                  }),
+                  points,
+                  angle,
+                  rotation,
+                  radius,
+                  radius2,
+               })
+            );
+         });
+
+         source.changed();
+      },
+      [layers, getShape]
+   );
+
    // Flag utilizada para demarcar a primeira renderização.
    const isInitialMount = useRef(true);
    useEffect(() => {
@@ -114,8 +256,6 @@ export const LayersProvider: React.FC = ({ children }) => {
 
             // Armazenamento das informações de cada feature.
             features[index].set('info', result);
-            // Flag de controle para saber qual filtro aplicar a cada features.
-            features[index].set('filterID', -1);
          });
 
          // A fonte (source) das informações para geração da camada.
@@ -178,6 +318,14 @@ export const LayersProvider: React.FC = ({ children }) => {
             features: [...resultsGeoJSON],
          };
 
+         // Inicialização do objeto responsável pela filtragem da camada.
+         const filter: IFilter = {
+            type: '',
+            label: '',
+            value: '',
+            color: '#000000',
+         };
+
          // A layer em si
          const vectorLayer = new VectorLayer({
             // Tipagem desnecessária nesse caso (openlayers reconhece atributos personalizados automaticamente).
@@ -185,8 +333,6 @@ export const LayersProvider: React.FC = ({ children }) => {
             id,
             // Classname necessário para evitar que labels 'declutteradas' sobreponham outras layers (https://github.com/openlayers/openlayers/issues/10096)
             className: `Layer ${id}`,
-            // Armazenamento da cor base utilizada nas features (para utilização nos filtros).
-            color: colorFill,
             // Query realizada pelo usuário (para exibição ao manter o mouse em cima da camada, na legenda).
             query,
             labels: layerLabels,
@@ -195,6 +341,8 @@ export const LayersProvider: React.FC = ({ children }) => {
             shape,
             // Armazenamento do tamanho das features da camada (caso aplicável).
             size: radius,
+            // Objeto com os inputs do fitro da camada.
+            filter,
             source: vectorSource,
             declutter: checkLayerDeclutter(geoJSONObject.features),
          });
@@ -207,7 +355,20 @@ export const LayersProvider: React.FC = ({ children }) => {
       // eslint-disable-next-line react-hooks/exhaustive-deps
    }, [results]);
 
-   return <LayersContext.Provider value={{ layers, setLayers }}>{children}</LayersContext.Provider>;
+   return (
+      <LayersContext.Provider
+         value={{
+            layers,
+            setLayers,
+            handleIntervalFilter,
+            handlePercentileFilter,
+            handleCategoryFilter,
+            handleEraseFilter,
+         }}
+      >
+         {children}
+      </LayersContext.Provider>
+   );
 };
 
 export default LayersContext;

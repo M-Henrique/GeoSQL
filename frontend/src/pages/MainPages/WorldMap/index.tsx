@@ -19,7 +19,7 @@ import {
    FaTrash,
    FaCaretDown,
    FaEye,
-   FaPlus,
+   FaChartPie,
    FaTimes,
 } from 'react-icons/fa';
 
@@ -40,7 +40,6 @@ import Select from 'ol/interaction/Select';
 
 import TablesContext from '../../../contexts/tables';
 import LayersContext from '../../../contexts/layers';
-import FiltersContext from '../../../contexts/filters';
 
 import TabsMenu from '../../../components/TabsMenu';
 
@@ -66,17 +65,7 @@ interface DnDProps {
 
 export default function WorldMap() {
    const { database } = useContext(TablesContext);
-   const { layers, setLayers } = useContext(LayersContext);
-   const {
-      filters,
-      incrementalID,
-      handleAddFilter,
-      handleChangeFilterLabel,
-      handleChangeFilterOperator,
-      handleChangeFilterValue,
-      handleChangeFilterColor,
-      handleDeleteFilter,
-   } = useContext(FiltersContext);
+   const { layers, setLayers, handleIntervalFilter, handleEraseFilter } = useContext(LayersContext);
 
    const [map, setMap] = useState<Map>();
 
@@ -92,6 +81,9 @@ export default function WorldMap() {
       const layersVisibilities = [...layers].reverse().map((layer) => layer.getVisible());
       return layersVisibilities;
    });
+
+   // Estado de utilidade. Estado utilizado para indicar ao react que o valor de um input foi atualizado (utilizando o set), o que faz com que o react renderize novamente o componente em questão.
+   const [flag, setFlag] = useState<boolean>(false);
 
    /*----------------------------- Funções responsáveis por aplicar o zoom e o centro ao mapa baseados no banco selecionado -------------------------------------------*/
    const handleMapCenter = useCallback((): Coordinate => {
@@ -356,6 +348,61 @@ export default function WorldMap() {
       },
       [handleClosePopup, layers, list, map, setLayers]
    );
+
+   // Função que realiza a submissão dos filtros para o contexto
+   const handleSubmitFilter = useCallback(
+      (layerID: number, index: number) => {
+         const { value: filterType } = document.getElementById(
+            `filterTypeSelect${index}`
+         ) as HTMLSelectElement;
+         const { value: filterLabel } = document.getElementById(
+            `filterLabelSelect${index}`
+         ) as HTMLSelectElement;
+         const { value: filterValue } = document.getElementById(
+            `filterValueInput${index}`
+         ) as HTMLInputElement;
+         const { value: filterColor } = document.getElementById(
+            `filterColorPicker${index}`
+         ) as HTMLInputElement;
+
+         switch (filterType) {
+            case 'Intervalos':
+               handleIntervalFilter(layerID, filterLabel, Number(filterValue), filterColor);
+               break;
+
+            case 'Percentil':
+               break;
+
+            case 'Categoria':
+               break;
+
+            default:
+               break;
+         }
+      },
+      [handleIntervalFilter]
+   );
+
+   // Função que impede o usuário de digitar valores não numéricos nos inputs textuais dos filtros numéricos (intervalos e percentil)
+   const checkNumericalDigit = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+      switch (e.key) {
+         case '1':
+         case '2':
+         case '3':
+         case '4':
+         case '5':
+         case '6':
+         case '7':
+         case '8':
+         case '9':
+         case '0':
+            break;
+
+         default:
+            e.preventDefault();
+            break;
+      }
+   }, []);
 
    // Função de utilidade para impedir que o arrasto do mouse ao selecionar o conteúdo do input de texto inicie um drag da camada.
    const handleInputDrag = useCallback((event) => {
@@ -661,63 +708,103 @@ export default function WorldMap() {
 
                                  <p className="text">Camada: {layer.get('id')}</p>
 
-                                 {filters
-                                    .filter(({ layerID }) => layerID === layer.get('id'))
-                                    .map((filter, index) => (
-                                       <div key={index} className="filterContainer container">
-                                          <select
-                                             name="filterSelect"
-                                             id={`filterSelect${index}`}
-                                             // onChange={({ target: { value } }) => {
-                                             //    handleChangeFilterLabel(layer, filter, value);
-                                             // }}
-                                          >
-                                             <option value=""></option>
-                                             {['Intervalos', 'Percentil', 'Categoria'].map(
-                                                (type: string) => (
-                                                   <option key={type}>{type}</option>
-                                                )
-                                             )}
-                                          </select>
+                                 <div className="filterContainer container">
+                                    <select
+                                       name="filterTypeSelect"
+                                       id={`filterTypeSelect${index}`}
+                                       className="filterTypeSelect"
+                                       value={layer.get('filter').type}
+                                       onChange={({ target: { value } }) => {
+                                          layer.get('filter').type = value;
+                                          setFlag(!flag);
+                                       }}
+                                    >
+                                       <option value=""></option>
+                                       {['Intervalos', 'Percentil', 'Categoria'].map(
+                                          (op: string) => (
+                                             <option key={op} value={op}>
+                                                {op}
+                                             </option>
+                                          )
+                                       )}
+                                    </select>
 
+                                    <select
+                                       name="filterLabelSelect"
+                                       id={`filterLabelSelect${index}`}
+                                       value={layer.get('filter').label}
+                                       onChange={({ target: { value } }) => {
+                                          layer.get('filter').label = value;
+                                          setFlag(!flag);
+                                       }}
+                                    >
+                                       <option value=""></option>
+                                       {layer.get('labels').map(
+                                          (label: string) =>
+                                             !isNaN(
+                                                Number(
+                                                   layer.getSource().getFeatures()[0].get('info')[
+                                                      label
+                                                   ]
+                                                )
+                                             ) && (
+                                                <option key={label} value={label}>
+                                                   {label}
+                                                </option>
+                                             )
+                                       )}
+                                    </select>
+
+                                    {document.getElementById(`filterTypeSelect${index}`) &&
+                                       (
+                                          document.getElementById(
+                                             `filterTypeSelect${index}`
+                                          ) as HTMLSelectElement
+                                       ).value !== 'Categoria' && (
                                           <input
+                                             id={`filterValueInput${index}`}
                                              type="text"
                                              style={{ paddingLeft: '0.2rem' }}
-                                             value={filter.value ? filter.value : ''}
-                                             onChange={({ target: { value } }) => {
-                                                handleChangeFilterValue(layer, filter, value);
-                                             }}
                                              draggable="true"
                                              onDragStart={handleInputDrag}
-                                          />
-
-                                          <input
-                                             type="color"
-                                             className="filterColorPicker"
-                                             value={
-                                                filter.color ? filter.color : layer.get('color')
-                                             }
+                                             value={layer.get('filter').value}
+                                             maxLength={2}
+                                             onKeyPress={(e) => {
+                                                checkNumericalDigit(e);
+                                             }}
                                              onChange={({ target: { value } }) => {
-                                                handleChangeFilterColor(layer, filter, value);
+                                                layer.get('filter').value = value;
+                                                setFlag(!flag);
                                              }}
                                           />
+                                       )}
 
-                                          <FaTimes
-                                             className="deleteFilter"
-                                             color={'#A83232'}
-                                             onClick={() => handleDeleteFilter(filter.filterID)}
-                                          />
-                                       </div>
-                                    ))}
+                                    <input
+                                       id={`filterColorPicker${index}`}
+                                       type="color"
+                                       className="filterColorPicker"
+                                       value={layer.get('filter').color}
+                                       onChange={({ target: { value } }) => {
+                                          layer.get('filter').color = value;
+                                          setFlag(!flag);
+                                       }}
+                                    />
 
-                                 <button
-                                    data-tip="Adicionar filtro"
-                                    data-background-color="rgb(59, 59, 59)"
-                                    className="addFilter"
-                                    onClick={() => handleAddFilter(layer, incrementalID)}
-                                 >
-                                    <FaPlus />
-                                 </button>
+                                    <button
+                                       id="submitFilter"
+                                       onClick={() => handleSubmitFilter(layer.get('id'), index)}
+                                    >
+                                       <FaChartPie />
+                                    </button>
+                                    <FaTimes
+                                       id="filterErase"
+                                       onClick={() => {
+                                          handleEraseFilter(layer.get('id'));
+                                          setFlag(!flag);
+                                       }}
+                                    />
+                                 </div>
+
                                  <ReactTooltip place="left" type="info" effect="solid" />
                               </li>
                            );
