@@ -31,9 +31,26 @@ interface ContextData {
    layers: Array<VectorLayer<VectorSource<any>>>;
    setLayers: Dispatch<SetStateAction<VectorLayer<VectorSource<any>>[]>>;
 
-   handleIntervalFilter: (layerID: number, label: string, value: number, color: string) => void;
-   handlePercentileFilter: (layerID: number, label: string, value: number, color: string) => void;
-   handleCategoryFilter: (layerID: number, label: string, value: number, color: string) => void;
+   handleIntervalFilter: (
+      layerID: number,
+      label: string,
+      value: number,
+      fillColor: string,
+      strokeColor: string
+   ) => void;
+   handlePercentileFilter: (
+      layerID: number,
+      label: string,
+      value: number,
+      fillColor: string,
+      strokeColor: string
+   ) => void;
+   handleCategoryFilter: (
+      layerID: number,
+      label: string,
+      fillColor: string,
+      strokeColor: string
+   ) => void;
 
    handleEraseFilter: (layerID: number) => void;
 }
@@ -41,9 +58,12 @@ interface ContextData {
 // Interface dos filtros
 interface IFilter {
    type: string;
+
    label: string;
    value: string;
-   color: string;
+
+   fillColor: string;
+   strokeColor: string;
 }
 
 const LayersContext = createContext<ContextData>({} as ContextData);
@@ -83,7 +103,7 @@ export const LayersProvider: React.FC = ({ children }) => {
       return shapes[Math.floor(Math.random() * shapes.length)];
    }, []);
 
-   // Função auxiliar para verificar a necessidade de "declutter" na camada
+   // Função auxiliar para verificar a necessidade de "declutter" na camada.
    const checkLayerDeclutter = useCallback((features) => {
       for (let i in features) {
          if (
@@ -109,18 +129,20 @@ export const LayersProvider: React.FC = ({ children }) => {
       return correctShape;
    }, []);
 
+   // Função que realiza a tematização do mapa baseado no número de intervalos de uma determinada label.
    const handleIntervalFilter = useCallback(
-      (layerID: number, label: string, value: number, color: string) => {
+      (layerID: number, label: string, value: number, fillColor: string, strokeColor: string) => {
+         // Recupera as features da layer sendo filtrada.
          const filteredLayer = layers.find((layer) => layer.get('id') === layerID)!;
          const features = filteredLayer?.getSource().getFeatures()!;
 
-         // Ordena as features baseado na label passada
+         // Ordena as features baseado na label passada, para facilitar a indexação e evitar iterar por features já passadas.
          features.sort(
             (feature1, feature2) =>
                Number(feature1.get('info')[label]) - Number(feature2.get('info')[label])
          );
 
-         // Openlayers não disponibiliza métodos para capturar a antiga regularShape da camada, tendo de ser feito um processo manual
+         // Openlayers não disponibiliza métodos para capturar a antiga regularShape da camada, tendo de ser feito um processo manual.
          const { points, angle, rotation, radius, radius2 } = getShape(
             filteredLayer.get('shape'),
             filteredLayer.get('size')
@@ -130,38 +152,67 @@ export const LayersProvider: React.FC = ({ children }) => {
          const rangeSize = Math.ceil(
             Number(features[features.length - 1].get('info')[label]) / value
          );
-         // Tamanho dos intervalos do alpha (cor)
+         // Tamanho dos intervalos do brilho (cor) para correta exibição do gradiente.
          const lightnessRangeSize = Math.floor(50 / value);
-         // Conversão da cor do formato hex para rgb
-         const [hue, sat] = hexToHsl(color);
+         // Conversão da cor do formato hex para hsl, para aplicar uma modificação de brilho e obter efeito de gradiente.
+         const [polyHue, polySat] = hexToHsl(fillColor);
+         // Conversão da cor do formato hex para hsl, para aplicar uma modificação de brilho e obter efeito de gradiente.
+         const [stroHue, stroSat] = hexToHsl(strokeColor);
 
-         // Variável que mantém o índice da última feature iterada a cada loop de value, evitando que features passadas tenham seus estilos sobrepostos
+         // Variável que mantém o índice da última feature iterada a cada loop de value, evitando que features passadas tenham seus estilos sobrepostos.
          let lastFeatureIndex = 0;
          for (let i = 1; i <= value; i++) {
-            // Alpha da cor
+            // Brilho da cor.
             const newLig = 30 + lightnessRangeSize * (value + 1 - i);
-            // Numero máximo permitido para esse intervalo
+            // Numero máximo permitido para esse intervalo.
             const maxRange = rangeSize * i;
 
-            // Modifica a cor das features, alterando o alpha do rgba para diferenciar as features pertencentes a cada intervalo
+            // Modifica a cor das features, alterando o brilho do hsl para diferenciar as features pertencentes a cada intervalo.
             for (let j = lastFeatureIndex; j < features.length; j++) {
+               // Caso o elemento iterado pertença a um novo intervalo, quebra o loop (funciona pois o array está ordenado).
                if (Number(features[j].get('info')[label]) > maxRange) {
                   lastFeatureIndex = j;
                   break;
                }
 
-               const oldStyle = features[j].getStyle();
+               // Recupera o antigo estilo da feature.
+               const oldStyle = features[j].getStyle() as Style;
 
-               //@ts-ignore
-               features[j].getStyle().getFill().setColor(hsl(hue, sat, newLig));
-               //@ts-ignore
-               features[j].getStyle().setImage(
+               // Modifica a cor de preenchimento.
+               oldStyle
+                  .getFill()
+                  .setColor(
+                     fillColor !== '#000000'
+                        ? hsl(polyHue, polySat, newLig)
+                        : oldStyle.getFill().getColor()
+                  );
+
+               // Modifica a cor de contorno.
+               oldStyle
+                  .getStroke()
+                  .setColor(
+                     strokeColor !== '#000000'
+                        ? hsl(stroHue, stroSat, newLig)
+                        : oldStyle.getStroke().getColor()
+                  );
+
+               // Modifica as mesmas coisas para features que sejam geradas como Regular Shapes (estrelas, círculos, etc).
+               oldStyle.setImage(
                   new RegularShape({
                      fill: new Fill({
-                        color: hsl(hue, sat, newLig),
+                        color:
+                           fillColor !== '#000000'
+                              ? hsl(polyHue, polySat, newLig)
+                              : oldStyle.getFill().getColor(),
                      }),
-                     //@ts-ignore
-                     stroke: oldStyle.getStroke(),
+
+                     stroke: new Stroke({
+                        color:
+                           strokeColor !== '#000000'
+                              ? hsl(stroHue, stroSat, newLig)
+                              : oldStyle.getStroke().getColor(),
+                     }),
+
                      points,
                      angle,
                      rotation,
@@ -172,14 +223,203 @@ export const LayersProvider: React.FC = ({ children }) => {
             }
          }
 
+         // Indica uma modificação na camada respectiva, para realizar uma nova renderização.
          filteredLayer?.getSource().changed();
       },
       [layers, getShape]
    );
 
-   const handlePercentileFilter = useCallback(() => {}, []);
+   // Função que realiza a tematização do mapa baseado em grupos com quantidades iguais de elementos.
+   const handlePercentileFilter = useCallback(
+      (layerID: number, label: string, value: number, fillColor: string, strokeColor: string) => {
+         // Recupera as features da layer sendo filtrada.
+         const filteredLayer = layers.find((layer) => layer.get('id') === layerID)!;
+         const features = filteredLayer?.getSource().getFeatures()!;
 
-   const handleCategoryFilter = useCallback(() => {}, []);
+         // Ordena as features baseado na label passada, para facilitar a indexação e evitar iterar por features já passadas.
+         features.sort(
+            (feature1, feature2) =>
+               Number(feature1.get('info')[label]) - Number(feature2.get('info')[label])
+         );
+
+         // Openlayers não disponibiliza métodos para capturar a antiga regularShape da camada, tendo de ser feito um processo manual.
+         const { points, angle, rotation, radius, radius2 } = getShape(
+            filteredLayer.get('shape'),
+            filteredLayer.get('size')
+         );
+
+         // Tamanho dos grupos.
+         const groupSize = Math.ceil(features.length * (value / 100));
+         // Número de grupos.
+         const numOfGroups = Math.ceil(features.length / groupSize);
+         // Tamanho dos intervalos do brilho (cor) para correta exibição do gradiente.
+         const lightnessRangeSize = Math.floor(50 / numOfGroups);
+         // Conversão da cor do formato hex para hsl, para aplicar uma modificação de brilho e obter efeito de gradiente.
+         const [polyHue, polySat] = hexToHsl(fillColor);
+         // Conversão da cor do formato hex para hsl, para aplicar uma modificação de brilho e obter efeito de gradiente.
+         const [stroHue, stroSat] = hexToHsl(strokeColor);
+
+         // Variável que mantém o índice da última feature iterada a cada loop de value, evitando que features passadas tenham seus estilos sobrepostos.
+         let nextFeatureIndex = 0;
+         for (let i = 1; i <= numOfGroups; i++) {
+            // Brilho da cor.
+            const newLig = 30 + lightnessRangeSize * (numOfGroups + 1 - i);
+
+            // Modifica a cor das features, alterando o brilho do hsl para diferenciar as features pertencentes a cada intervalo.
+            for (let j = nextFeatureIndex; j < features.length; j++) {
+               // Recupera o antigo estilo da feature.
+               const oldStyle = features[j].getStyle() as Style;
+
+               // Modifica a cor de preenchimento.
+               oldStyle
+                  .getFill()
+                  .setColor(
+                     fillColor !== '#000000'
+                        ? hsl(polyHue, polySat, newLig)
+                        : oldStyle.getFill().getColor()
+                  );
+
+               // Modifica a cor de contorno.
+               oldStyle
+                  .getStroke()
+                  .setColor(
+                     strokeColor !== '#000000'
+                        ? hsl(stroHue, stroSat, newLig)
+                        : oldStyle.getStroke().getColor()
+                  );
+
+               // Modifica as mesmas coisas para features que sejam geradas como Regular Shapes (estrelas, círculos, etc).
+               oldStyle.setImage(
+                  new RegularShape({
+                     fill: new Fill({
+                        color:
+                           fillColor !== '#000000'
+                              ? hsl(polyHue, polySat, newLig)
+                              : oldStyle.getFill().getColor(),
+                     }),
+
+                     stroke: new Stroke({
+                        color:
+                           strokeColor !== '#000000'
+                              ? hsl(stroHue, stroSat, newLig)
+                              : oldStyle.getStroke().getColor(),
+                     }),
+
+                     points,
+                     angle,
+                     rotation,
+                     radius,
+                     radius2,
+                  })
+               );
+
+               // Caso o elemento iterado seja de um novo grupo, quebra o loop (funciona pois o array está ordenado).
+               if ((j + 1) % groupSize === 0) {
+                  nextFeatureIndex = j + 1;
+                  break;
+               }
+            }
+         }
+
+         // Indica uma modificação na camada respectiva, para realizar uma nova renderização.
+         filteredLayer?.getSource().changed();
+      },
+      [layers, getShape]
+   );
+
+   // Função que realiza a tematização do mapa baseado em categorias diferentes.
+   const handleCategoryFilter = useCallback(
+      (layerID: number, label: string, fillColor: string, strokeColor: string) => {
+         // Recupera as features da layer sendo filtrada.
+         const filteredLayer = layers.find((layer) => layer.get('id') === layerID)!;
+         const features = filteredLayer?.getSource().getFeatures()!;
+
+         // Agrupa as features em um novo objeto, baseado nos diferentes valores da label passada.
+         const groupedFeatures = features.reduce((featuresSoFar: any, feature) => {
+            if (!featuresSoFar[feature.get('info')[label]])
+               featuresSoFar[feature.get('info')[label]] = [];
+
+            featuresSoFar[feature.get('info')[label]].push(feature);
+
+            return featuresSoFar;
+         }, {});
+
+         // Openlayers não disponibiliza métodos para capturar a antiga regularShape da camada, tendo de ser feito um processo manual.
+         const { points, angle, rotation, radius, radius2 } = getShape(
+            filteredLayer.get('shape'),
+            filteredLayer.get('size')
+         );
+
+         // Número de categorias.
+         let numOfCategories = Object.keys(groupedFeatures).length;
+         // Tamanho dos intervalos do brilho (cor) para correta exibição do gradiente.
+         const lightnessRangeSize = Math.floor(50 / numOfCategories);
+         // Conversão da cor do formato hex para hsl, para aplicar uma modificação de brilho e obter efeito de gradiente.
+         const [polyHue, polySat] = hexToHsl(fillColor);
+         // Conversão da cor do formato hex para hsl, para aplicar uma modificação de brilho e obter efeito de gradiente.
+         const [stroHue, stroSat] = hexToHsl(strokeColor);
+
+         for (let feats in groupedFeatures) {
+            // Brilho da cor.
+            const newLig = 30 + lightnessRangeSize * numOfCategories;
+
+            // Modifica a cor das features, alterando o brilho do hsl para diferenciar as features pertencentes a cada intervalo.
+            groupedFeatures[feats].forEach((feat: Feature<Geometry>) => {
+               // Recupera o antigo estilo da feature.
+               const oldStyle = feat.getStyle() as Style;
+
+               // Modifica a cor de preenchimento.
+               oldStyle
+                  .getFill()
+                  .setColor(
+                     fillColor !== '#000000'
+                        ? hsl(polyHue, polySat, newLig)
+                        : oldStyle.getFill().getColor()
+                  );
+
+               // Modifica a cor de contorno.
+               oldStyle
+                  .getStroke()
+                  .setColor(
+                     strokeColor !== '#000000'
+                        ? hsl(stroHue, stroSat, newLig)
+                        : oldStyle.getStroke().getColor()
+                  );
+
+               // Modifica as mesmas coisas para features que sejam geradas como Regular Shapes (estrelas, círculos, etc).
+               oldStyle.setImage(
+                  new RegularShape({
+                     fill: new Fill({
+                        color:
+                           fillColor !== '#000000'
+                              ? hsl(polyHue, polySat, newLig)
+                              : oldStyle.getFill().getColor(),
+                     }),
+
+                     stroke: new Stroke({
+                        color:
+                           strokeColor !== '#000000'
+                              ? hsl(stroHue, stroSat, newLig)
+                              : oldStyle.getStroke().getColor(),
+                     }),
+
+                     points,
+                     angle,
+                     rotation,
+                     radius,
+                     radius2,
+                  })
+               );
+            });
+
+            numOfCategories--;
+         }
+
+         // Indica uma modificação na camada respectiva, para realizar uma nova renderização.
+         filteredLayer?.getSource().changed();
+      },
+      [layers, getShape]
+   );
 
    const handleEraseFilter = useCallback(
       (layerID: number) => {
@@ -187,7 +427,8 @@ export const LayersProvider: React.FC = ({ children }) => {
 
          const source = filteredLayer.getSource();
          const features = source.getFeatures();
-         const color = filteredLayer.get('filter').color;
+         const fillColor = filteredLayer.get('filter').fillColor;
+         const strokeColor = filteredLayer.get('filter').strokeColor;
 
          filteredLayer.get('filter').type = '';
          filteredLayer.get('filter').label = '';
@@ -199,14 +440,21 @@ export const LayersProvider: React.FC = ({ children }) => {
          );
 
          features.forEach((feature) => {
-            //@ts-ignore
-            feature.getStyle().getFill().setColor(color);
-            //@ts-ignore
-            feature.getStyle().setImage(
+            const oldStyle = feature.getStyle() as Style;
+
+            oldStyle.getFill().setColor(fillColor);
+            oldStyle.getStroke().setColor(strokeColor);
+
+            oldStyle.setImage(
                new RegularShape({
                   fill: new Fill({
-                     color,
+                     color: fillColor,
                   }),
+
+                  stroke: new Stroke({
+                     color: strokeColor,
+                  }),
+
                   points,
                   angle,
                   rotation,
@@ -323,7 +571,8 @@ export const LayersProvider: React.FC = ({ children }) => {
             type: '',
             label: '',
             value: '',
-            color: '#000000',
+            fillColor: '#000000',
+            strokeColor: '#000000',
          };
 
          // A layer em si

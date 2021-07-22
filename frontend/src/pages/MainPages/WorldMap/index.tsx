@@ -65,7 +65,14 @@ interface DnDProps {
 
 export default function WorldMap() {
    const { database } = useContext(TablesContext);
-   const { layers, setLayers, handleIntervalFilter, handleEraseFilter } = useContext(LayersContext);
+   const {
+      layers,
+      setLayers,
+      handleIntervalFilter,
+      handlePercentileFilter,
+      handleCategoryFilter,
+      handleEraseFilter,
+   } = useContext(LayersContext);
 
    const [map, setMap] = useState<Map>();
 
@@ -352,35 +359,55 @@ export default function WorldMap() {
    // Função que realiza a submissão dos filtros para o contexto
    const handleSubmitFilter = useCallback(
       (layerID: number, index: number) => {
+         handleClosePopup();
+
          const { value: filterType } = document.getElementById(
             `filterTypeSelect${index}`
          ) as HTMLSelectElement;
          const { value: filterLabel } = document.getElementById(
             `filterLabelSelect${index}`
          ) as HTMLSelectElement;
-         const { value: filterValue } = document.getElementById(
-            `filterValueInput${index}`
+         const { value: filterValue } =
+            filterType !== 'Categoria'
+               ? (document.getElementById(`filterValueInput${index}`) as HTMLInputElement)
+               : { value: '' };
+         const { value: filterPolygonColor } = document.getElementById(
+            `filterPolygonColorPicker${index}`
          ) as HTMLInputElement;
-         const { value: filterColor } = document.getElementById(
-            `filterColorPicker${index}`
+         const { value: filterStrokeColor } = document.getElementById(
+            `filterStrokeColorPicker${index}`
          ) as HTMLInputElement;
 
          switch (filterType) {
             case 'Intervalos':
-               handleIntervalFilter(layerID, filterLabel, Number(filterValue), filterColor);
+               handleIntervalFilter(
+                  layerID,
+                  filterLabel,
+                  Number(filterValue),
+                  filterPolygonColor,
+                  filterStrokeColor
+               );
                break;
 
             case 'Percentil':
+               handlePercentileFilter(
+                  layerID,
+                  filterLabel,
+                  Number(filterValue),
+                  filterPolygonColor,
+                  filterStrokeColor
+               );
                break;
 
             case 'Categoria':
+               handleCategoryFilter(layerID, filterLabel, filterPolygonColor, filterStrokeColor);
                break;
 
             default:
                break;
          }
       },
-      [handleIntervalFilter]
+      [handleClosePopup, handleIntervalFilter, handlePercentileFilter, handleCategoryFilter]
    );
 
    // Função que impede o usuário de digitar valores não numéricos nos inputs textuais dos filtros numéricos (intervalos e percentil)
@@ -739,8 +766,8 @@ export default function WorldMap() {
                                        }}
                                     >
                                        <option value=""></option>
-                                       {layer.get('labels').map(
-                                          (label: string) =>
+                                       {layer.get('labels').map((label: string) =>
+                                          layer.get('filter').type !== 'Categoria' ? (
                                              !isNaN(
                                                 Number(
                                                    layer.getSource().getFeatures()[0].get('info')[
@@ -752,6 +779,11 @@ export default function WorldMap() {
                                                    {label}
                                                 </option>
                                              )
+                                          ) : (
+                                             <option key={label} value={label}>
+                                                {label}
+                                             </option>
+                                          )
                                        )}
                                     </select>
 
@@ -779,16 +811,29 @@ export default function WorldMap() {
                                           />
                                        )}
 
-                                    <input
-                                       id={`filterColorPicker${index}`}
-                                       type="color"
-                                       className="filterColorPicker"
-                                       value={layer.get('filter').color}
-                                       onChange={({ target: { value } }) => {
-                                          layer.get('filter').color = value;
-                                          setFlag(!flag);
-                                       }}
-                                    />
+                                    <div className="filterColorPickersContainer container">
+                                       <input
+                                          id={`filterPolygonColorPicker${index}`}
+                                          type="color"
+                                          className="filterPolygonColorPicker"
+                                          value={layer.get('filter').fillColor}
+                                          onChange={({ target: { value } }) => {
+                                             layer.get('filter').fillColor = value;
+                                             setFlag(!flag);
+                                          }}
+                                       />
+
+                                       <input
+                                          id={`filterStrokeColorPicker${index}`}
+                                          type="color"
+                                          className="filterStrokeColorPicker"
+                                          value={layer.get('filter').strokeColor}
+                                          onChange={({ target: { value } }) => {
+                                             layer.get('filter').strokeColor = value;
+                                             setFlag(!flag);
+                                          }}
+                                       />
+                                    </div>
 
                                     <button
                                        id="submitFilter"
@@ -796,6 +841,7 @@ export default function WorldMap() {
                                     >
                                        <FaChartPie />
                                     </button>
+
                                     <FaTimes
                                        id="filterErase"
                                        onClick={() => {
