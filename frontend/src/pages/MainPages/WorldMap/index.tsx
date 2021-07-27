@@ -19,6 +19,7 @@ import {
    FaTrash,
    FaCaretDown,
    FaEye,
+   FaPaintBrush,
    FaChartPie,
    FaTimes,
 } from 'react-icons/fa';
@@ -82,6 +83,7 @@ export default function WorldMap() {
    const [isPolygonMenuVisible, setIsPolygonMenuVisible] = useState<boolean[]>([]);
    const [isStrokeMenuVisible, setIsStrokeMenuVisible] = useState<boolean[]>([]);
    const [isLabelMenuVisible, setIsLabelMenuVisible] = useState<boolean[]>([]);
+   const [isFilterColorMenuVisible, setIsFilterColorMenuVisible] = useState<boolean[]>([]);
 
    // Estado inicial criado a partir da configuração de visualização das camadas, para que, ao mudar de página, o ícone de visibilidade continue de acordo com a visiblidade da respectiva camada.
    const [isLayerVisible, setIsLayerVisible] = useState<boolean[]>((): boolean[] => {
@@ -241,8 +243,15 @@ export default function WorldMap() {
          // Remove a visibilidade dos outros menus.
          setIsStrokeMenuVisible(isStrokeMenuVisible.fill(false));
          setIsLabelMenuVisible(isLabelMenuVisible.fill(false));
+         setIsFilterColorMenuVisible(isFilterColorMenuVisible.fill(false));
       },
-      [handleClosePopup, isLabelMenuVisible, isPolygonMenuVisible, isStrokeMenuVisible]
+      [
+         handleClosePopup,
+         isLabelMenuVisible,
+         isPolygonMenuVisible,
+         isStrokeMenuVisible,
+         isFilterColorMenuVisible,
+      ]
    );
 
    const handleStrokeMenuVisibility = useCallback(
@@ -258,8 +267,15 @@ export default function WorldMap() {
 
          setIsPolygonMenuVisible(isPolygonMenuVisible.fill(false));
          setIsLabelMenuVisible(isLabelMenuVisible.fill(false));
+         setIsFilterColorMenuVisible(isFilterColorMenuVisible.fill(false));
       },
-      [handleClosePopup, isLabelMenuVisible, isPolygonMenuVisible, isStrokeMenuVisible]
+      [
+         handleClosePopup,
+         isLabelMenuVisible,
+         isPolygonMenuVisible,
+         isStrokeMenuVisible,
+         isFilterColorMenuVisible,
+      ]
    );
 
    const handleLabelMenuVisibility = useCallback(
@@ -275,8 +291,39 @@ export default function WorldMap() {
 
          setIsPolygonMenuVisible(isPolygonMenuVisible.fill(false));
          setIsStrokeMenuVisible(isStrokeMenuVisible.fill(false));
+         setIsFilterColorMenuVisible(isFilterColorMenuVisible.fill(false));
       },
-      [handleClosePopup, isLabelMenuVisible, isPolygonMenuVisible, isStrokeMenuVisible]
+      [
+         handleClosePopup,
+         isLabelMenuVisible,
+         isPolygonMenuVisible,
+         isStrokeMenuVisible,
+         isFilterColorMenuVisible,
+      ]
+   );
+
+   const handleFilterColorMenuVisibility = useCallback(
+      (index) => {
+         // Fecha possíveis popups abertas (caso haja uma aberta, o app crasha ao tentar modificar uma camada).
+         handleClosePopup();
+
+         let filterColorMenus = [...isFilterColorMenuVisible];
+         filterColorMenus.fill(false);
+
+         filterColorMenus[index] = !isFilterColorMenuVisible[index];
+         setIsFilterColorMenuVisible(filterColorMenus);
+
+         setIsPolygonMenuVisible(isPolygonMenuVisible.fill(false));
+         setIsStrokeMenuVisible(isStrokeMenuVisible.fill(false));
+         setIsLabelMenuVisible(isLabelMenuVisible.fill(false));
+      },
+      [
+         handleClosePopup,
+         isLabelMenuVisible,
+         isPolygonMenuVisible,
+         isStrokeMenuVisible,
+         isFilterColorMenuVisible,
+      ]
    );
 
    /*----------------------------------------- Funções referentes às outras funcionalidades da legenda --------------------------------------------------*/
@@ -364,19 +411,27 @@ export default function WorldMap() {
          const { value: filterType } = document.getElementById(
             `filterTypeSelect${index}`
          ) as HTMLSelectElement;
+
          const { value: filterLabel } = document.getElementById(
             `filterLabelSelect${index}`
          ) as HTMLSelectElement;
+
          const { value: filterValue } =
             filterType !== 'Categoria'
                ? (document.getElementById(`filterValueInput${index}`) as HTMLInputElement)
                : { value: '' };
-         const { value: filterPolygonColor } = document.getElementById(
+
+         const { value: filterPolygonColor } = (document.getElementById(
             `filterPolygonColorPicker${index}`
-         ) as HTMLInputElement;
-         const { value: filterStrokeColor } = document.getElementById(
+         ) as HTMLInputElement)
+            ? (document.getElementById(`filterPolygonColorPicker${index}`) as HTMLInputElement)
+            : { value: '#000000' };
+
+         const { value: filterStrokeColor } = (document.getElementById(
             `filterStrokeColorPicker${index}`
-         ) as HTMLInputElement;
+         ) as HTMLInputElement)
+            ? (document.getElementById(`filterStrokeColorPicker${index}`) as HTMLInputElement)
+            : { value: '#000000' };
 
          switch (filterType) {
             case 'Intervalos':
@@ -811,28 +866,75 @@ export default function WorldMap() {
                                           />
                                        )}
 
-                                    <div className="filterColorPickersContainer container">
-                                       <input
-                                          id={`filterPolygonColorPicker${index}`}
-                                          type="color"
-                                          className="filterPolygonColorPicker"
-                                          value={layer.get('filter').fillColor}
-                                          onChange={({ target: { value } }) => {
-                                             layer.get('filter').fillColor = value;
-                                             setFlag(!flag);
-                                          }}
-                                       />
+                                    <div className="customizeFilters customization">
+                                       <button
+                                          data-tip="Aplicar cores ao filtro"
+                                          data-background-color="rgb(59, 59, 59)"
+                                          onClick={() => handleFilterColorMenuVisibility(index)}
+                                       >
+                                          <FaPaintBrush />
+                                       </button>
+                                       <ReactTooltip place="left" type="dark" effect="solid" />
 
-                                       <input
-                                          id={`filterStrokeColorPicker${index}`}
-                                          type="color"
-                                          className="filterStrokeColorPicker"
-                                          value={layer.get('filter').strokeColor}
-                                          onChange={({ target: { value } }) => {
-                                             layer.get('filter').strokeColor = value;
-                                             setFlag(!flag);
-                                          }}
-                                       />
+                                       {isFilterColorMenuVisible[index] && (
+                                          <div className="filterColorPickersMenu menu container">
+                                             <div>
+                                                <span>Preenchimento</span>
+
+                                                <input
+                                                   id={`filterPolygonColorPicker${index}`}
+                                                   type="color"
+                                                   className="filterPolygonColorPicker"
+                                                   value={layer.get('filter').fillColor}
+                                                   onChange={({ target: { value } }) => {
+                                                      layer.get('filter').fillColor = value;
+                                                      setFlag(!flag);
+                                                   }}
+                                                />
+
+                                                <div>
+                                                   <input
+                                                      type="checkbox"
+                                                      id={`randomPolygonFilterColor${index}`}
+                                                      name={`randomPolygonFilterColor${index}`}
+                                                   />
+                                                   <label
+                                                      htmlFor={`randomPolygonFilterColor${index}`}
+                                                   >
+                                                      Cores aleatórias
+                                                   </label>
+                                                </div>
+                                             </div>
+
+                                             <div>
+                                                <span>Contorno</span>
+
+                                                <input
+                                                   id={`filterStrokeColorPicker${index}`}
+                                                   type="color"
+                                                   className="filterStrokeColorPicker"
+                                                   value={layer.get('filter').strokeColor}
+                                                   onChange={({ target: { value } }) => {
+                                                      layer.get('filter').strokeColor = value;
+                                                      setFlag(!flag);
+                                                   }}
+                                                />
+
+                                                <div>
+                                                   <input
+                                                      type="checkbox"
+                                                      id={`randomStrokeFilterColor${index}`}
+                                                      name={`randomStrokeFilterColor${index}`}
+                                                   />
+                                                   <label
+                                                      htmlFor={`randomStrokeFilterColor${index}`}
+                                                   >
+                                                      Cores aleatórias
+                                                   </label>
+                                                </div>
+                                             </div>
+                                          </div>
+                                       )}
                                     </div>
 
                                     <button

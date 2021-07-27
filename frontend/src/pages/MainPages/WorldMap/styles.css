@@ -337,14 +337,7 @@
 
 /*------------------------ Estilo dos menus ---------------------------------------*/
 
-#mapContainer
-   #mainContainer
-   #subtitleContainer
-   #layersContainer
-   .layer
-   .buttons
-   .customization
-   .menu {
+#mapContainer #mainContainer #subtitleContainer #layersContainer .layer .customization .menu {
    margin-top: 0.1rem;
    min-width: 18rem;
 
@@ -359,17 +352,81 @@
    background: var(--color-secondary-lighter);
 }
 
+#mapContainer #mainContainer #subtitleContainer #layersContainer .layer .customization .menu > * {
+   width: calc(100% - 2rem);
+   margin: 1rem 1rem;
+}
+
 #mapContainer
    #mainContainer
    #subtitleContainer
    #layersContainer
    .layer
-   .buttons
    .customization
-   .menu
+   .filterColorPickersMenu {
+   right: 3%;
+}
+
+#mapContainer
+   #mainContainer
+   #subtitleContainer
+   #layersContainer
+   .layer
+   .customization
+   .filterColorPickersMenu
+   > div
    * {
-   width: calc(100% - 2rem);
-   margin: 1rem 1rem;
+   width: 100%;
+}
+
+#mapContainer
+   #mainContainer
+   #subtitleContainer
+   #layersContainer
+   .layer
+   .customization
+   .filterColorPickersMenu
+   > div
+   span {
+   font: 700 1.4rem var(--font-family-title);
+}
+
+#mapContainer
+   #mainContainer
+   #subtitleContainer
+   #layersContainer
+   .layer
+   .customization
+   .filterColorPickersMenu
+   > div:first-child {
+   margin-bottom: 0;
+   padding-bottom: 1rem;
+
+   border-bottom: 0.2rem dashed var(--color-secondary-dark);
+}
+
+#mapContainer
+   #mainContainer
+   #subtitleContainer
+   #layersContainer
+   .layer
+   .customization
+   .filterColorPickersMenu
+   input[type='checkbox'] {
+   width: 1.2rem;
+   margin-right: 0.5rem;
+}
+
+#mapContainer
+   #mainContainer
+   #subtitleContainer
+   #layersContainer
+   .layer
+   .customization
+   .filterColorPickersMenu
+   label {
+   position: relative;
+   bottom: 0.095rem;
 }
 
 /*--------------------- Estilização do slider ---------------------*/
