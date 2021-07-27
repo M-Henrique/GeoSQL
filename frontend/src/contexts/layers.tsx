@@ -36,20 +36,26 @@ interface ContextData {
       label: string,
       value: number,
       fillColor: string,
-      strokeColor: string
+      isFillColorRandom: boolean,
+      strokeColor: string,
+      isStrokeColorRandom: boolean
    ) => void;
    handlePercentileFilter: (
       layerID: number,
       label: string,
       value: number,
       fillColor: string,
-      strokeColor: string
+      isFillColorRandom: boolean,
+      strokeColor: string,
+      isStrokeColorRandom: boolean
    ) => void;
    handleCategoryFilter: (
       layerID: number,
       label: string,
       fillColor: string,
-      strokeColor: string
+      isFillColorRandom: boolean,
+      strokeColor: string,
+      isStrokeColorRandom: boolean
    ) => void;
 
    handleEraseFilter: (layerID: number) => void;
@@ -131,7 +137,15 @@ export const LayersProvider: React.FC = ({ children }) => {
 
    // Função que realiza a tematização do mapa baseado no número de intervalos de uma determinada label.
    const handleIntervalFilter = useCallback(
-      (layerID: number, label: string, value: number, fillColor: string, strokeColor: string) => {
+      (
+         layerID: number,
+         label: string,
+         value: number,
+         fillColor: string,
+         isFillColorRandom: boolean,
+         strokeColor: string,
+         isStrokeColorRandom: boolean
+      ) => {
          // Recupera as features da layer sendo filtrada.
          const filteredLayer = layers.find((layer) => layer.get('id') === layerID)!;
          const features = filteredLayer?.getSource().getFeatures()!;
@@ -166,6 +180,8 @@ export const LayersProvider: React.FC = ({ children }) => {
             const newLig = 30 + lightnessRangeSize * (value + 1 - i);
             // Numero máximo permitido para esse intervalo.
             const maxRange = rangeSize * i;
+            // Recupera uma cor aleatória (caso o usuário tenha selecionado tal opção).
+            const [randomFillColor, randomStrokeColor] = getRandomColor();
 
             // Modifica a cor das features, alterando o brilho do hsl para diferenciar as features pertencentes a cada intervalo.
             for (let j = lastFeatureIndex; j < features.length; j++) {
@@ -178,20 +194,24 @@ export const LayersProvider: React.FC = ({ children }) => {
                // Recupera o antigo estilo da feature.
                const oldStyle = features[j].getStyle() as Style;
 
-               // Modifica a cor de preenchimento.
+               // Modifica a cor de preenchimento (utiliza-se a cor preta base (#000000) para evitar que o filtro seja aplicado sem que o usuário queira. Como esta é a cor padrão do color picker, esse controle força uma escolha de cor por parte do usuário).
                oldStyle
                   .getFill()
                   .setColor(
-                     fillColor !== '#000000'
+                     isFillColorRandom
+                        ? randomFillColor
+                        : fillColor !== '#000000'
                         ? hsl(polyHue, polySat, newLig)
                         : oldStyle.getFill().getColor()
                   );
 
-               // Modifica a cor de contorno.
+               // Modifica a cor de contorno (utiliza-se a cor preta base (#000000) para evitar que o filtro seja aplicado sem que o usuário queira. Como esta é a cor padrão do color picker, esse controle força uma escolha de cor por parte do usuário).
                oldStyle
                   .getStroke()
                   .setColor(
-                     strokeColor !== '#000000'
+                     isStrokeColorRandom
+                        ? randomStrokeColor
+                        : strokeColor !== '#000000'
                         ? hsl(stroHue, stroSat, newLig)
                         : oldStyle.getStroke().getColor()
                   );
@@ -200,17 +220,19 @@ export const LayersProvider: React.FC = ({ children }) => {
                oldStyle.setImage(
                   new RegularShape({
                      fill: new Fill({
-                        color:
-                           fillColor !== '#000000'
-                              ? hsl(polyHue, polySat, newLig)
-                              : oldStyle.getFill().getColor(),
+                        color: isFillColorRandom
+                           ? randomFillColor
+                           : fillColor !== '#000000'
+                           ? hsl(polyHue, polySat, newLig)
+                           : oldStyle.getFill().getColor(),
                      }),
 
                      stroke: new Stroke({
-                        color:
-                           strokeColor !== '#000000'
-                              ? hsl(stroHue, stroSat, newLig)
-                              : oldStyle.getStroke().getColor(),
+                        color: isStrokeColorRandom
+                           ? randomStrokeColor
+                           : strokeColor !== '#000000'
+                           ? hsl(stroHue, stroSat, newLig)
+                           : oldStyle.getStroke().getColor(),
                      }),
 
                      points,
@@ -226,12 +248,20 @@ export const LayersProvider: React.FC = ({ children }) => {
          // Indica uma modificação na camada respectiva, para realizar uma nova renderização.
          filteredLayer?.getSource().changed();
       },
-      [layers, getShape]
+      [layers, getShape, getRandomColor]
    );
 
    // Função que realiza a tematização do mapa baseado em grupos com quantidades iguais de elementos.
    const handlePercentileFilter = useCallback(
-      (layerID: number, label: string, value: number, fillColor: string, strokeColor: string) => {
+      (
+         layerID: number,
+         label: string,
+         value: number,
+         fillColor: string,
+         isFillColorRandom: boolean,
+         strokeColor: string,
+         isStrokeColorRandom: boolean
+      ) => {
          // Recupera as features da layer sendo filtrada.
          const filteredLayer = layers.find((layer) => layer.get('id') === layerID)!;
          const features = filteredLayer?.getSource().getFeatures()!;
@@ -264,26 +294,32 @@ export const LayersProvider: React.FC = ({ children }) => {
          for (let i = 1; i <= numOfGroups; i++) {
             // Brilho da cor.
             const newLig = 30 + lightnessRangeSize * (numOfGroups + 1 - i);
+            // Recupera uma cor aleatória (caso o usuário tenha selecionado tal opção).
+            const [randomFillColor, randomStrokeColor] = getRandomColor();
 
             // Modifica a cor das features, alterando o brilho do hsl para diferenciar as features pertencentes a cada intervalo.
             for (let j = nextFeatureIndex; j < features.length; j++) {
                // Recupera o antigo estilo da feature.
                const oldStyle = features[j].getStyle() as Style;
 
-               // Modifica a cor de preenchimento.
+               // Modifica a cor de preenchimento (utiliza-se a cor preta base (#000000) para evitar que o filtro seja aplicado sem que o usuário queira. Como esta é a cor padrão do color picker, esse controle força uma escolha de cor por parte do usuário).
                oldStyle
                   .getFill()
                   .setColor(
-                     fillColor !== '#000000'
+                     isFillColorRandom
+                        ? randomFillColor
+                        : fillColor !== '#000000'
                         ? hsl(polyHue, polySat, newLig)
                         : oldStyle.getFill().getColor()
                   );
 
-               // Modifica a cor de contorno.
+               // Modifica a cor de contorno (utiliza-se a cor preta base (#000000) para evitar que o filtro seja aplicado sem que o usuário queira. Como esta é a cor padrão do color picker, esse controle força uma escolha de cor por parte do usuário).
                oldStyle
                   .getStroke()
                   .setColor(
-                     strokeColor !== '#000000'
+                     isStrokeColorRandom
+                        ? randomStrokeColor
+                        : strokeColor !== '#000000'
                         ? hsl(stroHue, stroSat, newLig)
                         : oldStyle.getStroke().getColor()
                   );
@@ -292,17 +328,19 @@ export const LayersProvider: React.FC = ({ children }) => {
                oldStyle.setImage(
                   new RegularShape({
                      fill: new Fill({
-                        color:
-                           fillColor !== '#000000'
-                              ? hsl(polyHue, polySat, newLig)
-                              : oldStyle.getFill().getColor(),
+                        color: isFillColorRandom
+                           ? randomFillColor
+                           : fillColor !== '#000000'
+                           ? hsl(polyHue, polySat, newLig)
+                           : oldStyle.getFill().getColor(),
                      }),
 
                      stroke: new Stroke({
-                        color:
-                           strokeColor !== '#000000'
-                              ? hsl(stroHue, stroSat, newLig)
-                              : oldStyle.getStroke().getColor(),
+                        color: isStrokeColorRandom
+                           ? randomStrokeColor
+                           : strokeColor !== '#000000'
+                           ? hsl(stroHue, stroSat, newLig)
+                           : oldStyle.getStroke().getColor(),
                      }),
 
                      points,
@@ -324,12 +362,19 @@ export const LayersProvider: React.FC = ({ children }) => {
          // Indica uma modificação na camada respectiva, para realizar uma nova renderização.
          filteredLayer?.getSource().changed();
       },
-      [layers, getShape]
+      [layers, getShape, getRandomColor]
    );
 
    // Função que realiza a tematização do mapa baseado em categorias diferentes.
    const handleCategoryFilter = useCallback(
-      (layerID: number, label: string, fillColor: string, strokeColor: string) => {
+      (
+         layerID: number,
+         label: string,
+         fillColor: string,
+         isFillColorRandom: boolean,
+         strokeColor: string,
+         isStrokeColorRandom: boolean
+      ) => {
          // Recupera as features da layer sendo filtrada.
          const filteredLayer = layers.find((layer) => layer.get('id') === layerID)!;
          const features = filteredLayer?.getSource().getFeatures()!;
@@ -362,26 +407,32 @@ export const LayersProvider: React.FC = ({ children }) => {
          for (let feats in groupedFeatures) {
             // Brilho da cor.
             const newLig = 30 + lightnessRangeSize * numOfCategories;
+            // Recupera uma cor aleatória (caso o usuário tenha selecionado tal opção).
+            const [randomFillColor, randomStrokeColor] = getRandomColor();
 
             // Modifica a cor das features, alterando o brilho do hsl para diferenciar as features pertencentes a cada intervalo.
             groupedFeatures[feats].forEach((feat: Feature<Geometry>) => {
                // Recupera o antigo estilo da feature.
                const oldStyle = feat.getStyle() as Style;
 
-               // Modifica a cor de preenchimento.
+               // Modifica a cor de preenchimento (utiliza-se a cor preta base (#000000) para evitar que o filtro seja aplicado sem que o usuário queira. Como esta é a cor padrão do color picker, esse controle força uma escolha de cor por parte do usuário).
                oldStyle
                   .getFill()
                   .setColor(
-                     fillColor !== '#000000'
+                     isFillColorRandom
+                        ? randomFillColor
+                        : fillColor !== '#000000'
                         ? hsl(polyHue, polySat, newLig)
                         : oldStyle.getFill().getColor()
                   );
 
-               // Modifica a cor de contorno.
+               // Modifica a cor de contorno (utiliza-se a cor preta base (#000000) para evitar que o filtro seja aplicado sem que o usuário queira. Como esta é a cor padrão do color picker, esse controle força uma escolha de cor por parte do usuário).
                oldStyle
                   .getStroke()
                   .setColor(
-                     strokeColor !== '#000000'
+                     isStrokeColorRandom
+                        ? randomStrokeColor
+                        : strokeColor !== '#000000'
                         ? hsl(stroHue, stroSat, newLig)
                         : oldStyle.getStroke().getColor()
                   );
@@ -390,17 +441,19 @@ export const LayersProvider: React.FC = ({ children }) => {
                oldStyle.setImage(
                   new RegularShape({
                      fill: new Fill({
-                        color:
-                           fillColor !== '#000000'
-                              ? hsl(polyHue, polySat, newLig)
-                              : oldStyle.getFill().getColor(),
+                        color: isFillColorRandom
+                           ? randomFillColor
+                           : fillColor !== '#000000'
+                           ? hsl(polyHue, polySat, newLig)
+                           : oldStyle.getFill().getColor(),
                      }),
 
                      stroke: new Stroke({
-                        color:
-                           strokeColor !== '#000000'
-                              ? hsl(stroHue, stroSat, newLig)
-                              : oldStyle.getStroke().getColor(),
+                        color: isStrokeColorRandom
+                           ? randomStrokeColor
+                           : strokeColor !== '#000000'
+                           ? hsl(stroHue, stroSat, newLig)
+                           : oldStyle.getStroke().getColor(),
                      }),
 
                      points,
@@ -418,7 +471,7 @@ export const LayersProvider: React.FC = ({ children }) => {
          // Indica uma modificação na camada respectiva, para realizar uma nova renderização.
          filteredLayer?.getSource().changed();
       },
-      [layers, getShape]
+      [layers, getShape, getRandomColor]
    );
 
    const handleEraseFilter = useCallback(

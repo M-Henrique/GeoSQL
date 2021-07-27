@@ -421,11 +421,17 @@ export default function WorldMap() {
                ? (document.getElementById(`filterValueInput${index}`) as HTMLInputElement)
                : { value: '' };
 
-         const { value: filterPolygonColor } = (document.getElementById(
-            `filterPolygonColorPicker${index}`
+         const { value: filterFillColor } = (document.getElementById(
+            `filterFillColorPicker${index}`
          ) as HTMLInputElement)
-            ? (document.getElementById(`filterPolygonColorPicker${index}`) as HTMLInputElement)
+            ? (document.getElementById(`filterFillColorPicker${index}`) as HTMLInputElement)
             : { value: '#000000' };
+
+         const { checked: isFilterFillColorRandom } = (document.getElementById(
+            `randomFilterFillColor${index}`
+         ) as HTMLInputElement)
+            ? (document.getElementById(`randomFilterFillColor${index}`) as HTMLInputElement)
+            : { checked: false };
 
          const { value: filterStrokeColor } = (document.getElementById(
             `filterStrokeColorPicker${index}`
@@ -433,14 +439,22 @@ export default function WorldMap() {
             ? (document.getElementById(`filterStrokeColorPicker${index}`) as HTMLInputElement)
             : { value: '#000000' };
 
+         const { checked: isFilterStrokeColorRandom } = (document.getElementById(
+            `randomStrokeFilterColor${index}`
+         ) as HTMLInputElement)
+            ? (document.getElementById(`randomStrokeFilterColor${index}`) as HTMLInputElement)
+            : { checked: false };
+
          switch (filterType) {
             case 'Intervalos':
                handleIntervalFilter(
                   layerID,
                   filterLabel,
                   Number(filterValue),
-                  filterPolygonColor,
-                  filterStrokeColor
+                  filterFillColor,
+                  isFilterFillColorRandom,
+                  filterStrokeColor,
+                  isFilterStrokeColorRandom
                );
                break;
 
@@ -449,13 +463,22 @@ export default function WorldMap() {
                   layerID,
                   filterLabel,
                   Number(filterValue),
-                  filterPolygonColor,
-                  filterStrokeColor
+                  filterFillColor,
+                  isFilterFillColorRandom,
+                  filterStrokeColor,
+                  isFilterStrokeColorRandom
                );
                break;
 
             case 'Categoria':
-               handleCategoryFilter(layerID, filterLabel, filterPolygonColor, filterStrokeColor);
+               handleCategoryFilter(
+                  layerID,
+                  filterLabel,
+                  filterFillColor,
+                  isFilterFillColorRandom,
+                  filterStrokeColor,
+                  isFilterStrokeColorRandom
+               );
                break;
 
             default:
@@ -882,9 +905,9 @@ export default function WorldMap() {
                                                 <span>Preenchimento</span>
 
                                                 <input
-                                                   id={`filterPolygonColorPicker${index}`}
+                                                   id={`filterFillColorPicker${index}`}
                                                    type="color"
-                                                   className="filterPolygonColorPicker"
+                                                   className="filterFillColorPicker"
                                                    value={layer.get('filter').fillColor}
                                                    onChange={({ target: { value } }) => {
                                                       layer.get('filter').fillColor = value;
@@ -895,12 +918,10 @@ export default function WorldMap() {
                                                 <div>
                                                    <input
                                                       type="checkbox"
-                                                      id={`randomPolygonFilterColor${index}`}
-                                                      name={`randomPolygonFilterColor${index}`}
+                                                      id={`randomFilterFillColor${index}`}
+                                                      name={`randomFilterFillColor${index}`}
                                                    />
-                                                   <label
-                                                      htmlFor={`randomPolygonFilterColor${index}`}
-                                                   >
+                                                   <label htmlFor={`randomFilterFillColor${index}`}>
                                                       Cores aleatórias
                                                    </label>
                                                 </div>
