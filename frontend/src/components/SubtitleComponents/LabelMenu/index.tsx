@@ -13,6 +13,8 @@ import React, { useCallback, useState } from 'react';
 import VectorSource from 'ol/source/Vector';
 import VectorLayer from 'ol/layer/Vector';
 
+import { FaPlus, FaTextHeight, FaMinus } from 'react-icons/fa';
+
 import './styles.css';
 
 interface LabelMenuProps {
@@ -26,6 +28,62 @@ const LabelMenu: React.FC<LabelMenuProps> = ({ layer }) => {
 
    const source = layer.getSource();
    const features = source.getFeatures();
+
+   const handleLabelTextSize = useCallback(
+      (operator: '+' | '-') => {
+         //@ts-ignore
+         const oldSize = features[0].getStyle()!.getText().getFont().split('p')[0];
+
+         switch (operator) {
+            case '+':
+               features.forEach((feature) => {
+                  feature
+                     .getStyle()!
+                     //@ts-ignore
+                     .getText()
+                     .setFont(`${Number(oldSize) + 1}px roboto`);
+               });
+
+               source.changed();
+               break;
+
+            case '-':
+               features.forEach((feature) => {
+                  feature
+                     .getStyle()!
+                     //@ts-ignore
+                     .getText()
+                     .setFont(`${Number(oldSize) - 1}px roboto`);
+               });
+
+               source.changed();
+               break;
+
+            default:
+               break;
+         }
+      },
+      [source, features]
+   );
+
+   const handleLabelColor = useCallback(() => {
+      const newColor = (
+         document.getElementById(`labelColorPicker${layer.get('id')}`)! as HTMLInputElement
+      ).value;
+
+      // Atualiza o texto de cada feature baseado na label que foi passada.
+      features.forEach((feature) => {
+         feature
+            .getStyle()!
+            //@ts-ignore
+            .getText()
+            .getFill()
+            .setColor(newColor);
+      });
+
+      source.changed();
+      setColor(newColor);
+   }, [features, layer, source]);
 
    const handleLabelText = useCallback(
       (labelIdentifier: number) => {
@@ -53,27 +111,18 @@ const LabelMenu: React.FC<LabelMenuProps> = ({ layer }) => {
       [features, source]
    );
 
-   const handleLabelColor = useCallback(() => {
-      const newColor = (
-         document.getElementById(`labelColorPicker${layer.get('id')}`)! as HTMLInputElement
-      ).value;
-
-      // Atualiza o texto de cada feature baseado na label que foi passada.
-      features.forEach((feature) => {
-         feature
-            .getStyle()!
-            //@ts-ignore
-            .getText()
-            .getFill()
-            .setColor(newColor);
-      });
-
-      source.changed();
-      setColor(newColor);
-   }, [features, layer, source]);
-
    return (
       <div className="labelMenu menu container">
+         <div className="textSizeContainer container">
+            <button>
+               <FaMinus size={12} onClick={() => handleLabelTextSize('-')} />
+            </button>
+            <FaTextHeight size={30} />
+            <button>
+               <FaPlus size={12} onClick={() => handleLabelTextSize('+')} />
+            </button>
+         </div>
+
          <input
             type="color"
             id={`labelColorPicker${layer.get('id')}`}

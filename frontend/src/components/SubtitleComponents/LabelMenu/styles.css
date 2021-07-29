@@ -18,6 +18,36 @@
    .layer
    .buttons
    .customization
+   .labelMenu
+   .textSizeContainer {
+   justify-content: center;
+   align-items: center;
+}
+
+#mapContainer
+   #mainContainer
+   #subtitleContainer
+   #layersContainer
+   .layer
+   .buttons
+   .customization
+   .labelMenu
+   .textSizeContainer
+   button {
+   width: 0.5rem;
+   height: 1rem;
+
+   margin: 0 0.5rem;
+   padding: 0.8rem 0.5rem;
+}
+
+#mapContainer
+   #mainContainer
+   #subtitleContainer
+   #layersContainer
+   .layer
+   .buttons
+   .customization
    .menu
    .label {
    width: 100%;
