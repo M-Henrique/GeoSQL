@@ -1,19 +1,10 @@
-/*------------------------------------------------------------------------------------------------------------------------
-|  A tipagem do Openlayers sofre um bug so utilizar a função getStyle,                                                   |
-|     da VectorLayer. Apesar de, no arquivo "C:\Apache24\htdocs\TCC\frontend\node_modules\@types\ol\style\Style.d.ts"    |
-|        o retorno ser especificado como "Style", por algum motivo esse retorno não é reconhecido, forçando a utilização |
-|           de @ts-ignore por diversas vezes ao longo do arquivo.                                                        |
-|                                                                                                                        |
-|                                                                                                                        |
-|                                                                                                                        |
-------------------------------------------------------------------------------------------------------------------------*/
-
 import React, { useCallback, useState } from 'react';
 
 import VectorSource from 'ol/source/Vector';
 import VectorLayer from 'ol/layer/Vector';
 import RegularShape from 'ol/style/RegularShape';
 import Fill from 'ol/style/Fill';
+import Style from 'ol/style/Style';
 
 import { FaSquare, FaPlay, FaStar, FaCircle } from 'react-icons/fa';
 
@@ -59,16 +50,15 @@ const PolygonMenu: React.FC<PolygonMenuProps> = ({ layer }) => {
 
       // Atualiza a cor de preenchimento para cada feature.
       features.forEach((feature) => {
-         const oldStyle = feature.getStyle();
-         //@ts-ignore
-         feature.getStyle().getFill().setColor(newColor);
-         //@ts-ignore
-         feature.getStyle().setImage(
+         const oldStyle = feature.getStyle() as Style;
+
+         (feature.getStyle() as Style).getFill().setColor(newColor);
+
+         (feature.getStyle() as Style).setImage(
             new RegularShape({
                fill: new Fill({
                   color: newColor,
                }),
-               //@ts-ignore
                stroke: oldStyle.getStroke(),
                points,
                angle,
@@ -93,13 +83,11 @@ const PolygonMenu: React.FC<PolygonMenuProps> = ({ layer }) => {
 
       // Atualiza o tamanho para cada feature.
       features.forEach((feature) => {
-         const oldStyle = feature.getStyle();
-         //@ts-ignore
-         feature.getStyle().setImage(
+         const oldStyle = feature.getStyle() as Style;
+
+         (feature.getStyle() as Style).setImage(
             new RegularShape({
-               //@ts-ignore
                fill: oldStyle.getFill(),
-               //@ts-ignore
                stroke: oldStyle.getStroke(),
                points,
                angle,
@@ -126,13 +114,11 @@ const PolygonMenu: React.FC<PolygonMenuProps> = ({ layer }) => {
             layer.set('shape', 'square');
 
             features.forEach((feature) => {
-               const oldStyle = feature.getStyle();
-               //@ts-ignore
-               feature.getStyle().setImage(
+               const oldStyle = feature.getStyle() as Style;
+
+               (feature.getStyle() as Style).setImage(
                   new RegularShape({
-                     //@ts-ignore
                      fill: oldStyle.getFill(),
-                     //@ts-ignore
                      stroke: oldStyle.getStroke(),
                      points,
                      angle,
@@ -152,13 +138,11 @@ const PolygonMenu: React.FC<PolygonMenuProps> = ({ layer }) => {
             layer.set('shape', 'triangle');
 
             features.forEach((feature) => {
-               const oldStyle = feature.getStyle();
-               //@ts-ignore
-               feature.getStyle().setImage(
+               const oldStyle = feature.getStyle() as Style;
+
+               (feature.getStyle() as Style).setImage(
                   new RegularShape({
-                     //@ts-ignore
                      fill: oldStyle.getFill(),
-                     //@ts-ignore
                      stroke: oldStyle.getStroke(),
                      points,
                      angle,
@@ -178,13 +162,11 @@ const PolygonMenu: React.FC<PolygonMenuProps> = ({ layer }) => {
             layer.set('shape', 'star');
 
             features.forEach((feature) => {
-               const oldStyle = feature.getStyle();
-               //@ts-ignore
-               feature.getStyle().setImage(
+               const oldStyle = feature.getStyle() as Style;
+
+               (feature.getStyle() as Style).setImage(
                   new RegularShape({
-                     //@ts-ignore
                      fill: oldStyle.getFill(),
-                     //@ts-ignore
                      stroke: oldStyle.getStroke(),
                      points,
                      angle,
@@ -204,13 +186,11 @@ const PolygonMenu: React.FC<PolygonMenuProps> = ({ layer }) => {
             layer.set('shape', 'circle');
 
             features.forEach((feature) => {
-               const oldStyle = feature.getStyle();
-               //@ts-ignore
-               feature.getStyle().setImage(
+               const oldStyle = feature.getStyle() as Style;
+
+               (feature.getStyle() as Style).setImage(
                   new RegularShape({
-                     //@ts-ignore
                      fill: oldStyle.getFill(),
-                     //@ts-ignore
                      stroke: oldStyle.getStroke(),
                      points,
                      angle,
@@ -240,13 +220,11 @@ const PolygonMenu: React.FC<PolygonMenuProps> = ({ layer }) => {
             type="color"
             id={`polygonColorPicker${layer.get('id')}`}
             className="colorPicker"
-            value={layer
-               .getSource()
-               .getFeatures()[0]
-               .getStyle()!
-               //@ts-ignore
-               .getFill()
-               .getColor()}
+            value={
+               (layer.getSource().getFeatures()[0].getStyle()! as Style)
+                  .getFill()
+                  .getColor() as string
+            }
             onChange={handlePolygonColor}
          />
 

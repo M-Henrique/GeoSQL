@@ -1,13 +1,3 @@
-/*------------------------------------------------------------------------------------------------------------------------
-|  A tipagem do Openlayers sofre um bug so utilizar a função getStyle,                                                   |
-|     da VectorLayer. Apesar de, no arquivo "C:\Apache24\htdocs\TCC\frontend\node_modules\@types\ol\style\Style.d.ts"    |
-|        o retorno ser especificado como "Style", por algum motivo esse retorno não é reconhecido, forçando a utilização |
-|           de @ts-ignore por diversas vezes ao longo do arquivo.                                                        |
-|                                                                                                                        |
-|                                                                                                                        |
-|                                                                                                                        |
-------------------------------------------------------------------------------------------------------------------------*/
-
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 
 import {

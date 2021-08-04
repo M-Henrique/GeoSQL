@@ -1,17 +1,8 @@
-/*------------------------------------------------------------------------------------------------------------------------
-|  A tipagem do Openlayers sofre um bug so utilizar a função getStyle,                                                   |
-|     da VectorLayer. Apesar de, no arquivo "__dirname\node_modules\@types\ol\style\Style.d.ts"    |
-|        o retorno ser especificado como "Style", por algum motivo esse retorno não é reconhecido, forçando a utilização |
-|           de @ts-ignore por diversas vezes ao longo do arquivo.                                                        |
-|                                                                                                                        |
-|                                                                                                                        |
-|                                                                                                                        |
-------------------------------------------------------------------------------------------------------------------------*/
-
 import React, { useCallback, useState } from 'react';
 
 import VectorSource from 'ol/source/Vector';
 import VectorLayer from 'ol/layer/Vector';
+import Style from 'ol/style/Style';
 
 import { FaPlus, FaTextHeight, FaMinus } from 'react-icons/fa';
 
@@ -31,15 +22,12 @@ const LabelMenu: React.FC<LabelMenuProps> = ({ layer }) => {
 
    const handleLabelTextSize = useCallback(
       (operator: '+' | '-') => {
-         //@ts-ignore
-         const oldSize = features[0].getStyle()!.getText().getFont().split('p')[0];
+         const oldSize = (features[0].getStyle()! as Style).getText().getFont().split('p')[0];
 
          switch (operator) {
             case '+':
                features.forEach((feature) => {
-                  feature
-                     .getStyle()!
-                     //@ts-ignore
+                  (feature.getStyle()! as Style)
                      .getText()
                      .setFont(`${Number(oldSize) + 1}px roboto`);
                });
@@ -49,9 +37,7 @@ const LabelMenu: React.FC<LabelMenuProps> = ({ layer }) => {
 
             case '-':
                features.forEach((feature) => {
-                  feature
-                     .getStyle()!
-                     //@ts-ignore
+                  (feature.getStyle()! as Style)
                      .getText()
                      .setFont(`${Number(oldSize) - 1}px roboto`);
                });
@@ -73,12 +59,7 @@ const LabelMenu: React.FC<LabelMenuProps> = ({ layer }) => {
 
       // Atualiza o texto de cada feature baseado na label que foi passada.
       features.forEach((feature) => {
-         feature
-            .getStyle()!
-            //@ts-ignore
-            .getText()
-            .getFill()
-            .setColor(newColor);
+         (feature.getStyle()! as Style).getText().getFill().setColor(newColor);
       });
 
       source.changed();
@@ -95,9 +76,7 @@ const LabelMenu: React.FC<LabelMenuProps> = ({ layer }) => {
 
          // Atualiza o texto de cada feature baseado na label que foi passada.
          features.forEach((feature) => {
-            feature
-               .getStyle()!
-               //@ts-ignore
+            (feature.getStyle()! as Style)
                .getText()
                .setText(
                   newLabel === '' || feature.get('info')[newLabel] === null || undefined
@@ -114,12 +93,12 @@ const LabelMenu: React.FC<LabelMenuProps> = ({ layer }) => {
    return (
       <div className="labelMenu menu container">
          <div className="textSizeContainer container">
-            <button>
-               <FaMinus size={12} onClick={() => handleLabelTextSize('-')} />
+            <button onClick={() => handleLabelTextSize('-')}>
+               <FaMinus size={12} />
             </button>
             <FaTextHeight size={30} />
-            <button>
-               <FaPlus size={12} onClick={() => handleLabelTextSize('+')} />
+            <button onClick={() => handleLabelTextSize('+')}>
+               <FaPlus size={12} />
             </button>
          </div>
 
@@ -127,14 +106,12 @@ const LabelMenu: React.FC<LabelMenuProps> = ({ layer }) => {
             type="color"
             id={`labelColorPicker${layer.get('id')}`}
             className="colorPicker"
-            value={layer
-               .getSource()
-               .getFeatures()[0]
-               .getStyle()!
-               //@ts-ignore
-               .getText()
-               .getFill()
-               .getColor()}
+            value={
+               (layer.getSource().getFeatures()[0].getStyle()! as Style)
+                  .getText()
+                  .getFill()
+                  .getColor() as string
+            }
             onChange={handleLabelColor}
          />
 

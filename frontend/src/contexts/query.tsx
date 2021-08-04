@@ -25,7 +25,7 @@ interface ContextData {
    queryHistory: string[];
    handleDeletePastQuery: (pastQuery: string) => void;
 
-   results: Array<Object>;
+   results: Array<{ [key: string]: string | number }>;
    hasGeomValue: boolean;
 
    loading: boolean;

@@ -1,19 +1,10 @@
-/*------------------------------------------------------------------------------------------------------------------------
-|  A tipagem do Openlayers sofre um bug so utilizar a função getStyle,                                                   |
-|     da VectorLayer. Apesar de, no arquivo "C:\Apache24\htdocs\TCC\frontend\node_modules\@types\ol\style\Style.d.ts"    |
-|        o retorno ser especificado como "Style", por algum motivo esse retorno não é reconhecido, forçando a utilização |
-|           de @ts-ignore por diversas vezes ao longo do arquivo.                                                        |
-|                                                                                                                        |
-|                                                                                                                        |
-|                                                                                                                        |
-------------------------------------------------------------------------------------------------------------------------*/
-
 import React, { useCallback, useState } from 'react';
 
 import VectorSource from 'ol/source/Vector';
 import VectorLayer from 'ol/layer/Vector';
 import RegularShape from 'ol/style/RegularShape';
 import Stroke from 'ol/style/Stroke';
+import Style from 'ol/style/Style';
 
 import './styles.css';
 
@@ -56,17 +47,16 @@ const StrokeMenu: React.FC<StrokeMenuProps> = ({ layer }) => {
 
       // Atualiza as linhas (strokes) de cada feature com a nova cor.
       features.forEach((feature) => {
-         const oldStyle = feature.getStyle();
-         //@ts-ignore
-         feature.getStyle().getStroke().setColor(newColor);
-         //@ts-ignore
-         feature.getStyle().setImage(
+         const oldStyle = feature.getStyle() as Style;
+
+         (feature.getStyle() as Style).getStroke().setColor(newColor);
+
+         (feature.getStyle() as Style).setImage(
             new RegularShape({
-               //@ts-ignore
                fill: oldStyle.getFill(),
                stroke: new Stroke({
                   color: newColor,
-                  //@ts-ignore
+
                   width: oldStyle.getStroke().getWidth(),
                }),
                points,
@@ -89,16 +79,14 @@ const StrokeMenu: React.FC<StrokeMenuProps> = ({ layer }) => {
 
       // Atualiza as linhas (strokes) de cada feature com a nova grossura.
       features.forEach((feature) => {
-         const oldStyle = feature.getStyle();
-         //@ts-ignore
-         feature.getStyle().getStroke().setWidth(newSize);
-         //@ts-ignore
-         feature.getStyle().setImage(
+         const oldStyle = feature.getStyle() as Style;
+
+         (feature.getStyle() as Style).getStroke().setWidth(newSize);
+
+         (feature.getStyle() as Style).setImage(
             new RegularShape({
-               //@ts-ignore
                fill: oldStyle.getFill(),
                stroke: new Stroke({
-                  //@ts-ignore
                   color: oldStyle.getStroke().getColor(),
                   width: newSize,
                }),
@@ -127,13 +115,11 @@ const StrokeMenu: React.FC<StrokeMenuProps> = ({ layer }) => {
             type="color"
             id={`strokeColorPicker${layer.get('id')}`}
             className="colorPicker" //
-            value={layer
-               .getSource()
-               .getFeatures()[0]
-               .getStyle()!
-               //@ts-ignore
-               .getStroke()
-               .getColor()}
+            value={
+               (layer.getSource().getFeatures()[0].getStyle()! as Style)
+                  .getStroke()
+                  .getColor() as string
+            }
             onChange={handleStrokeColor}
          />
 
@@ -144,14 +130,7 @@ const StrokeMenu: React.FC<StrokeMenuProps> = ({ layer }) => {
             min={1}
             max={5}
             step={0.1}
-            //@ts-ignore
-            value={layer
-               .getSource()
-               .getFeatures()[0]
-               .getStyle()
-               //@ts-ignore
-               .getStroke()
-               .getWidth()}
+            value={(layer.getSource().getFeatures()[0].getStyle() as Style).getStroke().getWidth()}
             onChange={handleStrokeSize}
             draggable="true"
             onDragStart={handleInputDrag}
