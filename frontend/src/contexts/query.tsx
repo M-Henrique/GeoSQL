@@ -15,6 +15,10 @@ import api from '../services/api';
 
 import TablesContext from './tables';
 
+export type Result = {
+   [key: string]: string | number;
+};
+
 interface ContextData {
    firstTime: boolean;
 
@@ -25,7 +29,7 @@ interface ContextData {
    queryHistory: string[];
    handleDeletePastQuery: (pastQuery: string) => void;
 
-   results: Array<{ [key: string]: string | number }>;
+   results: Result[];
    hasGeomValue: boolean;
 
    loading: boolean;
@@ -46,7 +50,7 @@ export const QueryProvider: React.FC = ({ children }) => {
    // Consulta realizada pelo usuário.
    const [query, setQuery] = useState('');
    // Resultados obtidos da consulta.
-   const [results, setResults] = useState([]);
+   const [results, setResults] = useState<Result[]>([]);
    // Flag para identificar se a consulta obteve algum resultado geométrico.
    const [hasGeomValue, setHasGeomValue] = useState(false);
    // Flag ativada durante a chamada à api.

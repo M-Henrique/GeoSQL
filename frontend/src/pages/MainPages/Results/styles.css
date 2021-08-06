@@ -82,6 +82,14 @@
    background: var(--color-primary-light);
 }
 
+#resultsContainer #mainContainer #tableContainer table thead th:hover {
+   background: #7ccbda;
+
+   cursor: pointer;
+
+   transition: all 0.2s ease;
+}
+
 #resultsContainer #mainContainer #tableContainer table tbody {
    font-size: 1.5rem;
 

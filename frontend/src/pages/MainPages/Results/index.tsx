@@ -1,22 +1,59 @@
 // Torna possível o retorno do map apenas em condicionais.
 /* eslint-disable array-callback-return */
 
-import React, { useCallback, useContext } from 'react';
+import React, { useContext, useState, useCallback, useEffect } from 'react';
 
-import { FiDownload } from 'react-icons/fi';
+import { FaDownload, FaCaretUp, FaCaretDown } from 'react-icons/fa';
 import { ClipLoader } from 'react-spinners';
 
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
-import QueryContext from '../../../contexts/query';
+import QueryContext, { Result } from '../../../contexts/query';
 
 import TabsMenu from '../../../components/TabsMenu';
 
 import './styles.css';
 
+interface ISortableResults {
+   sortOrientation: Array<'ascendant' | 'descendant' | 'unordered'>;
+   results: Result[];
+}
+
 export default function Results() {
    const { firstTime, results, loading } = useContext(QueryContext);
+
+   // Variável que mantém o mesmo array de resultados obtido da consulta, mas que pode ser modificado sem comprometer a funcionalidade do resto do sistema.
+   const [sortableResults, setSortableResults] = useState<ISortableResults>({} as ISortableResults);
+
+   // Função que ordena a exibição dos resultados baseado no rótulo clicado.
+   const handleSortResults = useCallback(
+      (label: string, index: number) => {
+         const { sortOrientation } = sortableResults;
+
+         let newSortOrientation = [...sortOrientation];
+
+         newSortOrientation.fill('unordered');
+
+         newSortOrientation[index] =
+            sortOrientation[index] === 'ascendant'
+               ? 'descendant'
+               : sortOrientation[index] === 'descendant'
+               ? 'ascendant'
+               : 'ascendant';
+
+         const sortedResults = sortableResults.results.sort((a, b) => {
+            if (newSortOrientation[index] === 'descendant') {
+               return a[label] < b[label] ? 1 : -1;
+            } else {
+               return a[label] > b[label] ? 1 : -1;
+            }
+         });
+
+         setSortableResults({ sortOrientation: newSortOrientation, results: sortedResults });
+      },
+      [sortableResults, setSortableResults]
+   );
 
    // Funções que salvam os resultados em diferentes formatos.
    const handleSaveResultsJson = useCallback(() => {
@@ -84,6 +121,10 @@ export default function Results() {
       downloadLink.click();
    }, []);
 
+   useEffect(() => {
+      setSortableResults({ sortOrientation: [], results: [...results] });
+   }, [results]);
+
    return (
       <div id="resultsContainer" className="firstContainer container">
          <header>
@@ -93,19 +134,19 @@ export default function Results() {
          <div id="mainContainer" className="container">
             <aside className="container">
                <button className="saveResults" onClick={handleSaveResultsJson}>
-                  <FiDownload className="saveIcon" />
+                  <FaDownload className="saveIcon" />
                   JSON
                </button>
                <button className="saveResults" onClick={handleSaveResultsPdf}>
-                  <FiDownload className="saveIcon" />
+                  <FaDownload className="saveIcon" />
                   PDF
                </button>
                <button className="saveResults" onClick={handleSaveResultsTxt}>
-                  <FiDownload className="saveIcon" />
+                  <FaDownload className="saveIcon" />
                   TXT
                </button>
                <button className="saveResults" onClick={handleSaveResultsCsv}>
-                  <FiDownload className="saveIcon" />
+                  <FaDownload className="saveIcon" />
                   CSV
                </button>
             </aside>
@@ -133,15 +174,28 @@ export default function Results() {
                   <table id="resultsTable">
                      <thead>
                         <tr>
-                           {Object.keys(results[0]).map((column, index) => {
+                           {Object.keys(sortableResults.results[0]).map((column, index) => {
                               if (column !== 'geojson') {
-                                 return <th key={index}>{column}</th>;
+                                 return (
+                                    <th
+                                       key={index}
+                                       onClick={() => handleSortResults(column, index)}
+                                    >
+                                       {column}{' '}
+                                       {sortableResults.sortOrientation[index] === 'ascendant' ? (
+                                          <FaCaretDown />
+                                       ) : (
+                                          sortableResults.sortOrientation[index] ===
+                                             'descendant' && <FaCaretUp />
+                                       )}
+                                    </th>
+                                 );
                               }
                            })}
                         </tr>
                      </thead>
                      <tbody>
-                        {results.map((row, index) => {
+                        {sortableResults.results.map((row, index) => {
                            return (
                               <tr key={index}>
                                  {Object.values(row).map((value, index) => {
