@@ -27,40 +27,6 @@ import QueryContext from './query';
 const hexToHsl = require('hex-to-hsl');
 const hsl = require('hsl-to-hex');
 
-interface ContextData {
-   layers: Array<VectorLayer<VectorSource<any>>>;
-   setLayers: Dispatch<SetStateAction<VectorLayer<VectorSource<any>>[]>>;
-
-   handleIntervalFilter: (
-      layerID: number,
-      label: string,
-      value: number,
-      fillColor: string,
-      isFillColorRandom: boolean,
-      strokeColor: string,
-      isStrokeColorRandom: boolean
-   ) => void;
-   handlePercentileFilter: (
-      layerID: number,
-      label: string,
-      value: number,
-      fillColor: string,
-      isFillColorRandom: boolean,
-      strokeColor: string,
-      isStrokeColorRandom: boolean
-   ) => void;
-   handleCategoryFilter: (
-      layerID: number,
-      label: string,
-      fillColor: string,
-      isFillColorRandom: boolean,
-      strokeColor: string,
-      isStrokeColorRandom: boolean
-   ) => void;
-
-   handleEraseFilter: (layerID: number) => void;
-}
-
 // Interface dos filtros
 interface IFilter {
    type: string;
@@ -72,6 +38,57 @@ interface IFilter {
    strokeColor: string;
 }
 
+// Interface dos itens da legenda dos filtros.
+export interface IFilterSubtitle {
+   type: string;
+
+   minValue?: number;
+   maxValue?: number;
+   categoryValue?: string;
+
+   fillColor: string;
+   strokeColor: string;
+}
+
+interface ContextData {
+   layers: Array<VectorLayer<VectorSource<any>>>;
+   setLayers: Dispatch<SetStateAction<VectorLayer<VectorSource<any>>[]>>;
+
+   filterSubtitles: Array<Array<IFilterSubtitle>>;
+   setFilterSubtitles: Dispatch<SetStateAction<Array<Array<IFilterSubtitle>>>>;
+
+   handleIntervalFilter: (
+      layerID: number,
+      label: string,
+      value: number,
+      fillColor: string,
+      isFillColorRandom: boolean,
+      strokeColor: string,
+      isStrokeColorRandom: boolean
+   ) => IFilterSubtitle[];
+
+   handlePercentileFilter: (
+      layerID: number,
+      label: string,
+      value: number,
+      fillColor: string,
+      isFillColorRandom: boolean,
+      strokeColor: string,
+      isStrokeColorRandom: boolean
+   ) => IFilterSubtitle[];
+
+   handleCategoryFilter: (
+      layerID: number,
+      label: string,
+      fillColor: string,
+      isFillColorRandom: boolean,
+      strokeColor: string,
+      isStrokeColorRandom: boolean
+   ) => IFilterSubtitle[];
+
+   handleEraseFilter: (layerID: number) => void;
+}
+
 const LayersContext = createContext<ContextData>({} as ContextData);
 
 export const LayersProvider: React.FC = ({ children }) => {
@@ -81,6 +98,8 @@ export const LayersProvider: React.FC = ({ children }) => {
    const [id, setId] = useState(0);
    // Vetor de camadas em si.
    const [layers, setLayers] = useState<VectorLayer<VectorSource<any>>[]>([]);
+   // Array que mantém as legendas de cada uma das layers (daí um duplo array).
+   const [filterSubtitles, setFilterSubtitles] = useState<IFilterSubtitle[][]>([]);
 
    //Função auxiliar para geração randômica da cor inicial
    const getRandomColor = useCallback(() => {
@@ -173,6 +192,8 @@ export const LayersProvider: React.FC = ({ children }) => {
          // Conversão da cor do formato hex para hsl, para aplicar uma modificação de brilho e obter efeito de gradiente.
          const [stroHue, stroSat] = hexToHsl(strokeColor);
 
+         // Variável que mantém os itens necessários para construção da legenda do filtro.
+         let subtitle: IFilterSubtitle[] = [];
          // Variável que mantém o índice da última feature iterada a cada loop de value, evitando que features passadas tenham seus estilos sobrepostos.
          let lastFeatureIndex = 0;
          for (let i = 1; i <= value; i++) {
@@ -182,6 +203,23 @@ export const LayersProvider: React.FC = ({ children }) => {
             const maxRange = rangeSize * i;
             // Recupera uma cor aleatória (caso o usuário tenha selecionado tal opção).
             const [randomFillColor, randomStrokeColor] = getRandomColor();
+
+            // Insere no array de legenda os valores respectivos.
+            subtitle.push({
+               type: 'Intervalo',
+               minValue: maxRange - rangeSize,
+               maxValue: maxRange,
+               fillColor: isFillColorRandom
+                  ? randomFillColor
+                  : fillColor !== '#000000'
+                  ? hsl(polyHue, polySat, newLig)
+                  : '#000000',
+               strokeColor: isStrokeColorRandom
+                  ? randomStrokeColor
+                  : strokeColor !== '#000000'
+                  ? hsl(stroHue, stroSat, newLig)
+                  : '#000000',
+            });
 
             // Modifica a cor das features, alterando o brilho do hsl para diferenciar as features pertencentes a cada intervalo.
             for (let j = lastFeatureIndex; j < features.length; j++) {
@@ -247,6 +285,8 @@ export const LayersProvider: React.FC = ({ children }) => {
 
          // Indica uma modificação na camada respectiva, para realizar uma nova renderização.
          filteredLayer?.getSource().changed();
+
+         return subtitle;
       },
       [layers, getShape, getRandomColor]
    );
@@ -262,6 +302,7 @@ export const LayersProvider: React.FC = ({ children }) => {
          strokeColor: string,
          isStrokeColorRandom: boolean
       ) => {
+         console.log(label);
          // Recupera as features da layer sendo filtrada.
          const filteredLayer = layers.find((layer) => layer.get('id') === layerID)!;
          const features = filteredLayer?.getSource().getFeatures()!;
@@ -289,6 +330,8 @@ export const LayersProvider: React.FC = ({ children }) => {
          // Conversão da cor do formato hex para hsl, para aplicar uma modificação de brilho e obter efeito de gradiente.
          const [stroHue, stroSat] = hexToHsl(strokeColor);
 
+         // Variável que mantém os itens necessários para construção da legenda do filtro.
+         let subtitle: IFilterSubtitle[] = [];
          // Variável que mantém o índice da última feature iterada a cada loop de value, evitando que features passadas tenham seus estilos sobrepostos.
          let nextFeatureIndex = 0;
          for (let i = 1; i <= numOfGroups; i++) {
@@ -296,6 +339,25 @@ export const LayersProvider: React.FC = ({ children }) => {
             const newLig = 30 + lightnessRangeSize * (numOfGroups + 1 - i);
             // Recupera uma cor aleatória (caso o usuário tenha selecionado tal opção).
             const [randomFillColor, randomStrokeColor] = getRandomColor();
+
+            console.log(fillColor);
+
+            // Insere no array de legenda os valores respectivos.
+            subtitle.push({
+               type: 'Percentil',
+               minValue: value * (i - 1),
+               maxValue: value * i,
+               fillColor: isFillColorRandom
+                  ? randomFillColor
+                  : fillColor !== '#000000'
+                  ? hsl(polyHue, polySat, newLig)
+                  : '#000000',
+               strokeColor: isStrokeColorRandom
+                  ? randomStrokeColor
+                  : strokeColor !== '#000000'
+                  ? hsl(stroHue, stroSat, newLig)
+                  : '#000000',
+            });
 
             // Modifica a cor das features, alterando o brilho do hsl para diferenciar as features pertencentes a cada intervalo.
             for (let j = nextFeatureIndex; j < features.length; j++) {
@@ -361,6 +423,8 @@ export const LayersProvider: React.FC = ({ children }) => {
 
          // Indica uma modificação na camada respectiva, para realizar uma nova renderização.
          filteredLayer?.getSource().changed();
+
+         return subtitle;
       },
       [layers, getShape, getRandomColor]
    );
@@ -404,11 +468,29 @@ export const LayersProvider: React.FC = ({ children }) => {
          // Conversão da cor do formato hex para hsl, para aplicar uma modificação de brilho e obter efeito de gradiente.
          const [stroHue, stroSat] = hexToHsl(strokeColor);
 
+         // Variável que mantém os itens necessários para construção da legenda do filtro.
+         let subtitle: IFilterSubtitle[] = [];
          for (let feats in groupedFeatures) {
             // Brilho da cor.
             const newLig = 30 + lightnessRangeSize * numOfCategories;
             // Recupera uma cor aleatória (caso o usuário tenha selecionado tal opção).
             const [randomFillColor, randomStrokeColor] = getRandomColor();
+
+            // Insere no array de legenda os valores respectivos.
+            subtitle.push({
+               type: 'Categoria',
+               categoryValue: feats,
+               fillColor: isFillColorRandom
+                  ? randomFillColor
+                  : fillColor !== '#000000'
+                  ? hsl(polyHue, polySat, newLig)
+                  : '#000000',
+               strokeColor: isStrokeColorRandom
+                  ? randomStrokeColor
+                  : strokeColor !== '#000000'
+                  ? hsl(stroHue, stroSat, newLig)
+                  : '#000000',
+            });
 
             // Modifica a cor das features, alterando o brilho do hsl para diferenciar as features pertencentes a cada intervalo.
             groupedFeatures[feats].forEach((feat: Feature<Geometry>) => {
@@ -470,6 +552,8 @@ export const LayersProvider: React.FC = ({ children }) => {
 
          // Indica uma modificação na camada respectiva, para realizar uma nova renderização.
          filteredLayer?.getSource().changed();
+
+         return subtitle;
       },
       [layers, getShape, getRandomColor]
    );
@@ -662,6 +746,10 @@ export const LayersProvider: React.FC = ({ children }) => {
          value={{
             layers,
             setLayers,
+
+            filterSubtitles,
+            setFilterSubtitles,
+
             handleIntervalFilter,
             handlePercentileFilter,
             handleCategoryFilter,

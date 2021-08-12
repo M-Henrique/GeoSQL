@@ -24,7 +24,10 @@ export default function Results() {
    const { firstTime, results, loading } = useContext(QueryContext);
 
    // Variável que mantém o mesmo array de resultados obtido da consulta, mas que pode ser modificado sem comprometer a funcionalidade do resto do sistema.
-   const [sortableResults, setSortableResults] = useState<ISortableResults>({} as ISortableResults);
+   const [sortableResults, setSortableResults] = useState<ISortableResults>({
+      sortOrientation: ['unordered'],
+      results,
+   });
 
    // Função que ordena a exibição dos resultados baseado no rótulo clicado.
    const handleSortResults = useCallback(

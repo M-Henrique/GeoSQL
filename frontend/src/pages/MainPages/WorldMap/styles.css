@@ -512,3 +512,53 @@
 
    cursor: move;
 }
+
+/* --------------------- Estilo da legenda dos filtros ------------------ */
+#mapContainer #mainContainer #subtitleContainer #layersContainer .layer .filterSubtitleContainer {
+   padding: 0.3rem;
+   padding-right: 0;
+
+   border: 0.2rem solid var(--color-primary-dark);
+   border-radius: 0.5rem;
+
+   background: var(--color-primary-lighter);
+
+   list-style: none;
+
+   font: 400 1.2rem var(--font-family-title);
+}
+
+#mapContainer
+   #mainContainer
+   #subtitleContainer
+   #layersContainer
+   .layer
+   .filterSubtitleContainer
+   li {
+   display: grid;
+   grid-template-columns: 2fr 1fr;
+}
+
+#mapContainer
+   #mainContainer
+   #subtitleContainer
+   #layersContainer
+   .layer
+   .filterSubtitleContainer
+   li
+   div:first-child {
+   display: grid;
+   grid-template-columns: 1fr 1fr;
+}
+
+#mapContainer
+   #mainContainer
+   #subtitleContainer
+   #layersContainer
+   .layer
+   .filterSubtitleContainer
+   li
+   div:last-child {
+   display: flex;
+   justify-content: center;
+}
