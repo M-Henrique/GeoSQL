@@ -28,14 +28,17 @@ const hexToHsl = require('hex-to-hsl');
 const hsl = require('hsl-to-hex');
 
 // Interface dos filtros
-interface IFilter {
+export interface IFilter {
    type: string;
 
    label: string;
    value: string;
 
    fillColor: string;
+   isFillColorRandom: boolean;
+
    strokeColor: string;
+   isStrokeColorRandom: boolean;
 }
 
 // Interface dos itens da legenda dos filtros.
@@ -48,43 +51,24 @@ export interface IFilterSubtitle {
 
    fillColor: string;
    strokeColor: string;
+
+   filteredFeatures: Feature<Geometry>[];
 }
 
 interface ContextData {
    layers: Array<VectorLayer<VectorSource<any>>>;
    setLayers: Dispatch<SetStateAction<VectorLayer<VectorSource<any>>[]>>;
 
-   filterSubtitles: Array<Array<IFilterSubtitle>>;
-   setFilterSubtitles: Dispatch<SetStateAction<Array<Array<IFilterSubtitle>>>>;
+   handleIntervalFilter: (layerID: number) => void;
+   handlePercentileFilter: (layerID: number) => void;
+   handleCategoryFilter: (layerID: number) => void;
 
-   handleIntervalFilter: (
+   handleChangeSpecificFeatures: (
       layerID: number,
-      label: string,
-      value: number,
+      features: Feature<Geometry>[],
       fillColor: string,
-      isFillColorRandom: boolean,
-      strokeColor: string,
-      isStrokeColorRandom: boolean
-   ) => IFilterSubtitle[];
-
-   handlePercentileFilter: (
-      layerID: number,
-      label: string,
-      value: number,
-      fillColor: string,
-      isFillColorRandom: boolean,
-      strokeColor: string,
-      isStrokeColorRandom: boolean
-   ) => IFilterSubtitle[];
-
-   handleCategoryFilter: (
-      layerID: number,
-      label: string,
-      fillColor: string,
-      isFillColorRandom: boolean,
-      strokeColor: string,
-      isStrokeColorRandom: boolean
-   ) => IFilterSubtitle[];
+      strokeColor: string
+   ) => void;
 
    handleEraseFilter: (layerID: number) => void;
 }
@@ -98,8 +82,6 @@ export const LayersProvider: React.FC = ({ children }) => {
    const [id, setId] = useState(0);
    // Vetor de camadas em si.
    const [layers, setLayers] = useState<VectorLayer<VectorSource<any>>[]>([]);
-   // Array que mantém as legendas de cada uma das layers (daí um duplo array).
-   const [filterSubtitles, setFilterSubtitles] = useState<IFilterSubtitle[][]>([]);
 
    //Função auxiliar para geração randômica da cor inicial
    const getRandomColor = useCallback(() => {
@@ -156,302 +138,460 @@ export const LayersProvider: React.FC = ({ children }) => {
 
    // Função que realiza a tematização do mapa baseado no número de intervalos de uma determinada label.
    const handleIntervalFilter = useCallback(
-      (
-         layerID: number,
-         label: string,
-         value: number,
-         fillColor: string,
-         isFillColorRandom: boolean,
-         strokeColor: string,
-         isStrokeColorRandom: boolean
-      ) => {
+      (layerID: number) => {
          // Recupera as features da layer sendo filtrada.
          const filteredLayer = layers.find((layer) => layer.get('id') === layerID)!;
          const features = filteredLayer?.getSource().getFeatures()!;
 
-         // Ordena as features baseado na label passada, para facilitar a indexação e evitar iterar por features já passadas.
-         features.sort(
-            (feature1, feature2) =>
-               Number(feature1.get('info')[label]) - Number(feature2.get('info')[label])
-         );
+         // Recupera o objeto de filtro da camada.
+         const filter = filteredLayer.get('filter') as IFilter;
 
-         // Openlayers não disponibiliza métodos para capturar a antiga regularShape da camada, tendo de ser feito um processo manual.
-         const { points, angle, rotation, radius, radius2 } = getShape(
-            filteredLayer.get('shape'),
-            filteredLayer.get('size')
-         );
+         if (filter.type !== '' && filter.label !== '' && filter.value !== '') {
+            // Ordena as features baseado na label passada, para facilitar a indexação e evitar iterar por features já passadas.
+            features.sort(
+               (feature1, feature2) =>
+                  Number(feature1.get('info')[filter.label]) -
+                  Number(feature2.get('info')[filter.label])
+            );
 
-         // Tamanho dos intervalos
-         const rangeSize = Math.ceil(
-            Number(features[features.length - 1].get('info')[label]) / value
-         );
-         // Tamanho dos intervalos do brilho (cor) para correta exibição do gradiente.
-         const lightnessRangeSize = Math.floor(50 / value);
-         // Conversão da cor do formato hex para hsl, para aplicar uma modificação de brilho e obter efeito de gradiente.
-         const [polyHue, polySat] = hexToHsl(fillColor);
-         // Conversão da cor do formato hex para hsl, para aplicar uma modificação de brilho e obter efeito de gradiente.
-         const [stroHue, stroSat] = hexToHsl(strokeColor);
+            // Openlayers não disponibiliza métodos para capturar a antiga regularShape da camada, tendo de ser feito um processo manual.
+            const { points, angle, rotation, radius, radius2 } = getShape(
+               filteredLayer.get('shape'),
+               filteredLayer.get('size')
+            );
 
-         // Variável que mantém os itens necessários para construção da legenda do filtro.
-         let subtitle: IFilterSubtitle[] = [];
-         // Variável que mantém o índice da última feature iterada a cada loop de value, evitando que features passadas tenham seus estilos sobrepostos.
-         let lastFeatureIndex = 0;
-         for (let i = 1; i <= value; i++) {
-            // Brilho da cor.
-            const newLig = 30 + lightnessRangeSize * (value + 1 - i);
-            // Numero máximo permitido para esse intervalo.
-            const maxRange = rangeSize * i;
-            // Recupera uma cor aleatória (caso o usuário tenha selecionado tal opção).
-            const [randomFillColor, randomStrokeColor] = getRandomColor();
+            // Tamanho dos intervalos
+            const rangeSize = Math.ceil(
+               Number(features[features.length - 1].get('info')[filter.label]) /
+                  Number(filter.value)
+            );
+            // Tamanho dos intervalos do brilho (cor) para correta exibição do gradiente.
+            const lightnessRangeSize = Math.floor(50 / Number(filter.value));
+            // Conversão da cor do formato hex para hsl, para aplicar uma modificação de brilho e obter efeito de gradiente.
+            const [polyHue, polySat] = hexToHsl(filter.fillColor);
+            // Conversão da cor do formato hex para hsl, para aplicar uma modificação de brilho e obter efeito de gradiente.
+            const [stroHue, stroSat] = hexToHsl(filter.strokeColor);
 
-            // Insere no array de legenda os valores respectivos.
-            subtitle.push({
-               type: 'Intervalo',
-               minValue: maxRange - rangeSize,
-               maxValue: maxRange,
-               fillColor: isFillColorRandom
-                  ? randomFillColor
-                  : fillColor !== '#000000'
-                  ? hsl(polyHue, polySat, newLig)
-                  : '#000000',
-               strokeColor: isStrokeColorRandom
-                  ? randomStrokeColor
-                  : strokeColor !== '#000000'
-                  ? hsl(stroHue, stroSat, newLig)
-                  : '#000000',
-            });
+            // Variável que mantém os itens necessários para construção da legenda do filtro.
+            let subtitle: IFilterSubtitle[] = [];
+            // Variável que mantém o índice da última feature iterada a cada loop de value, evitando que features passadas tenham seus estilos sobrepostos.
+            let lastFeatureIndex = 0;
+            for (let i = 1; i <= Number(filter.value); i++) {
+               // Brilho da cor.
+               const newLig = 30 + lightnessRangeSize * (Number(filter.value) + 1 - i);
+               // Numero máximo permitido para esse intervalo.
+               const maxRange = rangeSize * i;
+               // Recupera uma cor aleatória (caso o usuário tenha selecionado tal opção).
+               const [randomFillColor, randomStrokeColor] = getRandomColor();
 
-            // Modifica a cor das features, alterando o brilho do hsl para diferenciar as features pertencentes a cada intervalo.
-            for (let j = lastFeatureIndex; j < features.length; j++) {
-               // Caso o elemento iterado pertença a um novo intervalo, quebra o loop (funciona pois o array está ordenado).
-               if (Number(features[j].get('info')[label]) > maxRange) {
-                  lastFeatureIndex = j;
-                  break;
+               // Insere no array de legenda os valores respectivos.
+               if (
+                  !(
+                     filter.fillColor === '#000000' &&
+                     filter.strokeColor === '#000000' &&
+                     !filter.isFillColorRandom &&
+                     !filter.isStrokeColorRandom
+                  )
+               ) {
+                  // Recupera o antigo estilo de uma feature, para ser utilizado no filtro caso o usuário não tenha alterado manualmente.
+                  const oldStyle = features[0].getStyle() as Style;
+
+                  subtitle.push({
+                     type: 'Intervalo',
+                     minValue: maxRange - rangeSize,
+                     maxValue: maxRange,
+                     fillColor: filter.isFillColorRandom
+                        ? randomFillColor
+                        : filter.fillColor !== '#000000'
+                        ? hsl(polyHue, polySat, newLig)
+                        : oldStyle.getFill().getColor(),
+                     strokeColor: filter.isStrokeColorRandom
+                        ? randomStrokeColor
+                        : filter.strokeColor !== '#000000'
+                        ? hsl(stroHue, stroSat, newLig)
+                        : oldStyle.getStroke().getColor(),
+                     filteredFeatures: [],
+                  });
                }
 
-               // Recupera o antigo estilo da feature.
-               const oldStyle = features[j].getStyle() as Style;
+               // Modifica a cor das features, alterando o brilho do hsl para diferenciar as features pertencentes a cada intervalo.
+               for (let j = lastFeatureIndex; j < features.length; j++) {
+                  // Caso o elemento iterado pertença a um novo intervalo, quebra o loop (funciona pois o array está ordenado).
+                  if (Number(features[j].get('info')[filter.label]) > maxRange) {
+                     lastFeatureIndex = j;
+                     break;
+                  }
 
-               // Modifica a cor de preenchimento (utiliza-se a cor preta base (#000000) para evitar que o filtro seja aplicado sem que o usuário queira. Como esta é a cor padrão do color picker, esse controle força uma escolha de cor por parte do usuário).
-               oldStyle
-                  .getFill()
-                  .setColor(
-                     isFillColorRandom
-                        ? randomFillColor
-                        : fillColor !== '#000000'
-                        ? hsl(polyHue, polySat, newLig)
-                        : oldStyle.getFill().getColor()
-                  );
+                  // Insere a feature no objeto da legenda, para permitir modificação de features específicas através da legenda.
+                  subtitle[i - 1].filteredFeatures.push(features[j]);
 
-               // Modifica a cor de contorno (utiliza-se a cor preta base (#000000) para evitar que o filtro seja aplicado sem que o usuário queira. Como esta é a cor padrão do color picker, esse controle força uma escolha de cor por parte do usuário).
-               oldStyle
-                  .getStroke()
-                  .setColor(
-                     isStrokeColorRandom
-                        ? randomStrokeColor
-                        : strokeColor !== '#000000'
-                        ? hsl(stroHue, stroSat, newLig)
-                        : oldStyle.getStroke().getColor()
-                  );
+                  // Recupera o antigo estilo da feature.
+                  const oldStyle = features[j].getStyle() as Style;
 
-               // Modifica as mesmas coisas para features que sejam geradas como Regular Shapes (estrelas, círculos, etc).
-               oldStyle.setImage(
-                  new RegularShape({
-                     fill: new Fill({
-                        color: isFillColorRandom
+                  // Modifica a cor de preenchimento (utiliza-se a cor preta base (#000000) para evitar que o filtro seja aplicado sem que o usuário queira (por exemplo, aplicar efeitos no contorno sem que o usuário deseje). Como esta é a cor padrão do color picker, esse controle força uma escolha de cor por parte do usuário).
+                  oldStyle
+                     .getFill()
+                     .setColor(
+                        filter.isFillColorRandom
                            ? randomFillColor
-                           : fillColor !== '#000000'
+                           : filter.fillColor !== '#000000'
                            ? hsl(polyHue, polySat, newLig)
-                           : oldStyle.getFill().getColor(),
-                     }),
+                           : oldStyle.getFill().getColor()
+                     );
 
-                     stroke: new Stroke({
-                        color: isStrokeColorRandom
+                  // Modifica a cor de contorno (utiliza-se a cor preta base (#000000) para evitar que o filtro seja aplicado sem que o usuário queira (por exemplo, aplicar efeitos no contorno sem que o usuário deseje). Como esta é a cor padrão do color picker, esse controle força uma escolha de cor por parte do usuário).
+                  oldStyle
+                     .getStroke()
+                     .setColor(
+                        filter.isStrokeColorRandom
                            ? randomStrokeColor
-                           : strokeColor !== '#000000'
+                           : filter.strokeColor !== '#000000'
                            ? hsl(stroHue, stroSat, newLig)
-                           : oldStyle.getStroke().getColor(),
-                     }),
+                           : oldStyle.getStroke().getColor()
+                     );
 
-                     points,
-                     angle,
-                     rotation,
-                     radius,
-                     radius2,
-                  })
-               );
+                  // Modifica as mesmas coisas para features que sejam geradas como Regular Shapes (estrelas, círculos, etc).
+                  oldStyle.setImage(
+                     new RegularShape({
+                        fill: new Fill({
+                           color: filter.isFillColorRandom
+                              ? randomFillColor
+                              : filter.fillColor !== '#000000'
+                              ? hsl(polyHue, polySat, newLig)
+                              : oldStyle.getFill().getColor(),
+                        }),
+
+                        stroke: new Stroke({
+                           color: filter.isStrokeColorRandom
+                              ? randomStrokeColor
+                              : filter.strokeColor !== '#000000'
+                              ? hsl(stroHue, stroSat, newLig)
+                              : oldStyle.getStroke().getColor(),
+                           width: oldStyle.getStroke().getWidth(),
+                        }),
+
+                        points,
+                        angle,
+                        rotation,
+                        radius,
+                        radius2,
+                     })
+                  );
+               }
             }
+
+            // Atualiza o array de valores dos filtros da camada, para correta exibição da legenda.
+            filteredLayer.set('filterSubtitle', subtitle);
+
+            // Indica uma modificação na camada respectiva, para realizar uma nova renderização.
+            filteredLayer?.getSource().changed();
          }
-
-         // Indica uma modificação na camada respectiva, para realizar uma nova renderização.
-         filteredLayer?.getSource().changed();
-
-         return subtitle;
       },
       [layers, getShape, getRandomColor]
    );
 
    // Função que realiza a tematização do mapa baseado em grupos com quantidades iguais de elementos.
    const handlePercentileFilter = useCallback(
-      (
-         layerID: number,
-         label: string,
-         value: number,
-         fillColor: string,
-         isFillColorRandom: boolean,
-         strokeColor: string,
-         isStrokeColorRandom: boolean
-      ) => {
-         console.log(label);
+      (layerID: number) => {
          // Recupera as features da layer sendo filtrada.
          const filteredLayer = layers.find((layer) => layer.get('id') === layerID)!;
          const features = filteredLayer?.getSource().getFeatures()!;
 
-         // Ordena as features baseado na label passada, para facilitar a indexação e evitar iterar por features já passadas.
-         features.sort(
-            (feature1, feature2) =>
-               Number(feature1.get('info')[label]) - Number(feature2.get('info')[label])
-         );
+         // Recupera o objeto de filtro da camada.
+         const filter = filteredLayer.get('filter') as IFilter;
 
-         // Openlayers não disponibiliza métodos para capturar a antiga regularShape da camada, tendo de ser feito um processo manual.
-         const { points, angle, rotation, radius, radius2 } = getShape(
-            filteredLayer.get('shape'),
-            filteredLayer.get('size')
-         );
+         if (filter.type !== '' && filter.label !== '' && filter.value !== '') {
+            // Ordena as features baseado na label passada, para facilitar a indexação e evitar iterar por features já passadas.
+            features.sort(
+               (feature1, feature2) =>
+                  Number(feature1.get('info')[filter.label]) -
+                  Number(feature2.get('info')[filter.label])
+            );
 
-         // Tamanho dos grupos.
-         const groupSize = Math.ceil(features.length * (value / 100));
-         // Número de grupos.
-         const numOfGroups = Math.ceil(features.length / groupSize);
-         // Tamanho dos intervalos do brilho (cor) para correta exibição do gradiente.
-         const lightnessRangeSize = Math.floor(50 / numOfGroups);
-         // Conversão da cor do formato hex para hsl, para aplicar uma modificação de brilho e obter efeito de gradiente.
-         const [polyHue, polySat] = hexToHsl(fillColor);
-         // Conversão da cor do formato hex para hsl, para aplicar uma modificação de brilho e obter efeito de gradiente.
-         const [stroHue, stroSat] = hexToHsl(strokeColor);
+            // Openlayers não disponibiliza métodos para capturar a antiga regularShape da camada, tendo de ser feito um processo manual.
+            const { points, angle, rotation, radius, radius2 } = getShape(
+               filteredLayer.get('shape'),
+               filteredLayer.get('size')
+            );
 
-         // Variável que mantém os itens necessários para construção da legenda do filtro.
-         let subtitle: IFilterSubtitle[] = [];
-         // Variável que mantém o índice da última feature iterada a cada loop de value, evitando que features passadas tenham seus estilos sobrepostos.
-         let nextFeatureIndex = 0;
-         for (let i = 1; i <= numOfGroups; i++) {
-            // Brilho da cor.
-            const newLig = 30 + lightnessRangeSize * (numOfGroups + 1 - i);
-            // Recupera uma cor aleatória (caso o usuário tenha selecionado tal opção).
-            const [randomFillColor, randomStrokeColor] = getRandomColor();
+            // Tamanho dos grupos.
+            const groupSize = Math.ceil(features.length * (Number(filter.value) / 100));
+            // Número de grupos.
+            const numOfGroups = Math.ceil(features.length / groupSize);
+            // Tamanho dos intervalos do brilho (cor) para correta exibição do gradiente.
+            const lightnessRangeSize = Math.floor(50 / numOfGroups);
+            // Conversão da cor do formato hex para hsl, para aplicar uma modificação de brilho e obter efeito de gradiente.
+            const [polyHue, polySat] = hexToHsl(filter.fillColor);
+            // Conversão da cor do formato hex para hsl, para aplicar uma modificação de brilho e obter efeito de gradiente.
+            const [stroHue, stroSat] = hexToHsl(filter.strokeColor);
 
-            console.log(fillColor);
+            // Variável que mantém os itens necessários para construção da legenda do filtro.
+            let subtitle: IFilterSubtitle[] = [];
+            // Variável que mantém o índice da última feature iterada a cada loop de value, evitando que features passadas tenham seus estilos sobrepostos.
+            let nextFeatureIndex = 0;
+            for (let i = 1; i <= numOfGroups; i++) {
+               // Brilho da cor.
+               const newLig = 30 + lightnessRangeSize * (numOfGroups + 1 - i);
+               // Recupera uma cor aleatória (caso o usuário tenha selecionado tal opção).
+               const [randomFillColor, randomStrokeColor] = getRandomColor();
 
-            // Insere no array de legenda os valores respectivos.
-            subtitle.push({
-               type: 'Percentil',
-               minValue: value * (i - 1),
-               maxValue: value * i,
-               fillColor: isFillColorRandom
-                  ? randomFillColor
-                  : fillColor !== '#000000'
-                  ? hsl(polyHue, polySat, newLig)
-                  : '#000000',
-               strokeColor: isStrokeColorRandom
-                  ? randomStrokeColor
-                  : strokeColor !== '#000000'
-                  ? hsl(stroHue, stroSat, newLig)
-                  : '#000000',
-            });
+               // Insere no array de legenda os valores respectivos.
+               if (
+                  !(
+                     filter.fillColor === '#000000' &&
+                     filter.strokeColor === '#000000' &&
+                     !filter.isFillColorRandom &&
+                     !filter.isStrokeColorRandom
+                  )
+               ) {
+                  // Recupera o antigo estilo de uma feature, para ser utilizado no filtro caso o usuário não tenha alterado manualmente.
+                  const oldStyle = features[0].getStyle() as Style;
 
-            // Modifica a cor das features, alterando o brilho do hsl para diferenciar as features pertencentes a cada intervalo.
-            for (let j = nextFeatureIndex; j < features.length; j++) {
-               // Recupera o antigo estilo da feature.
-               const oldStyle = features[j].getStyle() as Style;
-
-               // Modifica a cor de preenchimento (utiliza-se a cor preta base (#000000) para evitar que o filtro seja aplicado sem que o usuário queira. Como esta é a cor padrão do color picker, esse controle força uma escolha de cor por parte do usuário).
-               oldStyle
-                  .getFill()
-                  .setColor(
-                     isFillColorRandom
+                  subtitle.push({
+                     type: 'Percentil',
+                     minValue: Number(filter.value) * (i - 1),
+                     maxValue: Number(filter.value) * i,
+                     fillColor: filter.isFillColorRandom
                         ? randomFillColor
-                        : fillColor !== '#000000'
+                        : filter.fillColor !== '#000000'
                         ? hsl(polyHue, polySat, newLig)
-                        : oldStyle.getFill().getColor()
-                  );
-
-               // Modifica a cor de contorno (utiliza-se a cor preta base (#000000) para evitar que o filtro seja aplicado sem que o usuário queira. Como esta é a cor padrão do color picker, esse controle força uma escolha de cor por parte do usuário).
-               oldStyle
-                  .getStroke()
-                  .setColor(
-                     isStrokeColorRandom
+                        : oldStyle.getFill().getColor(),
+                     strokeColor: filter.isStrokeColorRandom
                         ? randomStrokeColor
-                        : strokeColor !== '#000000'
+                        : filter.strokeColor !== '#000000'
                         ? hsl(stroHue, stroSat, newLig)
-                        : oldStyle.getStroke().getColor()
+                        : oldStyle.getStroke().getColor(),
+                     filteredFeatures: [],
+                  });
+               }
+
+               // Modifica a cor das features, alterando o brilho do hsl para diferenciar as features pertencentes a cada intervalo.
+               for (let j = nextFeatureIndex; j < features.length; j++) {
+                  // Insere a feature no objeto da legenda, para permitir modificação de features específicas através da legenda.
+                  subtitle[i - 1].filteredFeatures.push(features[j]);
+                  // Recupera o antigo estilo da feature.
+                  const oldStyle = features[j].getStyle() as Style;
+
+                  // Modifica a cor de preenchimento (utiliza-se a cor preta base (#000000) para evitar que o filtro seja aplicado sem que o usuário queira (por exemplo, aplicar efeitos no contorno sem que o usuário deseje). Como esta é a cor padrão do color picker, esse controle força uma escolha de cor por parte do usuário).
+                  oldStyle
+                     .getFill()
+                     .setColor(
+                        filter.isFillColorRandom
+                           ? randomFillColor
+                           : filter.fillColor !== '#000000'
+                           ? hsl(polyHue, polySat, newLig)
+                           : oldStyle.getFill().getColor()
+                     );
+
+                  // Modifica a cor de contorno (utiliza-se a cor preta base (#000000) para evitar que o filtro seja aplicado sem que o usuário queira (por exemplo, aplicar efeitos no contorno sem que o usuário deseje). Como esta é a cor padrão do color picker, esse controle força uma escolha de cor por parte do usuário).
+                  oldStyle
+                     .getStroke()
+                     .setColor(
+                        filter.isStrokeColorRandom
+                           ? randomStrokeColor
+                           : filter.strokeColor !== '#000000'
+                           ? hsl(stroHue, stroSat, newLig)
+                           : oldStyle.getStroke().getColor()
+                     );
+
+                  // Modifica as mesmas coisas para features que sejam geradas como Regular Shapes (estrelas, círculos, etc).
+                  oldStyle.setImage(
+                     new RegularShape({
+                        fill: new Fill({
+                           color: filter.isFillColorRandom
+                              ? randomFillColor
+                              : filter.fillColor !== '#000000'
+                              ? hsl(polyHue, polySat, newLig)
+                              : oldStyle.getFill().getColor(),
+                        }),
+
+                        stroke: new Stroke({
+                           color: filter.isStrokeColorRandom
+                              ? randomStrokeColor
+                              : filter.strokeColor !== '#000000'
+                              ? hsl(stroHue, stroSat, newLig)
+                              : oldStyle.getStroke().getColor(),
+                           width: oldStyle.getStroke().getWidth(),
+                        }),
+
+                        points,
+                        angle,
+                        rotation,
+                        radius,
+                        radius2,
+                     })
                   );
 
-               // Modifica as mesmas coisas para features que sejam geradas como Regular Shapes (estrelas, círculos, etc).
-               oldStyle.setImage(
-                  new RegularShape({
-                     fill: new Fill({
-                        color: isFillColorRandom
-                           ? randomFillColor
-                           : fillColor !== '#000000'
-                           ? hsl(polyHue, polySat, newLig)
-                           : oldStyle.getFill().getColor(),
-                     }),
-
-                     stroke: new Stroke({
-                        color: isStrokeColorRandom
-                           ? randomStrokeColor
-                           : strokeColor !== '#000000'
-                           ? hsl(stroHue, stroSat, newLig)
-                           : oldStyle.getStroke().getColor(),
-                     }),
-
-                     points,
-                     angle,
-                     rotation,
-                     radius,
-                     radius2,
-                  })
-               );
-
-               // Caso o elemento iterado seja de um novo grupo, quebra o loop (funciona pois o array está ordenado).
-               if ((j + 1) % groupSize === 0) {
-                  nextFeatureIndex = j + 1;
-                  break;
+                  // Caso o elemento iterado seja de um novo grupo, quebra o loop (funciona pois o array está ordenado).
+                  if ((j + 1) % groupSize === 0) {
+                     nextFeatureIndex = j + 1;
+                     break;
+                  }
                }
             }
+
+            // Atualiza o array de valores dos filtros da camada, para correta exibição da legenda.
+            filteredLayer.set('filterSubtitle', subtitle);
+
+            // Indica uma modificação na camada respectiva, para realizar uma nova renderização.
+            filteredLayer?.getSource().changed();
          }
-
-         // Indica uma modificação na camada respectiva, para realizar uma nova renderização.
-         filteredLayer?.getSource().changed();
-
-         return subtitle;
       },
       [layers, getShape, getRandomColor]
    );
 
    // Função que realiza a tematização do mapa baseado em categorias diferentes.
    const handleCategoryFilter = useCallback(
-      (
-         layerID: number,
-         label: string,
-         fillColor: string,
-         isFillColorRandom: boolean,
-         strokeColor: string,
-         isStrokeColorRandom: boolean
-      ) => {
+      (layerID: number) => {
          // Recupera as features da layer sendo filtrada.
          const filteredLayer = layers.find((layer) => layer.get('id') === layerID)!;
          const features = filteredLayer?.getSource().getFeatures()!;
 
-         // Agrupa as features em um novo objeto, baseado nos diferentes valores da label passada.
-         const groupedFeatures = features.reduce((featuresSoFar: any, feature) => {
-            if (!featuresSoFar[feature.get('info')[label]])
-               featuresSoFar[feature.get('info')[label]] = [];
+         // Recupera o objeto de filtro da camada.
+         const filter = filteredLayer.get('filter') as IFilter;
 
-            featuresSoFar[feature.get('info')[label]].push(feature);
+         if (filter.type !== '' && filter.label !== '') {
+            // Agrupa as features em um novo objeto, baseado nos diferentes valores da label passada.
+            const groupedFeatures = features.reduce((featuresSoFar: any, feature) => {
+               if (!featuresSoFar[feature.get('info')[filter.label]])
+                  featuresSoFar[feature.get('info')[filter.label]] = [];
 
-            return featuresSoFar;
-         }, {});
+               featuresSoFar[feature.get('info')[filter.label]].push(feature);
+
+               return featuresSoFar;
+            }, {});
+
+            // Openlayers não disponibiliza métodos para capturar a antiga regularShape da camada, tendo de ser feito um processo manual.
+            const { points, angle, rotation, radius, radius2 } = getShape(
+               filteredLayer.get('shape'),
+               filteredLayer.get('size')
+            );
+
+            // Número de categorias.
+            let numOfCategories = Object.keys(groupedFeatures).length;
+            // Tamanho dos intervalos do brilho (cor) para correta exibição do gradiente.
+            const lightnessRangeSize = Math.floor(50 / numOfCategories);
+            // Conversão da cor do formato hex para hsl, para aplicar uma modificação de brilho e obter efeito de gradiente.
+            const [polyHue, polySat] = hexToHsl(filter.fillColor);
+            // Conversão da cor do formato hex para hsl, para aplicar uma modificação de brilho e obter efeito de gradiente.
+            const [stroHue, stroSat] = hexToHsl(filter.strokeColor);
+
+            // Variável auxiliar para conseguir acessar o índice correto da legenda
+            let i = 0;
+            // Variável que mantém os itens necessários para construção da legenda do filtro.
+            let subtitle: IFilterSubtitle[] = [];
+            for (let feats in groupedFeatures) {
+               console.log(feats);
+               // Brilho da cor.
+               const newLig = 30 + lightnessRangeSize * numOfCategories;
+               // Recupera uma cor aleatória (caso o usuário tenha selecionado tal opção).
+               const [randomFillColor, randomStrokeColor] = getRandomColor();
+
+               // Insere no array de legenda os valores respectivos.
+               if (
+                  !(
+                     filter.fillColor === '#000000' &&
+                     filter.strokeColor === '#000000' &&
+                     !filter.isFillColorRandom &&
+                     !filter.isStrokeColorRandom
+                  )
+               ) {
+                  // Recupera o antigo estilo da feature.
+                  const oldStyle = features[0].getStyle() as Style;
+
+                  subtitle.push({
+                     type: 'Categoria',
+                     categoryValue: feats,
+                     fillColor: filter.isFillColorRandom
+                        ? randomFillColor
+                        : filter.fillColor !== '#000000'
+                        ? hsl(polyHue, polySat, newLig)
+                        : oldStyle.getFill().getColor(),
+                     strokeColor: filter.isStrokeColorRandom
+                        ? randomStrokeColor
+                        : filter.strokeColor !== '#000000'
+                        ? hsl(stroHue, stroSat, newLig)
+                        : oldStyle.getStroke().getColor(),
+                     filteredFeatures: [],
+                  });
+               }
+
+               // Modifica a cor das features, alterando o brilho do hsl para diferenciar as features pertencentes a cada intervalo.
+               for (let j = 0; j < groupedFeatures[feats].length; j++) {
+                  // Insere a feature no objeto da legenda, para permitir modificação de features específicas através da legenda.
+                  subtitle[i].filteredFeatures.push(groupedFeatures[feats][j]);
+                  // Recupera o antigo estilo da feature.
+                  const oldStyle = groupedFeatures[feats][j].getStyle() as Style;
+
+                  // Modifica a cor de preenchimento (utiliza-se a cor preta base (#000000) para evitar que o filtro seja aplicado sem que o usuário queira (por exemplo, aplicar efeitos no contorno sem que o usuário deseje). Como esta é a cor padrão do color picker, esse controle força uma escolha de cor por parte do usuário).
+                  oldStyle
+                     .getFill()
+                     .setColor(
+                        filter.isFillColorRandom
+                           ? randomFillColor
+                           : filter.fillColor !== '#000000'
+                           ? hsl(polyHue, polySat, newLig)
+                           : oldStyle.getFill().getColor()
+                     );
+
+                  // Modifica a cor de contorno (utiliza-se a cor preta base (#000000) para evitar que o filtro seja aplicado sem que o usuário queira (por exemplo, aplicar efeitos no contorno sem que o usuário deseje). Como esta é a cor padrão do color picker, esse controle força uma escolha de cor por parte do usuário).
+                  oldStyle
+                     .getStroke()
+                     .setColor(
+                        filter.isStrokeColorRandom
+                           ? randomStrokeColor
+                           : filter.strokeColor !== '#000000'
+                           ? hsl(stroHue, stroSat, newLig)
+                           : oldStyle.getStroke().getColor()
+                     );
+
+                  // Modifica as mesmas coisas para features que sejam geradas como Regular Shapes (estrelas, círculos, etc).
+                  oldStyle.setImage(
+                     new RegularShape({
+                        fill: new Fill({
+                           color: filter.isFillColorRandom
+                              ? randomFillColor
+                              : filter.fillColor !== '#000000'
+                              ? hsl(polyHue, polySat, newLig)
+                              : oldStyle.getFill().getColor(),
+                        }),
+
+                        stroke: new Stroke({
+                           color: filter.isStrokeColorRandom
+                              ? randomStrokeColor
+                              : filter.strokeColor !== '#000000'
+                              ? hsl(stroHue, stroSat, newLig)
+                              : oldStyle.getStroke().getColor(),
+                           width: oldStyle.getStroke().getWidth(),
+                        }),
+
+                        points,
+                        angle,
+                        rotation,
+                        radius,
+                        radius2,
+                     })
+                  );
+               }
+
+               i++;
+               numOfCategories--;
+            }
+
+            // Atualiza o array de valores dos filtros da camada, para correta exibição da legenda.
+            filteredLayer.set('filterSubtitle', subtitle);
+
+            // Indica uma modificação na camada respectiva, para realizar uma nova renderização.
+            filteredLayer?.getSource().changed();
+         }
+      },
+      [layers, getShape, getRandomColor]
+   );
+
+   // Função que modifica o estilo das features compreendidas em um intervalo/percentil/categoria específico.
+   const handleChangeSpecificFeatures = useCallback(
+      (layerID: number, features: Feature<Geometry>[], fillColor: string, strokeColor: string) => {
+         const filteredLayer = layers.find((layer) => layer.get('id') === layerID)!;
 
          // Openlayers não disponibiliza métodos para capturar a antiga regularShape da camada, tendo de ser feito um processo manual.
          const { points, angle, rotation, radius, radius2 } = getShape(
@@ -459,117 +599,68 @@ export const LayersProvider: React.FC = ({ children }) => {
             filteredLayer.get('size')
          );
 
-         // Número de categorias.
-         let numOfCategories = Object.keys(groupedFeatures).length;
-         // Tamanho dos intervalos do brilho (cor) para correta exibição do gradiente.
-         const lightnessRangeSize = Math.floor(50 / numOfCategories);
-         // Conversão da cor do formato hex para hsl, para aplicar uma modificação de brilho e obter efeito de gradiente.
-         const [polyHue, polySat] = hexToHsl(fillColor);
-         // Conversão da cor do formato hex para hsl, para aplicar uma modificação de brilho e obter efeito de gradiente.
-         const [stroHue, stroSat] = hexToHsl(strokeColor);
+         // Recupera e modifica os valores de cor do pedaço específico sendo afetado, possibilitando o acompanhamento visual do input de cor de acordo com as ações do usuário
+         const affectedPiece = (filteredLayer.get('filterSubtitle') as IFilterSubtitle[]).find(
+            (sub) => sub.filteredFeatures === features
+         ) as IFilterSubtitle;
 
-         // Variável que mantém os itens necessários para construção da legenda do filtro.
-         let subtitle: IFilterSubtitle[] = [];
-         for (let feats in groupedFeatures) {
-            // Brilho da cor.
-            const newLig = 30 + lightnessRangeSize * numOfCategories;
-            // Recupera uma cor aleatória (caso o usuário tenha selecionado tal opção).
-            const [randomFillColor, randomStrokeColor] = getRandomColor();
+         affectedPiece.fillColor = fillColor;
+         affectedPiece.strokeColor = strokeColor;
 
-            // Insere no array de legenda os valores respectivos.
-            subtitle.push({
-               type: 'Categoria',
-               categoryValue: feats,
-               fillColor: isFillColorRandom
-                  ? randomFillColor
-                  : fillColor !== '#000000'
-                  ? hsl(polyHue, polySat, newLig)
-                  : '#000000',
-               strokeColor: isStrokeColorRandom
-                  ? randomStrokeColor
-                  : strokeColor !== '#000000'
-                  ? hsl(stroHue, stroSat, newLig)
-                  : '#000000',
-            });
+         features.forEach((feat) => {
+            // Recupera o antigo estilo da feature.
+            const oldStyle = feat.getStyle() as Style;
 
-            // Modifica a cor das features, alterando o brilho do hsl para diferenciar as features pertencentes a cada intervalo.
-            groupedFeatures[feats].forEach((feat: Feature<Geometry>) => {
-               // Recupera o antigo estilo da feature.
-               const oldStyle = feat.getStyle() as Style;
+            // Modifica a cor de preenchimento (utiliza-se a cor preta base (#000000) para evitar que o filtro seja aplicado sem que o usuário queira (por exemplo, aplicar efeitos no contorno sem que o usuário deseje). Como esta é a cor padrão do color picker, esse controle força uma escolha de cor por parte do usuário).
+            oldStyle.getFill().setColor(fillColor);
 
-               // Modifica a cor de preenchimento (utiliza-se a cor preta base (#000000) para evitar que o filtro seja aplicado sem que o usuário queira. Como esta é a cor padrão do color picker, esse controle força uma escolha de cor por parte do usuário).
-               oldStyle
-                  .getFill()
-                  .setColor(
-                     isFillColorRandom
-                        ? randomFillColor
-                        : fillColor !== '#000000'
-                        ? hsl(polyHue, polySat, newLig)
-                        : oldStyle.getFill().getColor()
-                  );
+            // Modifica a cor de contorno (utiliza-se a cor preta base (#000000) para evitar que o filtro seja aplicado sem que o usuário queira (por exemplo, aplicar efeitos no contorno sem que o usuário deseje). Como esta é a cor padrão do color picker, esse controle força uma escolha de cor por parte do usuário).
+            oldStyle.getStroke().setColor(strokeColor);
 
-               // Modifica a cor de contorno (utiliza-se a cor preta base (#000000) para evitar que o filtro seja aplicado sem que o usuário queira. Como esta é a cor padrão do color picker, esse controle força uma escolha de cor por parte do usuário).
-               oldStyle
-                  .getStroke()
-                  .setColor(
-                     isStrokeColorRandom
-                        ? randomStrokeColor
-                        : strokeColor !== '#000000'
-                        ? hsl(stroHue, stroSat, newLig)
-                        : oldStyle.getStroke().getColor()
-                  );
+            // Modifica as mesmas coisas para features que sejam geradas como Regular Shapes (estrelas, círculos, etc).
+            oldStyle.setImage(
+               new RegularShape({
+                  fill: new Fill({
+                     color: fillColor,
+                  }),
 
-               // Modifica as mesmas coisas para features que sejam geradas como Regular Shapes (estrelas, círculos, etc).
-               oldStyle.setImage(
-                  new RegularShape({
-                     fill: new Fill({
-                        color: isFillColorRandom
-                           ? randomFillColor
-                           : fillColor !== '#000000'
-                           ? hsl(polyHue, polySat, newLig)
-                           : oldStyle.getFill().getColor(),
-                     }),
+                  stroke: new Stroke({
+                     color: strokeColor,
+                     width: oldStyle.getStroke().getWidth(),
+                  }),
 
-                     stroke: new Stroke({
-                        color: isStrokeColorRandom
-                           ? randomStrokeColor
-                           : strokeColor !== '#000000'
-                           ? hsl(stroHue, stroSat, newLig)
-                           : oldStyle.getStroke().getColor(),
-                     }),
+                  points,
+                  angle,
+                  rotation,
+                  radius,
+                  radius2,
+               })
+            );
+         });
 
-                     points,
-                     angle,
-                     rotation,
-                     radius,
-                     radius2,
-                  })
-               );
-            });
-
-            numOfCategories--;
-         }
-
-         // Indica uma modificação na camada respectiva, para realizar uma nova renderização.
-         filteredLayer?.getSource().changed();
-
-         return subtitle;
+         filteredLayer.getSource().changed();
       },
-      [layers, getShape, getRandomColor]
+      [layers, getShape]
    );
 
+   // Função que apaga os filtros aplicados.
    const handleEraseFilter = useCallback(
       (layerID: number) => {
          const filteredLayer = layers.find((layer) => layer.get('id') === layerID)!;
-
          const source = filteredLayer.getSource();
          const features = source.getFeatures();
-         const fillColor = filteredLayer.get('filter').fillColor;
-         const strokeColor = filteredLayer.get('filter').strokeColor;
 
-         filteredLayer.get('filter').type = '';
-         filteredLayer.get('filter').label = '';
-         filteredLayer.get('filter').value = '';
+         const filter = filteredLayer.get('filter') as IFilter;
+
+         const fillColor = filter.fillColor;
+         const strokeColor = filter.strokeColor;
+
+         filter.type = '';
+         filter.label = '';
+         filter.value = '';
+
+         filteredLayer.set('filterSubtitle', []);
+
          // Openlayers não disponibiliza métodos para capturar a antiga regularShape da camada, tendo de ser feito um processo manual
          const { points, angle, rotation, radius, radius2 } = getShape(
             filteredLayer.get('shape'),
@@ -708,9 +799,16 @@ export const LayersProvider: React.FC = ({ children }) => {
             type: '',
             label: '',
             value: '',
+
             fillColor: '#000000',
+            isFillColorRandom: false,
+
             strokeColor: '#000000',
+            isStrokeColorRandom: false,
          };
+
+         // Inicialização do objeto responsável pela legenda do filtro da camada.
+         const filterSubtitle: IFilterSubtitle[] = [];
 
          // A layer em si
          const vectorLayer = new VectorLayer({
@@ -729,6 +827,9 @@ export const LayersProvider: React.FC = ({ children }) => {
             size: radius,
             // Objeto com os inputs do fitro da camada.
             filter,
+            // Array com os valores do fitro da camada, para utilização na legenda.
+            filterSubtitle,
+
             source: vectorSource,
             declutter: checkLayerDeclutter(geoJSONObject.features),
          });
@@ -747,12 +848,12 @@ export const LayersProvider: React.FC = ({ children }) => {
             layers,
             setLayers,
 
-            filterSubtitles,
-            setFilterSubtitles,
-
             handleIntervalFilter,
             handlePercentileFilter,
             handleCategoryFilter,
+
+            handleChangeSpecificFeatures,
+
             handleEraseFilter,
          }}
       >

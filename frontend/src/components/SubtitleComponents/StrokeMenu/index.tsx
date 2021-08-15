@@ -81,9 +81,9 @@ const StrokeMenu: React.FC<StrokeMenuProps> = ({ layer }) => {
       features.forEach((feature) => {
          const oldStyle = feature.getStyle() as Style;
 
-         (feature.getStyle() as Style).getStroke().setWidth(newSize);
+         oldStyle.getStroke().setWidth(newSize);
 
-         (feature.getStyle() as Style).setImage(
+         oldStyle.setImage(
             new RegularShape({
                fill: oldStyle.getFill(),
                stroke: new Stroke({
@@ -114,7 +114,7 @@ const StrokeMenu: React.FC<StrokeMenuProps> = ({ layer }) => {
          <input
             type="color"
             id={`strokeColorPicker${layer.get('id')}`}
-            className="colorPicker" //
+            className="colorPicker"
             value={
                (layer.getSource().getFeatures()[0].getStyle()! as Style)
                   .getStroke()

@@ -30,7 +30,7 @@ import { Coordinate, toStringHDMS } from 'ol/coordinate';
 import Select from 'ol/interaction/Select';
 
 import TablesContext from '../../../contexts/tables';
-import LayersContext, { IFilterSubtitle } from '../../../contexts/layers';
+import LayersContext, { IFilter, IFilterSubtitle } from '../../../contexts/layers';
 
 import TabsMenu from '../../../components/TabsMenu';
 
@@ -60,12 +60,12 @@ export default function WorldMap() {
       layers,
       setLayers,
 
-      filterSubtitles,
-      setFilterSubtitles,
-
       handleIntervalFilter,
       handlePercentileFilter,
       handleCategoryFilter,
+
+      handleChangeSpecificFeatures,
+
       handleEraseFilter,
    } = useContext(LayersContext);
 
@@ -74,6 +74,12 @@ export default function WorldMap() {
 
    // Estado que indica se a legenda deve ser exibida ou não.
    const [showSubtitle, setShowSubtitle] = useState(true);
+   // Estado que indica se a legenda dos filtros deve ser exibida ou não.
+   const [showFilterSubtitle, setShowFilterSubtitle] = useState<boolean[]>((): boolean[] => {
+      const visibilities: boolean[] = [];
+      layers.forEach(() => visibilities.push(true));
+      return visibilities;
+   });
 
    // Flags para controlar qual menu de qual camada está aberto (na legenda).
    const [isPolygonMenuVisible, setIsPolygonMenuVisible] = useState<boolean[]>([]);
@@ -86,15 +92,6 @@ export default function WorldMap() {
       const layersVisibilities = [...layers].reverse().map((layer) => layer.getVisible());
       return layersVisibilities;
    });
-
-   // Estados que mantém os valores dos parâmetros de filtragem de cada camada.
-   const [filterTypes, setFilterTypes] = useState<string[]>([]);
-   const [filterLabels, setFilterLabels] = useState<string[]>([]);
-   const [filterValues, setFilterValues] = useState<Array<number | string>>([]);
-   const [filterFillColors, setFilterFillColors] = useState<string[]>([]);
-   const [isFilterFillColorRandom, setIsFilterFillColorRandom] = useState<boolean[]>([]);
-   const [filterStrokeColors, setFilterStrokeColors] = useState<string[]>([]);
-   const [isFilterStrokeColorRandom, setIsFilterStrokeColorRandom] = useState<boolean[]>([]);
 
    // Estado de utilidade. Estado utilizado para indicar ao react que o valor de um input foi atualizado (utilizando o set), o que faz com que o react renderize novamente o componente em questão.
    const [flag, setFlag] = useState<boolean>(false);
@@ -410,91 +407,36 @@ export default function WorldMap() {
 
    // Função que realiza a submissão dos filtros para o contexto
    const handleSubmitFilter = useCallback(
-      (layerID: number, index: number) => {
+      (layerID: number) => {
          handleClosePopup();
 
-         // console.log(filterSubtitles);
-         // console.log(layerID);
-         // console.log(index);
-         // console.log(filterLabels);
-         // console.log(filterValues);
-         // console.log(filterFillColors);
-         // console.log(isFilterFillColorRandom);
-         // console.log(filterStrokeColors);
-         // console.log(isFilterStrokeColorRandom);
+         const { value: filterType } = document.getElementById(
+            `filterTypeSelect${layerID}`
+         ) as HTMLSelectElement;
 
-         // Variável auxiliar para permitir a modificação do array de legendas de filtro
-         let newFilterSubtitles: IFilterSubtitle[][];
-         switch (filterTypes[index]) {
+         switch (filterType) {
             case 'Intervalos':
-               newFilterSubtitles = [...filterSubtitles];
-
-               newFilterSubtitles[index] = handleIntervalFilter(
-                  layerID,
-                  filterLabels[index],
-                  Number(filterValues[index]),
-                  filterFillColors[index],
-                  isFilterFillColorRandom[index],
-                  filterStrokeColors[index],
-                  isFilterStrokeColorRandom[index]
-               );
-
-               setFilterSubtitles([...newFilterSubtitles]);
+               handleIntervalFilter(layerID);
 
                break;
 
             case 'Percentil':
-               newFilterSubtitles = [...filterSubtitles];
-
-               newFilterSubtitles[index] = handlePercentileFilter(
-                  layerID,
-                  filterLabels[index],
-                  Number(filterValues[index]),
-                  filterFillColors[index],
-                  isFilterFillColorRandom[index],
-                  filterStrokeColors[index],
-                  isFilterStrokeColorRandom[index]
-               );
-
-               setFilterSubtitles([...newFilterSubtitles]);
+               handlePercentileFilter(layerID);
 
                break;
 
             case 'Categoria':
-               newFilterSubtitles = [...filterSubtitles];
-
-               newFilterSubtitles[index] = handleCategoryFilter(
-                  layerID,
-                  filterLabels[index],
-                  filterFillColors[index],
-                  isFilterFillColorRandom[index],
-                  filterStrokeColors[index],
-                  isFilterStrokeColorRandom[index]
-               );
-
-               setFilterSubtitles([...newFilterSubtitles]);
+               handleCategoryFilter(layerID);
 
                break;
 
             default:
                break;
          }
+
+         setFlag(!flag);
       },
-      [
-         handleClosePopup,
-         handleIntervalFilter,
-         handlePercentileFilter,
-         handleCategoryFilter,
-         filterFillColors,
-         filterLabels,
-         filterStrokeColors,
-         filterTypes,
-         filterValues,
-         isFilterFillColorRandom,
-         isFilterStrokeColorRandom,
-         filterSubtitles,
-         setFilterSubtitles,
-      ]
+      [handleClosePopup, handleIntervalFilter, handlePercentileFilter, handleCategoryFilter, flag]
    );
 
    // Função que impede o usuário de digitar valores não numéricos nos inputs textuais dos filtros numéricos (intervalos e percentil)
@@ -617,21 +559,6 @@ export default function WorldMap() {
          map?.addLayer(layer);
       }
    }, [layers, map]);
-
-   /*--------- Função que insere valores default nos campos do filtro que não precisam ser obrigatoriamente modificados, para que a aplicação não crashe -----------*/
-   useEffect(() => {
-      layers.forEach(() => {
-         setFilterFillColors((prevArray) => [...prevArray, '#000000']);
-         setIsFilterFillColorRandom((prevArray) => [...prevArray, false]);
-
-         setFilterStrokeColors((prevArray) => [...prevArray, '#000000']);
-         setIsFilterStrokeColorRandom((prevArray) => [...prevArray, false]);
-      });
-   }, [layers]);
-
-   useEffect(() => {
-      console.log(filterSubtitles);
-   }, [filterSubtitles]);
 
    return (
       <div
@@ -839,17 +766,17 @@ export default function WorldMap() {
 
                                  <div className="filterContainer container">
                                     <select
-                                       name="filterTypeSelect"
-                                       id={`filterTypeSelect${index}`}
+                                       name={`filterTypeSelect${layer.get('id')}`}
+                                       id={`filterTypeSelect${layer.get('id')}`}
                                        className="filterTypeSelect"
-                                       value={layer.get('filter').type}
+                                       value={(layer.get('filter') as IFilter).type}
                                        onChange={({ target: { value } }) => {
-                                          layer.get('filter').type = value;
+                                          (layer.get('filter') as IFilter).type = value;
 
-                                          let newFilterTypes = [...filterTypes];
-                                          newFilterTypes[index] = value;
-                                          setFilterTypes([...newFilterTypes]);
+                                          setFlag(!flag);
                                        }}
+                                       data-tip="Selecionar tipo do filtro"
+                                       data-background-color="rgb(59, 59, 59)"
                                     >
                                        <option value=""></option>
                                        {['Intervalos', 'Percentil', 'Categoria'].map(
@@ -860,18 +787,19 @@ export default function WorldMap() {
                                           )
                                        )}
                                     </select>
+                                    <ReactTooltip place="left" type="dark" effect="solid" />
 
                                     <select
-                                       name="filterLabelSelect"
-                                       id={`filterLabelSelect${index}`}
-                                       value={layer.get('filter').label}
+                                       name={`filterLabelSelect${layer.get('id')}`}
+                                       id={`filterLabelSelect${layer.get('id')}`}
+                                       value={(layer.get('filter') as IFilter).label}
                                        onChange={({ target: { value } }) => {
-                                          layer.get('filter').label = value;
+                                          (layer.get('filter') as IFilter).label = value;
 
-                                          let newFilterLabels = [...filterLabels];
-                                          newFilterLabels[index] = value;
-                                          setFilterLabels([...newFilterLabels]);
+                                          setFlag(!flag);
                                        }}
+                                       data-tip="Selecionar rótulo do filtro"
+                                       data-background-color="rgb(59, 59, 59)"
                                     >
                                        <option value=""></option>
                                        {layer.get('labels').map((label: string) =>
@@ -894,28 +822,43 @@ export default function WorldMap() {
                                           )
                                        )}
                                     </select>
+                                    <ReactTooltip place="left" type="dark" effect="solid" />
 
-                                    {filterTypes[index] !== 'Categoria' && (
-                                       <input
-                                          id={`filterValueInput${index}`}
-                                          type="text"
-                                          style={{ paddingLeft: '0.2rem' }}
-                                          draggable="true"
-                                          onDragStart={handleInputDrag}
-                                          value={layer.get('filter').value}
-                                          maxLength={2}
-                                          onKeyPress={(e) => {
-                                             checkNumericalDigit(e);
-                                          }}
-                                          onChange={({ target: { value } }) => {
-                                             layer.get('filter').value = value;
+                                    {document.getElementById(
+                                       `filterTypeSelect${layer.get('id')}`
+                                    ) &&
+                                       (
+                                          document.getElementById(
+                                             `filterTypeSelect${layer.get('id')}`
+                                          ) as HTMLSelectElement
+                                       ).value !== 'Categoria' && (
+                                          <>
+                                             <input
+                                                id={`filterValueInput${layer.get('id')}`}
+                                                type="text"
+                                                style={{ paddingLeft: '0.2rem' }}
+                                                draggable="true"
+                                                onDragStart={handleInputDrag}
+                                                value={(layer.get('filter') as IFilter).value}
+                                                maxLength={2}
+                                                onKeyPress={(e) => {
+                                                   checkNumericalDigit(e);
+                                                }}
+                                                onChange={({ target: { value } }) => {
+                                                   (layer.get('filter') as IFilter).value = value;
 
-                                             let newFilterValues = [...filterValues];
-                                             newFilterValues[index] = value;
-                                             setFilterValues([...newFilterValues]);
-                                          }}
-                                       />
-                                    )}
+                                                   setFlag(!flag);
+                                                }}
+                                                data-tip="Inserir valor do filtro (e.g nº de intervalos)"
+                                                data-background-color="rgb(37, 37, 37)"
+                                             />
+                                             <ReactTooltip
+                                                place="left"
+                                                type="dark"
+                                                effect="solid"
+                                             />
+                                          </>
+                                       )}
 
                                     <div className="customizeFilters customization">
                                        <button
@@ -933,39 +876,44 @@ export default function WorldMap() {
                                                 <span>Preenchimento</span>
 
                                                 <input
-                                                   id={`filterFillColorPicker${index}`}
+                                                   id={`filterFillColorPicker${layer.get('id')}`}
                                                    type="color"
                                                    className="filterFillColorPicker"
-                                                   value={layer.get('filter').fillColor}
+                                                   value={
+                                                      (layer.get('filter') as IFilter).fillColor
+                                                   }
                                                    onChange={({ target: { value } }) => {
-                                                      layer.get('filter').fillColor = value;
+                                                      (layer.get('filter') as IFilter).fillColor =
+                                                         value;
 
-                                                      let newFilterFillColors = [
-                                                         ...filterFillColors,
-                                                      ];
-                                                      newFilterFillColors[index] = value;
-                                                      setFilterFillColors([...newFilterFillColors]);
+                                                      setFlag(!flag);
                                                    }}
                                                 />
 
                                                 <div>
                                                    <input
                                                       type="checkbox"
-                                                      id={`randomFilterFillColor${index}`}
-                                                      name={`randomFilterFillColor${index}`}
-                                                      checked={isFilterFillColorRandom[index]}
+                                                      id={`randomFilterFillColor${layer.get('id')}`}
+                                                      name={`randomFilterFillColor${layer.get(
+                                                         'id'
+                                                      )}`}
+                                                      checked={
+                                                         (layer.get('filter') as IFilter)
+                                                            .isFillColorRandom
+                                                      }
                                                       onChange={({ target: { checked } }) => {
-                                                         let newIsFilterFillColorRandom = [
-                                                            ...isFilterFillColorRandom,
-                                                         ];
-                                                         newIsFilterFillColorRandom[index] =
-                                                            checked;
-                                                         setIsFilterFillColorRandom([
-                                                            ...newIsFilterFillColorRandom,
-                                                         ]);
+                                                         (
+                                                            layer.get('filter') as IFilter
+                                                         ).isFillColorRandom = checked;
+
+                                                         setFlag(!flag);
                                                       }}
                                                    />
-                                                   <label htmlFor={`randomFilterFillColor${index}`}>
+                                                   <label
+                                                      htmlFor={`randomFilterFillColor${layer.get(
+                                                         'id'
+                                                      )}`}
+                                                   >
                                                       Cores aleatórias
                                                    </label>
                                                 </div>
@@ -975,42 +923,45 @@ export default function WorldMap() {
                                                 <span>Contorno</span>
 
                                                 <input
-                                                   id={`filterStrokeColorPicker${index}`}
+                                                   id={`filterStrokeColorPicker${layer.get('id')}`}
                                                    type="color"
                                                    className="filterStrokeColorPicker"
-                                                   value={layer.get('filter').strokeColor}
+                                                   value={
+                                                      (layer.get('filter') as IFilter).strokeColor
+                                                   }
                                                    onChange={({ target: { value } }) => {
-                                                      layer.get('filter').strokeColor = value;
+                                                      (layer.get('filter') as IFilter).strokeColor =
+                                                         value;
 
-                                                      let newFilterStrokeColors = [
-                                                         ...filterStrokeColors,
-                                                      ];
-                                                      newFilterStrokeColors[index] = value;
-                                                      setFilterStrokeColors([
-                                                         ...newFilterStrokeColors,
-                                                      ]);
+                                                      setFlag(!flag);
                                                    }}
                                                 />
 
                                                 <div>
                                                    <input
                                                       type="checkbox"
-                                                      id={`randomStrokeFilterColor${index}`}
-                                                      name={`randomStrokeFilterColor${index}`}
-                                                      checked={isFilterStrokeColorRandom[index]}
+                                                      id={`randomStrokeFilterColor${layer.get(
+                                                         'id'
+                                                      )}`}
+                                                      name={`randomStrokeFilterColor${layer.get(
+                                                         'id'
+                                                      )}`}
+                                                      checked={
+                                                         (layer.get('filter') as IFilter)
+                                                            .isStrokeColorRandom
+                                                      }
                                                       onChange={({ target: { checked } }) => {
-                                                         let newIsFilterStrokeColorRandom = [
-                                                            ...isFilterStrokeColorRandom,
-                                                         ];
-                                                         newIsFilterStrokeColorRandom[index] =
-                                                            checked;
-                                                         setIsFilterStrokeColorRandom([
-                                                            ...newIsFilterStrokeColorRandom,
-                                                         ]);
+                                                         (
+                                                            layer.get('filter') as IFilter
+                                                         ).isStrokeColorRandom = checked;
+
+                                                         setFlag(!flag);
                                                       }}
                                                    />
                                                    <label
-                                                      htmlFor={`randomStrokeFilterColor${index}`}
+                                                      htmlFor={`randomStrokeFilterColor${layer.get(
+                                                         'id'
+                                                      )}`}
                                                    >
                                                       Cores aleatórias
                                                    </label>
@@ -1022,65 +973,127 @@ export default function WorldMap() {
 
                                     <button
                                        id="submitFilter"
-                                       onClick={() => handleSubmitFilter(layer.get('id'), index)}
+                                       onClick={() => handleSubmitFilter(layer.get('id'))}
+                                       data-tip="Submeter filtragem"
+                                       data-background-color="rgb(59, 59, 59)"
                                     >
                                        <FaChartPie />
                                     </button>
+                                    <ReactTooltip place="left" type="info" effect="solid" />
 
                                     <FaTimes
                                        id="filterErase"
                                        onClick={() => {
                                           handleEraseFilter(layer.get('id'));
+
                                           setFlag(!flag);
                                        }}
+                                       data-tip="Remover filtro"
+                                       data-background-color="rgb(59, 59, 59)"
                                     />
+                                    <ReactTooltip place="left" type="info" effect="solid" />
                                  </div>
 
-                                 {filterSubtitles.length > 0 && filterSubtitles[index] && (
-                                    <ul className="filterSubtitleContainer">
-                                       {filterSubtitles[index].map(
-                                          (
-                                             {
-                                                type,
-                                                minValue,
-                                                maxValue,
-                                                categoryValue,
-                                                fillColor,
-                                                strokeColor,
-                                             }: IFilterSubtitle,
-                                             index: number
-                                          ) => (
-                                             <li key={index}>
-                                                <div>
-                                                   <span>{`${type} ${index + 1}:`}</span>{' '}
-                                                   {`${
-                                                      minValue || minValue === 0
-                                                         ? `${minValue}${
-                                                              type === 'Percentil' ? '%' : ''
-                                                           } - `
-                                                         : ''
-                                                   }${
-                                                      type === 'Percentil' &&
-                                                      maxValue &&
-                                                      maxValue > 100
-                                                         ? 100
-                                                         : maxValue || maxValue === 0
-                                                         ? maxValue
-                                                         : ''
-                                                   }${type === 'Percentil' ? '%' : ''} ${
-                                                      categoryValue ? categoryValue : ''
-                                                   } `}
-                                                </div>
+                                 <button
+                                    id="toggleSubtitle"
+                                    className="container"
+                                    style={{ margin: 0, marginBottom: '0.2rem', padding: '0.2rem' }}
+                                    onClick={() => {
+                                       let newShowFilterSubtitle = [...showFilterSubtitle];
 
-                                                <div>
-                                                   <input type="color" value={fillColor} />
-                                                   <input type="color" value={strokeColor} />
-                                                </div>
-                                             </li>
-                                          )
+                                       newShowFilterSubtitle[index] = !newShowFilterSubtitle[index];
+                                       setShowFilterSubtitle(newShowFilterSubtitle);
+                                    }}
+                                    data-tip="Alternar visibilidade da legenda"
+                                    data-background-color="rgb(59, 59, 59)"
+                                 >
+                                    <FaList id="toggleSubtitleIcon" size={30} />
+                                 </button>
+                                 <ReactTooltip place="left" type="info" effect="solid" />
+
+                                 <SlideDown>
+                                    {showFilterSubtitle[index] &&
+                                       layer.get('filterSubtitle').length > 0 && (
+                                          <ul className="filterSubtitleContainer">
+                                             {layer
+                                                .get('filterSubtitle')
+                                                .map(
+                                                   (
+                                                      {
+                                                         type,
+                                                         minValue,
+                                                         maxValue,
+                                                         categoryValue,
+                                                         fillColor,
+                                                         strokeColor,
+                                                         filteredFeatures,
+                                                      }: IFilterSubtitle,
+                                                      index: number
+                                                   ) => (
+                                                      <li key={index}>
+                                                         <div>
+                                                            <span>{`${type} ${index + 1}:`}</span>{' '}
+                                                            {`${
+                                                               minValue || minValue === 0
+                                                                  ? `${minValue}${
+                                                                       type === 'Percentil'
+                                                                          ? '%'
+                                                                          : ''
+                                                                    } - `
+                                                                  : ''
+                                                            }${
+                                                               type === 'Percentil' &&
+                                                               maxValue &&
+                                                               maxValue > 100
+                                                                  ? 100
+                                                                  : maxValue || maxValue === 0
+                                                                  ? maxValue
+                                                                  : ''
+                                                            }${type === 'Percentil' ? '%' : ''} ${
+                                                               categoryValue ? categoryValue : ''
+                                                            } `}
+                                                         </div>
+
+                                                         <div>
+                                                            <input
+                                                               type="color"
+                                                               value={fillColor}
+                                                               onChange={({
+                                                                  target: { value },
+                                                               }) => {
+                                                                  handleChangeSpecificFeatures(
+                                                                     layer.get('id'),
+                                                                     filteredFeatures,
+                                                                     value,
+                                                                     strokeColor
+                                                                  );
+
+                                                                  setFlag(!flag);
+                                                               }}
+                                                            />
+                                                            <input
+                                                               type="color"
+                                                               value={strokeColor}
+                                                               onChange={({
+                                                                  target: { value },
+                                                               }) => {
+                                                                  handleChangeSpecificFeatures(
+                                                                     layer.get('id'),
+                                                                     filteredFeatures,
+                                                                     fillColor,
+                                                                     value
+                                                                  );
+
+                                                                  setFlag(!flag);
+                                                               }}
+                                                            />
+                                                         </div>
+                                                      </li>
+                                                   )
+                                                )}
+                                          </ul>
                                        )}
-                                    </ul>
-                                 )}
+                                 </SlideDown>
 
                                  <ReactTooltip place="left" type="info" effect="solid" />
                               </li>

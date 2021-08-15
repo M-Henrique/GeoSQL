@@ -47,9 +47,11 @@ export default function Results() {
 
          const sortedResults = sortableResults.results.sort((a, b) => {
             if (newSortOrientation[index] === 'descendant') {
-               return a[label] < b[label] ? 1 : -1;
+               if (!isNaN(Number(a[label]))) return Number(a[label]) - Number(b[label]);
+               else return a[label] < b[label] ? 1 : -1;
             } else {
-               return a[label] > b[label] ? 1 : -1;
+               if (!isNaN(Number(a[label]))) return Number(b[label]) - Number(a[label]);
+               else return a[label] > b[label] ? 1 : -1;
             }
          });
 
