@@ -481,7 +481,6 @@ export const LayersProvider: React.FC = ({ children }) => {
             // Variável que mantém os itens necessários para construção da legenda do filtro.
             let subtitle: IFilterSubtitle[] = [];
             for (let feats in groupedFeatures) {
-               console.log(feats);
                // Brilho da cor.
                const newLig = 30 + lightnessRangeSize * numOfCategories;
                // Recupera uma cor aleatória (caso o usuário tenha selecionado tal opção).

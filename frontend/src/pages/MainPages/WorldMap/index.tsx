@@ -669,7 +669,7 @@ export default function WorldMap() {
                                  <div className="buttons container">
                                     <div className="customizePolygon customization">
                                        <button
-                                          data-tip="Alterar cor, forma ou tamanho"
+                                          data-tip="Alterar cor, tamanho ou forma"
                                           data-background-color="rgb(59, 59, 59)"
                                           className="togglePolygonMenu"
                                           onClick={() => handlePolygonMenuVisibility(index)}
@@ -701,7 +701,7 @@ export default function WorldMap() {
 
                                     <div className="customizeLabel customization">
                                        <button
-                                          data-tip="Alterar rótulo exibido"
+                                          data-tip="Alterar tamanho, cor ou conteúdo do rótulo exibido"
                                           data-background-color="rgb(59, 59, 59)"
                                           className="toggleLabelMenu"
                                           onClick={() => handleLabelMenuVisibility(index)}
@@ -772,6 +772,8 @@ export default function WorldMap() {
                                        value={(layer.get('filter') as IFilter).type}
                                        onChange={({ target: { value } }) => {
                                           (layer.get('filter') as IFilter).type = value;
+                                          (layer.get('filter') as IFilter).label = '';
+                                          (layer.get('filter') as IFilter).value = '';
 
                                           setFlag(!flag);
                                        }}
@@ -1004,7 +1006,7 @@ export default function WorldMap() {
                                        newShowFilterSubtitle[index] = !newShowFilterSubtitle[index];
                                        setShowFilterSubtitle(newShowFilterSubtitle);
                                     }}
-                                    data-tip="Alternar visibilidade da legenda"
+                                    data-tip="Alternar visibilidade da legenda de filtro"
                                     data-background-color="rgb(59, 59, 59)"
                                  >
                                     <FaList id="toggleSubtitleIcon" size={30} />

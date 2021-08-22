@@ -19,6 +19,11 @@ export type Result = {
    [key: string]: string | number;
 };
 
+export interface IQueryHistory {
+   query: string;
+   success: boolean;
+}
+
 interface ContextData {
    firstTime: boolean;
 
@@ -26,7 +31,7 @@ interface ContextData {
    setQuery: Dispatch<SetStateAction<string>>;
    submitQuery(query: string): Promise<void>;
 
-   queryHistory: string[];
+   queryHistory: IQueryHistory[];
    handleDeletePastQuery: (pastQuery: string) => void;
 
    results: Result[];
@@ -56,23 +61,26 @@ export const QueryProvider: React.FC = ({ children }) => {
    // Flag ativada durante a chamada à api.
    const [loading, setLoading] = useState(false);
    // Estado que armazena o histórico de queries, filtrado para não incluir os resultados vazios do método split, e revertido para ser visualizado corretamente.
-   const [queryHistory, setQueryHistory] = useState<string[]>([]);
+   const [queryHistory, setQueryHistory] = useState<IQueryHistory[]>([]);
    // Valor que armazena a ordem das consultas (para identificar cada consulta no histórico e evitar a exclusão de consultas duplicadas).
    const [pastQueryIdentifier, setPastQueryIdentifier] = useState(1);
 
    // Função que realiza o armazenamento da query no histórico.
-   const handleQueryHistory = useCallback(() => {
-      let queryHistoryCopy = [...queryHistory].reverse();
-      queryHistoryCopy.push(`${pastQueryIdentifier} - ${query}`);
-      setQueryHistory([...queryHistoryCopy].reverse());
+   const handleQueryHistory = useCallback(
+      (success: boolean) => {
+         let queryHistoryCopy = [...queryHistory].reverse();
+         queryHistoryCopy.push({ query: `${pastQueryIdentifier} - ${query}`, success });
+         setQueryHistory([...queryHistoryCopy].reverse());
 
-      setPastQueryIdentifier(pastQueryIdentifier + 1);
-   }, [query, queryHistory, pastQueryIdentifier]);
+         setPastQueryIdentifier(pastQueryIdentifier + 1);
+      },
+      [query, queryHistory, pastQueryIdentifier]
+   );
 
    // Função que deleta uma query passada.
    const handleDeletePastQuery = useCallback(
       (pastQuery: string) => {
-         setQueryHistory([...queryHistory].filter((query) => query !== pastQuery));
+         setQueryHistory([...queryHistory].filter(({ query }) => query !== pastQuery));
       },
       [setQueryHistory, queryHistory]
    );
@@ -103,7 +111,7 @@ export const QueryProvider: React.FC = ({ children }) => {
 
             setResults(data);
 
-            handleQueryHistory();
+            handleQueryHistory(typeof data !== 'string' ? true : false);
 
             setLoading(false);
          } catch {

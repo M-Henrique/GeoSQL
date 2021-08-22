@@ -4,10 +4,11 @@ import { Link } from 'react-router-dom';
 import { FiTrash2, FiDownload, FiSearch, FiSave, FiHelpCircle } from 'react-icons/fi';
 import ClipLoader from 'react-spinners/ClipLoader';
 
-import QueryContext from '../../../contexts/query';
+import QueryContext, { IQueryHistory } from '../../../contexts/query';
 import TablesContext from '../../../contexts/tables';
 
 import TabsMenu from '../../../components/TabsMenu';
+import QueryTemplates from '../../../components/QueryTemplates';
 
 import './styles.css';
 
@@ -106,19 +107,15 @@ export default function Query() {
                <div id="historyContainer" className="container">
                   <div id="history" className="container">
                      <ul>
-                        {queryHistory?.map((pastQuery: string, index) => (
+                        {queryHistory?.map(({ query, success }: IQueryHistory, index) => (
                            <li
                               key={index}
-                              title={pastQuery}
-                              onClick={() =>
-                                 setQuery(pastQuery.substr(pastQuery.indexOf('-') + 1).trim())
-                              }
+                              title={query}
+                              style={{ color: success ? 'green' : 'red' }}
+                              onClick={() => setQuery(query.substr(query.indexOf('-') + 1).trim())}
                            >
-                              <span>{pastQuery}</span>{' '}
-                              <FiTrash2
-                                 size={14}
-                                 onClick={() => handleDeletePastQuery(pastQuery)}
-                              />
+                              <span>{query}</span>{' '}
+                              <FiTrash2 size={14} onClick={() => handleDeletePastQuery(query)} />
                            </li>
                         ))}
                      </ul>
@@ -141,9 +138,8 @@ export default function Query() {
                      onChange={(e) => setQuery(e.target.value)}
                   ></textarea>
                   <small>
-                     Obs: ao realizar consultas com funções geográficas, como ST_Union por exemplo,
-                     utilizar o alias "geom". Ex: SELECT ST_Union(a.geom, b.geom){' '}
-                     <strong>as geom</strong> from ...
+                     Obs: ao realizar consultas com funções geográficas, utilizar o alias "geom".
+                     Ex: SELECT ST_Union(a.geom, b.geom) <strong>as geom</strong> from ...
                   </small>
                </div>
 
@@ -166,6 +162,8 @@ export default function Query() {
                      Ajuda
                   </Link>
                </div>
+
+               <QueryTemplates />
 
                <div id="databaseSelectionContainer" className="container">
                   <span>Escolha o banco de dados:</span>

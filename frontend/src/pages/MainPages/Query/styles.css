@@ -226,12 +226,13 @@
 }
 
 #queryContainer #inputsContainer #textAreaContainer {
-   flex: 3;
+   flex: 2.5;
    flex-direction: column;
 }
 
 #queryContainer textarea {
    height: 20vh;
+
    margin-bottom: 0.5rem;
    padding: 1rem;
 
@@ -253,7 +254,7 @@
    height: 20vh;
    margin-left: 1.5rem;
 
-   flex: 1;
+   flex: 0.5;
    flex-direction: column;
    justify-content: space-between;
 }
