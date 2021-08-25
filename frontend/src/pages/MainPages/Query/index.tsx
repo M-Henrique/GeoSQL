@@ -1,4 +1,4 @@
-import React, { useContext, useCallback } from 'react';
+import React, { useContext, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 
 import { FiTrash2, FiDownload, FiSearch, FiSave, FiHelpCircle } from 'react-icons/fi';
@@ -18,24 +18,40 @@ export default function Query() {
    const { database, databases, tables, tablesColumns, getTables, loading } =
       useContext(TablesContext);
 
+   const [showConfirm, setShowConfirm] = useState(false);
+
    // Função que salva o histórico de queries em um arquivo txt.
-   const handleSaveHistory = useCallback(() => {
-      // Formato semelhante a uma lista de exercícios.
-      let queryList = '';
-      queryHistory.forEach((pastQuery) => {
-         queryList += `${pastQuery}\n\n`;
-      });
+   const handleSaveHistory = useCallback(
+      (onlyCorrectQueries: boolean) => {
+         // Formato semelhante a uma lista de exercícios.
+         let queryList = '';
 
-      const file = new Blob([queryList], { type: 'text/plain' });
-      const fileName = `History.txt`;
+         if (onlyCorrectQueries) {
+            queryHistory
+               .filter(({ success }) => success)
+               .forEach(({ query }) => {
+                  queryList += `${query}\n\n`;
+               });
+         } else {
+            queryHistory.forEach(({ query }) => {
+               queryList += `${query}\n\n`;
+            });
+         }
 
-      const downloadUrl = URL.createObjectURL(file);
+         const file = new Blob([queryList], { type: 'text/plain' });
+         const fileName = `History.txt`;
 
-      const downloadLink = document.createElement('a');
-      downloadLink.download = fileName;
-      downloadLink.href = downloadUrl;
-      downloadLink.click();
-   }, [queryHistory]);
+         const downloadUrl = URL.createObjectURL(file);
+
+         const downloadLink = document.createElement('a');
+         downloadLink.download = fileName;
+         downloadLink.href = downloadUrl;
+         downloadLink.click();
+
+         setShowConfirm(false);
+      },
+      [queryHistory]
+   );
 
    // Função que submete a consulta do usuário.
    const handleSubmitQuery = useCallback(async () => {
@@ -121,8 +137,16 @@ export default function Query() {
                      </ul>
                   </div>
 
-                  <button onClick={handleSaveHistory}>
-                     {' '}
+                  {showConfirm && (
+                     <div id="confirmContainer">
+                        Apenas as consultas corretas?
+                        <div id="confirmButtonsContainer">
+                           <button onClick={() => handleSaveHistory(true)}>Sim</button>
+                           <button onClick={() => handleSaveHistory(false)}>Não</button>
+                        </div>
+                     </div>
+                  )}
+                  <button onClick={() => setShowConfirm(!showConfirm)}>
                      <FiDownload size={20} />
                      Baixar histórico
                   </button>
