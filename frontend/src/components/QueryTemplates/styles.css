@@ -81,3 +81,27 @@
 
    cursor: pointer;
 }
+
+#modalButton {
+   width: 10rem;
+   height: 5rem;
+
+   display: flex;
+   justify-content: center;
+   align-items: center;
+
+   border: none;
+   border-radius: 0.5rem;
+
+   color: #fff;
+
+   background: green;
+
+   cursor: pointer;
+
+   transition: 0.2s all ease;
+}
+
+#modalButton:hover {
+   background: rgb(11, 99, 11);
+}

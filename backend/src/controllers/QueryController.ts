@@ -56,7 +56,7 @@ export default class QueryController {
             client.end();
          }
 
-         return response.json(error.message);
+         return response.status(400).json((error as Error).message);
       }
    }
 }

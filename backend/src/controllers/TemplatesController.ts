@@ -1,13 +1,11 @@
 import { Request, Response } from 'express';
 import { Client } from 'pg';
 
-export default class DatabasesController {
+export default class TemplatesController {
    public async index(request: Request, response: Response) {
-      const { database } = request.query;
-
       const client = new Client({
          host: 'greenwich.lbd.dcc.ufmg.br',
-         database: database as string,
+         database: 'postgres',
          port: 5432,
 
          user: 'geosql',
@@ -17,14 +15,14 @@ export default class DatabasesController {
       try {
          await client.connect();
 
-         // Retorna as tabelas junto de suas respectivas colunas (para saber qual coluna pertence a qual tabela).
-         const { rows: databases } = await client.query(
-            `SELECT datname FROM pg_database WHERE datname like 'geosql_%';`
+         // Retorna todas as informações das funções utilizadas nos templates.
+         const { rows: templates } = await client.query(
+            `select item, grupo, titulo, proto, descr from templates.postgis_manual;`
          );
 
          client.end();
 
-         return response.json({ databases });
+         return response.json({ templates });
       } catch (error) {
          if (client) {
             client.end();

@@ -1,16 +1,27 @@
 /* Contexto que armazena as tabelas recebidas do banco, para evitar chamadas repetitivas à api. */
-
 import React, { createContext, useCallback, useEffect, useState } from 'react';
 
 import api from '../services/api';
+
+interface ITemplate {
+   item: string;
+
+   group: string;
+   title: string;
+   prototype: string;
+   description: string;
+}
 
 interface ContextData {
    database: string;
 
    databases: Array<string>;
+
    tables: Array<any>;
    tablesColumns: Array<any>;
    getTables(database: string): Promise<void>;
+
+   templates: Array<ITemplate>;
 
    loading: boolean;
 }
@@ -28,6 +39,8 @@ export const TablesProvider: React.FC = ({ children }) => {
    const [databases, setDatabases] = useState<string[]>([]);
    // Tabelas (para facilitar indexação).
    const [tables, setTables] = useState([]);
+   // Templates.
+   const [templates, setTemplates] = useState<ITemplate[]>([]);
    // Tabelas com suas respectivas colunas.
    const [tablesColumns, setTablesColumns] = useState([]);
    // Flag ativada enquanto a chamada à api é realizada.
@@ -67,15 +80,35 @@ export const TablesProvider: React.FC = ({ children }) => {
       setDatabases([...allDatabases]);
    }, [database]);
 
+   // Função que realiza a chamada à api, para recuperar os bancos de dados disponíveis para a aplicação.
+   const getTemplates = useCallback(async () => {
+      const {
+         data: { templates },
+      } = await api.get('/templates');
+
+      const allTemplates: ITemplate[] = templates.map((template: { [key: string]: any }) => {
+         return {
+            item: template.item,
+            group: template.grupo,
+            title: template.titulo,
+            prototype: template.proto,
+            description: template.descr,
+         };
+      });
+
+      setTemplates([...allTemplates]);
+   }, []);
+
    useEffect(() => {
       getTables(database);
       getDatabases();
+      getTemplates();
       // eslint-disable-next-line
-   }, [getTables, getDatabases]);
+   }, [getTables, getDatabases, getTemplates]);
 
    return (
       <TablesContext.Provider
-         value={{ database, databases, tables, tablesColumns, getTables, loading }}
+         value={{ database, databases, tables, tablesColumns, getTables, templates, loading }}
       >
          {children}
       </TablesContext.Provider>
