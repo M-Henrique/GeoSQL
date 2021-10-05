@@ -38,7 +38,7 @@ export default function QueryTemplates() {
                   title={prototype}
                   onClick={() => handleModal(title, group, prototype, description)}
                >
-                  {item} - {prototype}
+                  {item} - {prototype ? prototype : title}
                </li>
             ))}
          </ul>
