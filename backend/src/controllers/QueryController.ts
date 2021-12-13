@@ -15,20 +15,27 @@ export default class QueryController {
       });
 
       try {
+         console.log('oi1');
          await client.connect();
-
+         console.log('oi2');
          // Armazena os nomes das colunas geométricas para diferente tratamento.
          const geomColumnsObj = await client.query(
             `SELECT f_geometry_column FROM geometry_columns;`
          );
          const geomColumns = [...new Set(geomColumnsObj.rows.map((row) => Object.values(row)[0]))];
+         console.log('oi3');
 
          // Cria uma tabela temporária para armazenar os resultados da consulta realizada, e recupera o conteúdo da mesma.
          await client.query(`DROP TABLE IF EXISTS resultados;`);
+         console.log('oi4');
 
-         await client.query(`CREATE TEMP TABLE resultados as ${query}`);
+         console.log(query);
 
-         let results = await client.query(`SELECT * FROM resultados`);
+         await client.query(`CREATE TEMP TABLE resultados as ${query};`);
+         console.log('oi5');
+
+         let results = await client.query(`SELECT * FROM resultados;`);
+         console.log('oi6');
 
          // Caso a consulta englobe uma coluna geométrica, é necessário um tratamento extra para evitar quebra de interface (em caso de coordenadas muito grandes (mostramos apenas a geometria ao invés da coordenada inteira, através da função ST_GeometryType)) e permitir ao Openlayers acesso ao geojson (ST_AsGeoJson) respectivo da consulta (para criação das camadas).
          for (let i in results.fields) {
@@ -56,7 +63,7 @@ export default class QueryController {
             client.end();
          }
 
-         return response.status(400).json((error as Error).message);
+         return response.json((error as Error).message);
       }
    }
 }
