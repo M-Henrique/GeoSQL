@@ -103,6 +103,8 @@ export const TablesProvider: React.FC = ({ children }) => {
       getTables(database);
       getDatabases();
       getTemplates();
+
+      return () => {};
       // eslint-disable-next-line
    }, [getTables, getDatabases, getTemplates]);
 

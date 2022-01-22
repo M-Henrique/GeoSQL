@@ -837,6 +837,8 @@ export const LayersProvider: React.FC = ({ children }) => {
          setLayers((oldLayers) => [...oldLayers, vectorLayer]);
          setId((id) => id + 1);
       }
+
+      return () => {};
       // Necessário para evitar loops infinitos na criação de layers
       // eslint-disable-next-line react-hooks/exhaustive-deps
    }, [results]);

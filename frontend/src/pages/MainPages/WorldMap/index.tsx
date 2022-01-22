@@ -475,6 +475,8 @@ export default function WorldMap() {
       } else {
          setList(dragAndDrop.updatedOrder);
       }
+
+      return () => {};
    }, [dragAndDrop]);
 
    /*------------------------------------- Função que monta o mapa e adiciona as funcionalidades de popup e seleção de features ------------------------------------*/
@@ -558,6 +560,8 @@ export default function WorldMap() {
          map?.removeLayer(layer);
          map?.addLayer(layer);
       }
+
+      return () => {};
    }, [layers, map]);
 
    return (

@@ -128,6 +128,8 @@ export default function Results() {
 
    useEffect(() => {
       setSortableResults({ sortOrientation: [], results: [...results] });
+
+      return () => {};
    }, [results]);
 
    return (
