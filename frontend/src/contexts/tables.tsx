@@ -1,5 +1,5 @@
 /* Contexto que armazena as tabelas recebidas do banco, para evitar chamadas repetitivas à api. */
-import React, { createContext, useCallback, useEffect, useState } from 'react';
+import React, { createContext, useCallback, useEffect, useRef, useState } from 'react';
 
 import api from '../services/api';
 
@@ -29,6 +29,9 @@ interface ContextData {
 const TablesContext = createContext<ContextData>({} as ContextData);
 
 export const TablesProvider: React.FC = ({ children }) => {
+   /**Referência que mantém o status de renderização do componente, para evitar vazamentos de memória em tarefas assíncronas realizadas em componentes já desmontados */
+   const isMounted = useRef(true);
+
    // Banco de dados selecionado atualmente.
    const [database, setDatabase] = useState(
       sessionStorage.getItem('@geosql/selected-database')
@@ -58,6 +61,8 @@ export const TablesProvider: React.FC = ({ children }) => {
             data: { tables, tablesColumns },
          } = await api.get('/query', { params: { database } });
 
+         if (!isMounted.current) return;
+
          setTables(tables);
          setTablesColumns(tablesColumns);
 
@@ -73,6 +78,8 @@ export const TablesProvider: React.FC = ({ children }) => {
          data: { databases },
       } = await api.get('/databases', { params: { database } });
 
+      if (!isMounted.current) return;
+
       const allDatabases: string[] = databases.map(
          (database: { datname: string }) => database.datname
       );
@@ -85,6 +92,8 @@ export const TablesProvider: React.FC = ({ children }) => {
       const {
          data: { templates },
       } = await api.get('/templates');
+
+      if (!isMounted.current) return;
 
       const allTemplates: ITemplate[] = templates.map((template: { [key: string]: any }) => {
          return {
@@ -107,6 +116,13 @@ export const TablesProvider: React.FC = ({ children }) => {
       return () => {};
       // eslint-disable-next-line
    }, [getTables, getDatabases, getTemplates]);
+
+   /**Atualiza a referência para indicar que o componente foi desmontado */
+   useEffect(() => {
+      return () => {
+         isMounted.current = false;
+      };
+   }, []);
 
    return (
       <TablesContext.Provider

@@ -7,6 +7,8 @@ import React, {
    Dispatch,
    SetStateAction,
    useContext,
+   useRef,
+   useEffect,
 } from 'react';
 
 import { AxiosRequestConfig } from 'axios';
@@ -49,6 +51,9 @@ const QueryContext = createContext<ContextData>({} as ContextData);
 
 export const QueryProvider: React.FC = ({ children }) => {
    const { database } = useContext(TablesContext);
+
+   /**Referência que mantém o status de renderização do componente, para evitar vazamentos de memória em tarefas assíncronas realizadas em componentes já desmontados */
+   const isMounted = useRef(true);
 
    // Flag para identificar se o usuário ainda não fez nenhuma consulta.
    const [firstTime, setFirstTime] = useState(true);
@@ -100,6 +105,8 @@ export const QueryProvider: React.FC = ({ children }) => {
                database,
             } as Query);
 
+            if (!isMounted.current) return;
+
             // Checa se os objetos recebidos em resposta possuem a propriedade geométrica, e marca a flag.
             if (data[0]) {
                if (data[0].hasOwnProperty('geojson')) {
@@ -120,6 +127,13 @@ export const QueryProvider: React.FC = ({ children }) => {
       },
       [firstTime, handleQueryHistory, database]
    );
+
+   /**Atualiza a referência para indicar que o componente foi desmontado */
+   useEffect(() => {
+      return () => {
+         isMounted.current = false;
+      };
+   }, []);
 
    return (
       <QueryContext.Provider
